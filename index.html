@@ -179,7 +179,7 @@
 
 <div class="container" id="app">
     <header>
-        <h1 v-if="isWideScreen">Sky キャンドル計算機 (Web版)</h1>
+        <h1 v-if="isWideScreen"> キャンドル計算機 (Web版)</h1>
         <h1 v-else>ダッシュボード</h1>
     </header>
 
@@ -203,7 +203,7 @@
             </div>
 
             <div class="section-card">
-                <div class="section-header">📅 キャンドル・イベント管理</div>
+                <div class="section-header"> キャンドル管理</div>
                 <div class="row" style="flex-direction: column; align-items: flex-start;">
                     <div style="display: flex; justify-content: space-between; width: 100%;">
                         <div>繰越:</div>
@@ -212,7 +212,7 @@
                     <input type="range" v-model.number="carryOverPercent" min="0" max="99" step="1">
                 </div>
                 <div class="row">
-                    <div>現在所持数:</div>
+                    <div>現在所持キャンドル数:</div>
                     <input type="number" v-model.number="currentCandles">
                 </div>
                 <div class="row">
@@ -220,7 +220,7 @@
                     <input type="number" v-model.number="plannedUsage">
                 </div>
                 <div class="row">
-                    <div>イベント残日数:</div>
+                    <div>稼ぐ日数:</div>
                     <input type="number" v-model.number="eventDays">
                 </div>
                 <div class="row">
