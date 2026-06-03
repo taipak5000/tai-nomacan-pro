@@ -131,7 +131,6 @@
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .btn-orange { background-color: var(--accent-orange); color: white; }
         
-        /* 枠線ボタンの共通化とデザイン洗練 */
         .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; cursor: pointer; }
         .btn-outline-blue:disabled { border-color: var(--border-color); color: var(--text-gray); cursor: not-allowed; }
         .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; cursor: pointer; }
@@ -298,6 +297,22 @@
                 </div>
                 <button class="btn-add" @click="addItem">➕ アイテムを追加</button>
             </div>
+
+            <div class="section-card">
+                <div class="section-header">🧙‍♂️ データの共有（復活の呪文）</div>
+                <div class="row" style="flex-direction: column; align-items: flex-start;">
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">この端末のデータを呪文にする：</div>
+                    <button class="btn btn-blue" @click="generateSpell" style="margin-top: 0; padding: 8px; font-size:14px;">✨ 復活の呪文を生成</button>
+                    <textarea v-model="generatedSpell" readonly placeholder="ボタンを押すとここに呪文が生成されます..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: #f9f9f9;" @click="$event.target.select()"></textarea>
+                    <div v-if="generatedSpell" style="font-size: 11px; color: var(--accent-green); margin-top: 4px; font-weight: bold;">⬆️ 全選択してコピーし、他端末に送ってください</div>
+                </div>
+                <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
+                <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">他の端末の呪文から復元する：</div>
+                    <textarea v-model="inputSpell" placeholder="他端末で生成した呪文をここに貼り付けてください..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
+                    <button class="btn btn-orange" @click="applySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱える</button>
+                </div>
+            </div>
         </div>
           
         <div>
@@ -370,6 +385,10 @@
             const placedItems = ref([]);
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
+
+            // ★新機能：復活の呪文用の変数
+            const generatedSpell = ref("");
+            const inputSpell = ref("");
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -545,7 +564,6 @@
                 return { light, eff };
             };
 
-            // ★新機能：メインエリアの並び替えロジック
             const moveMainArea = (index, direction) => {
                 const targetIndex = index + direction;
                 if (targetIndex < 0 || targetIndex >= areas.value.length) return;
@@ -554,7 +572,6 @@
                 save();
             };
 
-            // ★新機能：サブエリアの並び替えロジック
             const moveSubArea = (mIdx, sIdx, direction) => {
                 const subAreas = areas.value[mIdx].subAreas;
                 const targetIndex = sIdx + direction;
@@ -562,6 +579,72 @@
                 const item = subAreas.splice(sIdx, 1)[0];
                 subAreas.splice(targetIndex, 0, item);
                 save();
+            };
+
+            // ★新機能：復活の呪文の生成ロジック (UTF-8安全なBase64エンコード)
+            const generateSpell = () => {
+                try {
+                    const dataToSave = {
+                        areas: areas.value,
+                        placedItems: placedItems.value,
+                        carryOverPercent: carryOverPercent.value,
+                        targetDate: targetDate.value,
+                        currentCandles: currentCandles.value,
+                        plannedUsage: plannedUsage.value,
+                        targetCandlesForOptimization: targetCandlesForOptimization.value,
+                        candleMemo: candleMemo.value
+                    };
+                    const jsonStr = JSON.stringify(dataToSave);
+                    const uint8array = new TextEncoder().encode(jsonStr);
+                    let binString = "";
+                    for (let i = 0; i < uint8array.length; i++) {
+                        binString += String.fromCharCode(uint8array[i]);
+                    }
+                    generatedSpell.value = btoa(binString);
+                } catch (e) {
+                    alert("呪文の生成に失敗しました。");
+                }
+            };
+
+            // ★新機能：復活の呪文の読み込み・復元ロジック
+            const applySpell = () => {
+                if (!inputSpell.value.trim()) {
+                    alert("呪文を入力してください。");
+                    return;
+                }
+                if (!confirm("呪文を唱えると、現在のこの端末のデータはすべて上書きされます。よろしいですか？")) {
+                    return;
+                }
+                try {
+                    const binString = atob(inputSpell.value.trim());
+                    const uint8array = new Uint8Array(binString.length);
+                    for (let i = 0; i < binString.length; i++) {
+                        uint8array[i] = binString.charCodeAt(i);
+                    }
+                    const jsonStr = new TextDecoder().decode(uint8array);
+                    const decoded = JSON.parse(jsonStr);
+                    
+                    // データの安全な適用
+                    if (decoded.areas) areas.value = decoded.areas;
+                    if (decoded.placedItems) {
+                        placedItems.value = decoded.placedItems.map(item => ({
+                            ...item,
+                            placedDate: new Date(item.placedDate)
+                        }));
+                    }
+                    if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
+                    if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
+                    if (decoded.targetDate) targetDate.value = decoded.targetDate;
+                    if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
+                    if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
+                    if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
+                    
+                    save();
+                    inputSpell.value = "";
+                    alert("🌟 パパパパッパパーン！\nデータの復元に成功しました！");
+                } catch (e) {
+                    alert("😢 じゅもんが ちがいます！\n(正しい呪文がすべて貼り付けられているか確認してください)");
+                }
             };
 
             const dailyReset = () => {
@@ -657,13 +740,20 @@
 
             return {
                 areas, placedItems, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                generatedSpell, inputSpell,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
-                moveMainArea, moveSubArea, // ★忘れずにreturn
+                moveMainArea, moveSubArea, generateSpell, applySpell,
                 addItem, removeItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
             };
         }
     }).mount('#app');
 </script>
 <footer style="text-align: center; padding: 24px 0; color: var(--text-gray); font-size: 13px;">
-    © 2026 キャンドル計算機 | 作成
+    © 2026 キャンドル計算機 | 作成・ご意見: 
+    <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
+        @Skyzztai
+    </a>
+</footer>
+</body>
+</html>
