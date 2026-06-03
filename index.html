@@ -224,8 +224,12 @@
                     <input type="number" v-model.number="plannedUsage">
                 </div>
                 <div class="row">
+                    <div>目標日:</div>
+                    <input type="date" v-model="targetDate" style="width: 130px; text-align: left;">
+                </div>
+                <div class="row">
                     <div>稼ぐ残日数:</div>
-                    <input type="number" v-model.number="eventDays">
+                    <div style="font-weight: bold;">{{ eventDays }} 日</div>
                 </div>
                 <div class="row">
                     <div>予想残数:</div>
@@ -326,7 +330,12 @@
             const areas = ref([]);
             const placedItems = ref([]);
             const carryOverPercent = ref(0.0);
-            const eventDays = ref(14);
+            
+            // ★新機能用：目標日のデータ（初期値は14日後の日付の文字列 YYYY-MM-DD）
+            const defaultTarget = new Date();
+            defaultTarget.setDate(defaultTarget.getDate() + 14);
+            const targetDate = ref(defaultTarget.toISOString().split('T')[0]);
+
             const currentCandles = ref(0);
             const plannedUsage = ref(0);
             const targetCandlesForOptimization = ref(20);
@@ -355,7 +364,7 @@
                     areas: areas.value,
                     placedItems: placedItems.value,
                     carryOverPercent: carryOverPercent.value,
-                    eventDays: eventDays.value,
+                    targetDate: targetDate.value, // ★保存データに目標日を追加
                     currentCandles: currentCandles.value,
                     plannedUsage: plannedUsage.value,
                     targetCandlesForOptimization: targetCandlesForOptimization.value
@@ -375,7 +384,16 @@
                             placedDate: new Date(item.placedDate)
                         }));
                         carryOverPercent.value = decoded.carryOverPercent || 0;
-                        eventDays.value = decoded.eventDays || 14;
+                        
+                        // ★古いデータ（eventDays数値のみ）がある場合の互換性ケア
+                        if (decoded.targetDate) {
+                            targetDate.value = decoded.targetDate;
+                        } else if (decoded.eventDays) {
+                            const d = new Date();
+                            d.setDate(d.getDate() + decoded.eventDays);
+                            targetDate.value = d.toISOString().split('T')[0];
+                        }
+
                         currentCandles.value = decoded.currentCandles || 0;
                         plannedUsage.value = decoded.plannedUsage || 0;
                         targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
@@ -388,6 +406,19 @@
             };
 
             // 算出プロパティ (Computed)
+            
+            // ★変更点：目標日（targetDate）から「残日数（eventDays）」を逆算する算出プロパティに変更
+            const eventDays = computed(() => {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const target = new Date(targetDate.value);
+                target.setHours(0,0,0,0);
+                
+                const diffTime = target - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 ? diffDays : 0; // 過去の日付なら0日とする
+            });
+
             const selectedLight = computed(() => {
                 let total = 0;
                 areas.value.forEach(area => {
@@ -398,7 +429,6 @@
                 return total;
             });
 
-            // ★新機能：選択されたエリア全体の総合効率を計算
             const totalEfficiency = computed(() => {
                 let totalLightSelected = 0;
                 let totalTimeSelected = 0;
@@ -412,7 +442,6 @@
                     });
                 });
 
-                // 選択されているエリアの合計秒数が0より大きい場合のみ割り算（エラー回避）
                 return totalTimeSelected > 0 ? (totalLightSelected / totalTimeSelected) : 0.0;
             });
 
@@ -489,7 +518,6 @@
                 save();
             };
 
-            // シェアアイテム管理用の日付計算ヘルパー
             const getDaysLeft = (placedDate) => {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -532,12 +560,13 @@
                 });
             });
 
-            watch([areas, placedItems, carryOverPercent, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization], () => {
+            // 監視設定（targetDateも監視対象に加える）
+            watch([areas, placedItems, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization], () => {
                 save();
             }, { deep: true });
 
             return {
-                areas, placedItems, carryOverPercent, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds,
+                areas, placedItems, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds,
                 totalLight, calculated, projectedCandles, totalEfficiency, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate,
                 addItem, removeItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
