@@ -68,6 +68,14 @@
             margin-bottom: 12px;
             font-weight: 600;
         }
+        
+        .section-header-clickable {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 4px;
+        }
 
         .row {
             display: flex;
@@ -157,10 +165,12 @@
             font-weight: bold;
             padding: 4px 6px;
             border-radius: 4px;
+            white-space: nowrap;
         }
         .badge-red { background: rgba(255,59,48,0.15); color: var(--accent-red); }
         .badge-yellow { background: rgba(255,149,0,0.15); color: var(--accent-orange); }
         .badge-green { background: rgba(52,199,89,0.15); color: var(--accent-green); }
+        .badge-gray { background: #e5e5ea; color: #8e8e93; }
 
         /* インライン通知メッセージ用スタイル */
         .inline-alert {
@@ -195,9 +205,10 @@
         }
         .subarea-item {
             background: #f9f9f9;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
         }
         .subarea-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
         .subarea-row2 { display: flex; align-items: center; gap: 12px; padding-left: 28px; font-size: 13px; color: #666; }
@@ -288,27 +299,54 @@
             </div>
 
             <div class="section-card">
-                <div class="section-header">シェア系創作物管理 (14日間)</div>
-                <div v-for="(item, index) in placedItems" :key="item.id" class="subarea-item" style="background: var(--card-bg); border: 1px solid var(--border-color); margin-bottom:10px;">
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <input type="text" v-model="item.memo" placeholder="設置メモ">
-                        <span :class="['badge', getDaysLeft(item.placedDate) < 0 ? 'badge-red' : (getDaysLeft(item.placedDate) <= 3 ? 'badge-yellow' : 'badge-green')]">
-                            {{ getDaysLeft(item.placedDate) < 0 ? '消滅' : (getDaysLeft(item.placedDate) === 0 ? '今日まで' : 'あと ' + getDaysLeft(item.placedDate) + '日') }}
-                        </span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray);">
-                        <div>
-                            <div>設置日</div>
-                            <input type="date" :value="formatDateForInput(item.placedDate)" @input="updateItemDate(index, $event.target.value)" style="width:120px;">
-                        </div>
-                        <div style="text-align: right;">
-                            <div>消える日</div>
-                            <div style="font-weight: bold; margin-top: 6px; color: var(--text-color);">{{ getExpiryDateString(item.placedDate) }}</div>
-                        </div>
-                    </div>
-                    <button class="btn-outline-red" @click="removeItem(index)" style="margin-top: 8px;">削除</button>
+                <div class="section-header section-header-clickable" @click="isItemsExpanded = !isItemsExpanded">
+                    <span>シェア系創作物管理 (14日間)</span>
+                    <span style="font-size: 14px;">{{ isItemsExpanded ? '▼' : '▶' }}</span>
                 </div>
-                <button class="btn-add" @click="addItem">➕ アイテムを追加</button>
+                
+                <div v-if="isItemsExpanded">
+                    <div v-for="item in sortedPlacedItems" :key="item.id" class="subarea-item">
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                            <input type="text" v-model="item.memo" placeholder="設置メモ (例: 花鳥郷)">
+                            <span v-if="item.isSuspended" class="badge badge-gray">保留中</span>
+                            <span v-else :class="['badge', getDaysLeft(item.placedDate) < 0 ? 'badge-red' : (getDaysLeft(item.placedDate) <= 3 ? 'badge-yellow' : 'badge-green')]">
+                                {{ getDaysLeft(item.placedDate) < 0 ? '消滅' : (getDaysLeft(item.placedDate) === 0 ? '今日まで' : 'あと ' + getDaysLeft(item.placedDate) + '日') }}
+                            </span>
+                        </div>
+
+                        <div v-if="item.isSuspended" style="display: flex; gap: 6px; margin-top: 8px;">
+                            <button class="btn-outline-blue" @click="rePlaceItem(item.id)" style="flex:1; padding: 6px;">♻️ 今日再設置</button>
+                            <button class="btn-outline-red" @click="removeItem(item.id)" style="flex:1; padding: 6px;">🗑️ 削除</button>
+                        </div>
+                        
+                        <div v-else>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray);">
+                                <div>
+                                    <div>設置日</div>
+                                    <input type="date" :value="formatDateForInput(item.placedDate)" @input="updateItemDate(item.id, $event.target.value)" style="width:120px;">
+                                </div>
+                                <div style="text-align: right;">
+                                    <div>消える日</div>
+                                    <div style="font-weight: bold; margin-top: 6px; color: var(--text-color);">{{ getExpiryDateString(item.placedDate) }}</div>
+                                </div>
+                            </div>
+                            
+                            <div v-if="getDaysLeft(item.placedDate) < 0" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+                                <div style="font-size: 11px; color: var(--accent-red); margin-bottom: 6px; font-weight: bold;">⚠️ 期限が切れました。どうしますか？</div>
+                                <div style="display:flex; gap:6px;">
+                                    <button class="btn-outline-blue" @click="rePlaceItem(item.id)" style="flex:1; padding: 6px;">♻️ 再設置</button>
+                                    <button class="btn-outline-blue" @click="suspendItem(item.id)" style="flex:1; border-color:var(--text-gray); color:var(--text-gray); padding: 6px;">📦 保留</button>
+                                    <button class="btn-outline-red" @click="removeItem(item.id)" style="flex:1; padding: 6px;">🗑️ 削除</button>
+                                </div>
+                            </div>
+                            
+                            <div v-else style="text-align: right; margin-top: 8px;">
+                                <button class="btn-outline-red" @click="removeItem(item.id)">削除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-add" @click="addItem">➕ アイテムを追加</button>
+                </div>
             </div>
 
             <div class="section-card">
@@ -411,16 +449,15 @@
             
             const areas = ref([]);
             const placedItems = ref([]);
+            const isItemsExpanded = ref(true); // ★アイテムリストの開閉状態
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
 
             const generatedSpell = ref("");
             const inputSpell = ref("");
-            
-            // ★画面内通知・確認用の新しい状態変数
             const isConfirming = ref(false);
             const spellMessage = ref("");
-            const spellMessageType = ref(""); // 'success' or 'error'
+            const spellMessageType = ref("");
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -450,6 +487,7 @@
                 const dataToSave = {
                     areas: areas.value,
                     placedItems: placedItems.value,
+                    isItemsExpanded: isItemsExpanded.value,
                     carryOverPercent: carryOverPercent.value,
                     targetDate: targetDate.value,
                     currentCandles: currentCandles.value,
@@ -470,8 +508,14 @@
 
                         placedItems.value = (decoded.placedItems || []).map(item => ({
                             ...item,
-                            placedDate: new Date(item.placedDate)
+                            placedDate: new Date(item.placedDate),
+                            isSuspended: item.isSuspended || false // 古いデータにも安全に対応
                         }));
+                        
+                        if (decoded.isItemsExpanded !== undefined) {
+                            isItemsExpanded.value = decoded.isItemsExpanded;
+                        }
+
                         carryOverPercent.value = decoded.carryOverPercent || 0;
                         candleMemo.value = decoded.candleMemo || "";
                         
@@ -565,6 +609,31 @@
                 return currentCandles.value + (daily * eventDays.value) - plannedUsage.value;
             });
 
+            const getDaysLeft = (placedDate) => {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const expiry = new Date(placedDate);
+                expiry.setDate(expiry.getDate() + 14);
+                expiry.setHours(0,0,0,0);
+                const diffTime = expiry - today;
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            };
+
+            // ★アイテムを自動ソートするComputedプロパティ
+            const sortedPlacedItems = computed(() => {
+                return [...placedItems.value].sort((a, b) => {
+                    // 1. 保留中のものは常に一番下
+                    if (a.isSuspended && !b.isSuspended) return 1;
+                    if (!a.isSuspended && b.isSuspended) return -1;
+                    if (a.isSuspended && b.isSuspended) return 0;
+                    
+                    // 2. 残り日数が少ない順（期限切れ含む）に上に持ってくる
+                    const daysA = getDaysLeft(a.placedDate);
+                    const daysB = getDaysLeft(b.placedDate);
+                    return daysA - daysB;
+                });
+            });
+
             const getEfficiency = (subArea) => {
                 return subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
             };
@@ -616,6 +685,7 @@
                     const dataToSave = {
                         areas: areas.value,
                         placedItems: placedItems.value,
+                        isItemsExpanded: isItemsExpanded.value,
                         carryOverPercent: carryOverPercent.value,
                         targetDate: targetDate.value,
                         currentCandles: currentCandles.value,
@@ -635,7 +705,6 @@
                 }
             };
 
-            // ★改良：ボタンを押した時に確認状態にする
             const requestApplySpell = () => {
                 if (!inputSpell.value.trim()) {
                     showInlineMessage("呪文を入力してください。", "error");
@@ -644,7 +713,6 @@
                 isConfirming.value = true;
             };
 
-            // ★改良：画面内の「はい」を押したときに実行する
             const confirmApplySpell = () => {
                 isConfirming.value = false;
                 try {
@@ -660,9 +728,11 @@
                     if (decoded.placedItems) {
                         placedItems.value = decoded.placedItems.map(item => ({
                             ...item,
-                            placedDate: new Date(item.placedDate)
+                            placedDate: new Date(item.placedDate),
+                            isSuspended: item.isSuspended || false
                         }));
                     }
+                    if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
                     if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
                     if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
                     if (decoded.targetDate) targetDate.value = decoded.targetDate;
@@ -678,12 +748,11 @@
                 }
             };
 
-            // メッセージを画面内に表示して数秒後に消すユーティリティ
             const showInlineMessage = (msg, type) => {
                 spellMessage.value = msg;
                 spellMessageType.value = type;
                 if (type === 'success') {
-                    setTimeout(() => { spellMessage.value = ""; }, 5000); // 成功時は5秒で消す
+                    setTimeout(() => { spellMessage.value = ""; }, 5000);
                 }
             };
 
@@ -734,16 +803,6 @@
                 save();
             };
 
-            const getDaysLeft = (placedDate) => {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const expiry = new Date(placedDate);
-                expiry.setDate(expiry.getDate() + 14);
-                expiry.setHours(0,0,0,0);
-                const diffTime = expiry - today;
-                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            };
-
             const getExpiryDateString = (placedDate) => {
                 const expiry = new Date(placedDate);
                 expiry.setDate(expiry.getDate() + 14);
@@ -754,12 +813,37 @@
                 return date.toISOString().split('T')[0];
             };
 
-            const updateItemDate = (index, dateString) => {
-                if (dateString) placedItems.value[index].placedDate = new Date(dateString);
+            // ★IDベースでアイテム操作を行う関数群
+            const updateItemDate = (id, dateString) => {
+                if (!dateString) return;
+                const item = placedItems.value.find(i => i.id === id);
+                if (item) {
+                    item.placedDate = new Date(dateString);
+                    item.isSuspended = false;
+                }
             };
 
-            const addItem = () => { placedItems.value.push({ id: uuid(), memo: "", placedDate: new Date() }); };
-            const removeItem = (index) => { placedItems.value.splice(index, 1); };
+            const addItem = () => { 
+                placedItems.value.push({ id: uuid(), memo: "", placedDate: new Date(), isSuspended: false }); 
+            };
+            
+            const removeItem = (id) => { 
+                const idx = placedItems.value.findIndex(i => i.id === id);
+                if (idx !== -1) placedItems.value.splice(idx, 1); 
+            };
+
+            const rePlaceItem = (id) => {
+                const item = placedItems.value.find(i => i.id === id);
+                if (item) {
+                    item.placedDate = new Date();
+                    item.isSuspended = false;
+                }
+            };
+
+            const suspendItem = (id) => {
+                const item = placedItems.value.find(i => i.id === id);
+                if (item) item.isSuspended = true;
+            };
             
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
             const deleteMainArea = (index) => { areas.value.splice(index, 1); };
@@ -774,17 +858,17 @@
                 });
             });
 
-            watch([areas, placedItems, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo], () => {
+            watch([areas, placedItems, isItemsExpanded, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo], () => {
                 save();
             }, { deep: true });
 
             return {
-                areas, placedItems, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                areas, placedItems, sortedPlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
                 moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-                addItem, removeItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
+                addItem, removeItem, rePlaceItem, suspendItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
             };
         }
     }).mount('#app');
