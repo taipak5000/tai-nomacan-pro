@@ -132,7 +132,23 @@
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .btn-orange { background-color: var(--accent-orange); color: white; }
         .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; }
-        .btn-add { background: transparent; color: var(--accent-blue); text-align: left; padding: 8px 0; font-size: 14px; width: auto; margin: 0; display: inline-flex; align-items: center; gap: 4px;}
+        
+        /* ★改善点：ブラウザの初期黒枠を消し、余白を広げて洗練されたテキストリンク風に */
+        .btn-add { 
+            background: transparent; 
+            border: none; 
+            color: var(--accent-blue); 
+            text-align: left; 
+            padding: 10px 4px; 
+            font-size: 14px; 
+            font-weight: 500;
+            width: auto; 
+            margin: 4px 0; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px;
+            cursor: pointer;
+        }
 
         /* バッジ */
         .badge {
