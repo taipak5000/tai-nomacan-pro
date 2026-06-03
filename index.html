@@ -162,6 +162,19 @@
         .badge-yellow { background: rgba(255,149,0,0.15); color: var(--accent-orange); }
         .badge-green { background: rgba(52,199,89,0.15); color: var(--accent-green); }
 
+        /* インライン通知メッセージ用スタイル */
+        .inline-alert {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        .inline-alert-success { background: rgba(52,199,89,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
+
         /* アコーディオン */
         .area-accordion {
             border-bottom: 1px solid var(--border-color);
@@ -306,11 +319,26 @@
                     <textarea v-model="generatedSpell" readonly placeholder="ボタンを押すとここに呪文が生成されます..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: #f9f9f9;" @click="$event.target.select()"></textarea>
                     <div v-if="generatedSpell" style="font-size: 11px; color: var(--accent-green); margin-top: 4px; font-weight: bold;">⬆️ 全選択してコピーし、他端末に送ってください</div>
                 </div>
+                
                 <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
+                
                 <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
                     <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">他の端末の呪文から復元する：</div>
                     <textarea v-model="inputSpell" placeholder="他端末で生成した呪文をここに貼り付けてください..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
-                    <button class="btn btn-orange" @click="applySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱える</button>
+                    
+                    <div v-if="isConfirming" class="inline-alert inline-alert-confirm" style="width:100%; box-sizing:border-box;">
+                        ⚠️ 呪文を唱えると現在のデータが上書きされます。よろしいですか？
+                        <div style="display:flex; gap:10px; margin-top:8px;">
+                            <button class="btn-outline-blue" @click="confirmApplySpell" style="background:var(--accent-orange); color:white; border:none; padding:6px 12px; font-weight:bold;">はい、唱えます</button>
+                            <button class="btn-outline-blue" @click="isConfirming = false" style="background:#ccc; color:#333; border:none; padding:6px 12px;">やめる</button>
+                        </div>
+                    </div>
+                    
+                    <button v-else class="btn btn-orange" @click="requestApplySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱える</button>
+
+                    <div v-if="spellMessage" :class="['inline-alert', spellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="width:100%; box-sizing:border-box;">
+                        {{ spellMessage }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -386,9 +414,13 @@
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
 
-            // ★新機能：復活の呪文用の変数
             const generatedSpell = ref("");
             const inputSpell = ref("");
+            
+            // ★画面内通知・確認用の新しい状態変数
+            const isConfirming = ref(false);
+            const spellMessage = ref("");
+            const spellMessageType = ref(""); // 'success' or 'error'
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -462,7 +494,6 @@
                 }
             };
 
-            // 算出プロパティ (Computed)
             const eventDays = computed(() => {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -534,7 +565,6 @@
                 return currentCandles.value + (daily * eventDays.value) - plannedUsage.value;
             });
 
-            // メソッド（ロジック処理）
             const getEfficiency = (subArea) => {
                 return subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
             };
@@ -581,7 +611,6 @@
                 save();
             };
 
-            // ★新機能：復活の呪文の生成ロジック (UTF-8安全なBase64エンコード)
             const generateSpell = () => {
                 try {
                     const dataToSave = {
@@ -602,19 +631,22 @@
                     }
                     generatedSpell.value = btoa(binString);
                 } catch (e) {
-                    alert("呪文の生成に失敗しました。");
+                    showInlineMessage("呪文の生成に失敗しました。", "error");
                 }
             };
 
-            // ★新機能：復活の呪文の読み込み・復元ロジック
-            const applySpell = () => {
+            // ★改良：ボタンを押した時に確認状態にする
+            const requestApplySpell = () => {
                 if (!inputSpell.value.trim()) {
-                    alert("呪文を入力してください。");
+                    showInlineMessage("呪文を入力してください。", "error");
                     return;
                 }
-                if (!confirm("呪文を唱えると、現在のこの端末のデータはすべて上書きされます。よろしいですか？")) {
-                    return;
-                }
+                isConfirming.value = true;
+            };
+
+            // ★改良：画面内の「はい」を押したときに実行する
+            const confirmApplySpell = () => {
+                isConfirming.value = false;
                 try {
                     const binString = atob(inputSpell.value.trim());
                     const uint8array = new Uint8Array(binString.length);
@@ -624,7 +656,6 @@
                     const jsonStr = new TextDecoder().decode(uint8array);
                     const decoded = JSON.parse(jsonStr);
                     
-                    // データの安全な適用
                     if (decoded.areas) areas.value = decoded.areas;
                     if (decoded.placedItems) {
                         placedItems.value = decoded.placedItems.map(item => ({
@@ -641,9 +672,18 @@
                     
                     save();
                     inputSpell.value = "";
-                    alert("🌟 パパパパッパパーン！\nデータの復元に成功しました！");
+                    showInlineMessage("🌟 パパパパッパパーン！ データの復元に成功しました！", "success");
                 } catch (e) {
-                    alert("😢 じゅもんが ちがいます！\n(正しい呪文がすべて貼り付けられているか確認してください)");
+                    showInlineMessage("😢 じゅもんが ちがいます！ (正しい呪文がすべて貼り付けられているか確認してください)", "error");
+                }
+            };
+
+            // メッセージを画面内に表示して数秒後に消すユーティリティ
+            const showInlineMessage = (msg, type) => {
+                spellMessage.value = msg;
+                spellMessageType.value = type;
+                if (type === 'success') {
+                    setTimeout(() => { spellMessage.value = ""; }, 5000); // 成功時は5秒で消す
                 }
             };
 
@@ -740,10 +780,10 @@
 
             return {
                 areas, placedItems, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-                generatedSpell, inputSpell,
+                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
-                moveMainArea, moveSubArea, generateSpell, applySpell,
+                moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 addItem, removeItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
             };
         }
