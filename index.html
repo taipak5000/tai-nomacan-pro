@@ -298,14 +298,16 @@
                 <button class="btn btn-orange" @click="optimize">高効率エリアを自動選択</button>
             </div>
 
+            <!-- ★スマートアラート搭載：シェア系創作物管理セクション -->
             <div class="section-card">
                 <div class="section-header section-header-clickable" @click="isItemsExpanded = !isItemsExpanded">
                     <span>シェア系創作物管理 (14日間)</span>
                     <span style="font-size: 14px;">{{ isItemsExpanded ? '▼' : '▶' }}</span>
                 </div>
                 
-                <div v-if="isItemsExpanded">
-                    <div v-for="item in sortedPlacedItems" :key="item.id" class="subarea-item">
+                <div>
+                    <!-- 改良：条件に応じて表示するアイテムを制御するループに変更 -->
+                    <div v-for="item in visiblePlacedItems" :key="item.id" class="subarea-item">
                         <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
                             <input type="text" v-model="item.memo" placeholder="設置メモ (例: 花鳥郷)">
                             <span v-if="item.isSuspended" class="badge badge-gray">保留中</span>
@@ -314,11 +316,13 @@
                             </span>
                         </div>
 
+                        <!-- 1. 保留中の場合 -->
                         <div v-if="item.isSuspended" style="display: flex; gap: 6px; margin-top: 8px;">
                             <button class="btn-outline-blue" @click="rePlaceItem(item.id)" style="flex:1; padding: 6px;">♻️ 今日再設置</button>
                             <button class="btn-outline-red" @click="removeItem(item.id)" style="flex:1; padding: 6px;">🗑️ 削除</button>
                         </div>
                         
+                        <!-- 2. アクティブ（消滅前・消滅後）の場合 -->
                         <div v-else>
                             <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray);">
                                 <div>
@@ -345,7 +349,8 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn-add" @click="addItem">➕ アイテムを追加</button>
+                    <!-- 追加ボタンは展開時のみ表示 -->
+                    <button v-if="isItemsExpanded" class="btn-add" @click="addItem">➕ アイテムを追加</button>
                 </div>
             </div>
 
@@ -449,7 +454,7 @@
             
             const areas = ref([]);
             const placedItems = ref([]);
-            const isItemsExpanded = ref(true); // ★アイテムリストの開閉状態
+            const isItemsExpanded = ref(true); 
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
 
@@ -509,7 +514,7 @@
                         placedItems.value = (decoded.placedItems || []).map(item => ({
                             ...item,
                             placedDate: new Date(item.placedDate),
-                            isSuspended: item.isSuspended || false // 古いデータにも安全に対応
+                            isSuspended: item.isSuspended || false
                         }));
                         
                         if (decoded.isItemsExpanded !== undefined) {
@@ -619,18 +624,26 @@
                 return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             };
 
-            // ★アイテムを自動ソートするComputedプロパティ
             const sortedPlacedItems = computed(() => {
                 return [...placedItems.value].sort((a, b) => {
-                    // 1. 保留中のものは常に一番下
                     if (a.isSuspended && !b.isSuspended) return 1;
                     if (!a.isSuspended && b.isSuspended) return -1;
                     if (a.isSuspended && b.isSuspended) return 0;
                     
-                    // 2. 残り日数が少ない順（期限切れ含む）に上に持ってくる
                     const daysA = getDaysLeft(a.placedDate);
                     const daysB = getDaysLeft(b.placedDate);
                     return daysA - daysB;
+                });
+            });
+
+            // ★新機能：実際に画面に表示するアイテムを決定するフィルター
+            const visiblePlacedItems = computed(() => {
+                return sortedPlacedItems.value.filter(item => {
+                    // 1. 展開時（▼の状態）は無条件ですべて表示
+                    if (isItemsExpanded.value) return true;
+                    // 2. 折りたたみ時（▶の状態）は、保留中ではない、かつ残り3日以下（黄色・赤色）のみ表示
+                    if (item.isSuspended) return false;
+                    return getDaysLeft(item.placedDate) <= 3;
                 });
             });
 
@@ -813,7 +826,6 @@
                 return date.toISOString().split('T')[0];
             };
 
-            // ★IDベースでアイテム操作を行う関数群
             const updateItemDate = (id, dateString) => {
                 if (!dateString) return;
                 const item = placedItems.value.find(i => i.id === id);
@@ -863,8 +875,8 @@
             }, { deep: true });
 
             return {
-                areas, placedItems, sortedPlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
+                areas, placedItems, sortedPlacedItems, visiblePlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                generatedSpell = ref(""), inputSpell, isConfirming, spellMessage, spellMessageType,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
                 moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
