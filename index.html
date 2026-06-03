@@ -298,7 +298,6 @@
                 <button class="btn btn-orange" @click="optimize">高効率エリアを自動選択</button>
             </div>
 
-            <!-- ★スマートアラート搭載：シェア系創作物管理セクション -->
             <div class="section-card">
                 <div class="section-header section-header-clickable" @click="isItemsExpanded = !isItemsExpanded">
                     <span>シェア系創作物管理 (14日間)</span>
@@ -306,7 +305,6 @@
                 </div>
                 
                 <div>
-                    <!-- 改良：条件に応じて表示するアイテムを制御するループに変更 -->
                     <div v-for="item in visiblePlacedItems" :key="item.id" class="subarea-item">
                         <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
                             <input type="text" v-model="item.memo" placeholder="設置メモ (例: 花鳥郷)">
@@ -316,13 +314,11 @@
                             </span>
                         </div>
 
-                        <!-- 1. 保留中の場合 -->
                         <div v-if="item.isSuspended" style="display: flex; gap: 6px; margin-top: 8px;">
                             <button class="btn-outline-blue" @click="rePlaceItem(item.id)" style="flex:1; padding: 6px;">♻️ 今日再設置</button>
                             <button class="btn-outline-red" @click="removeItem(item.id)" style="flex:1; padding: 6px;">🗑️ 削除</button>
                         </div>
                         
-                        <!-- 2. アクティブ（消滅前・消滅後）の場合 -->
                         <div v-else>
                             <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray);">
                                 <div>
@@ -349,7 +345,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 追加ボタンは展開時のみ表示 -->
                     <button v-if="isItemsExpanded" class="btn-add" @click="addItem">➕ アイテムを追加</button>
                 </div>
             </div>
@@ -403,7 +398,7 @@
                         
                         <div style="display:flex; gap:6px; align-items:center; flex-shrink: 0;">
                             <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.value.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
                             <button class="btn-outline-red" @click="deleteMainArea(mIdx)">削除</button>
                             <span @click="mainArea.isExpanded = !mainArea.isExpanded" style="padding: 4px; cursor: pointer;">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
                         </div>
@@ -636,12 +631,9 @@
                 });
             });
 
-            // ★新機能：実際に画面に表示するアイテムを決定するフィルター
             const visiblePlacedItems = computed(() => {
                 return sortedPlacedItems.value.filter(item => {
-                    // 1. 展開時（▼の状態）は無条件ですべて表示
                     if (isItemsExpanded.value) return true;
-                    // 2. 折りたたみ時（▶の状態）は、保留中ではない、かつ残り3日以下（黄色・赤色）のみ表示
                     if (item.isSuspended) return false;
                     return getDaysLeft(item.placedDate) <= 3;
                 });
@@ -876,7 +868,7 @@
 
             return {
                 areas, placedItems, sortedPlacedItems, visiblePlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-                generatedSpell = ref(""), inputSpell, isConfirming, spellMessage, spellMessageType,
+                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
                 moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
