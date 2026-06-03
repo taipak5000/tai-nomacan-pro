@@ -130,7 +130,11 @@
 
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .btn-orange { background-color: var(--accent-orange); color: white; }
-        .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; }
+        
+        /* 枠線ボタンの共通化とデザイン洗練 */
+        .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; cursor: pointer; }
+        .btn-outline-blue:disabled { border-color: var(--border-color); color: var(--text-gray); cursor: not-allowed; }
+        .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; cursor: pointer; }
         
         .btn-add { 
             background: transparent; 
@@ -214,7 +218,6 @@
                     <div style="font-weight: bold;">選択全体の総合効率:</div>
                     <div class="bold-text" style="color: var(--accent-blue);">{{ totalEfficiency.toFixed(2) }} <span style="font-size:12px; font-weight:normal; color:var(--text-gray);">/s</span></div>
                 </div>
-                <!-- ★新機能：総所要時間を「〇分〇秒」形式で表示 -->
                 <div class="row">
                     <div style="font-weight: bold;">総所要時間:</div>
                     <div class="bold-text" style="color: var(--accent-blue);">{{ formattedTotalTime }}</div>
@@ -236,7 +239,7 @@
                     <input type="range" v-model.number="carryOverPercent" min="0" max="99" step="1">
                 </div>
                 <div class="row">
-                    <div>現在所持キャンドル数:</div>
+                    <div>現所持キャンドル数:</div>
                     <input type="number" v-model.number="currentCandles">
                 </div>
                 <div class="row">
@@ -257,7 +260,6 @@
                         {{ projectedCandles }} 本
                     </div>
                 </div>
-                <!-- ★新機能：キャンドル管理の自由メモ欄 -->
                 <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0; margin-top: 10px;">
                     <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">キャンドル管理メモ:</div>
                     <textarea v-model="candleMemo" placeholder="交換予定のアイテムやイベント名など、自由にメモを入力できます..." style="width: 100%; height: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
@@ -304,18 +306,18 @@
                 
                 <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
                     <div class="area-title-bar">
-                        <!-- ★新機能：メインエリアの一括チェックボックス＆リアルタイム状況バッジ表示 -->
                         <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0; padding-right: 4px;">
                             <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)">
                             <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size:16px; background: transparent; border: none; width: 100px; flex-shrink: 0; text-overflow: ellipsis;">
                             
-                            <!-- 選択中のみ火種と効率をバッジ形式で綺麗に表示 -->
                             <span v-if="getMainAreaStats(mainArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">
                                 🔥{{ getMainAreaStats(mainArea).light }} ({{ getMainAreaStats(mainArea).eff.toFixed(1) }}/s)
                             </span>
                         </div>
                         
-                        <div style="display:flex; gap:10px; align-items:center; flex-shrink: 0;">
+                        <div style="display:flex; gap:6px; align-items:center; flex-shrink: 0;">
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
                             <button class="btn-outline-red" @click="deleteMainArea(mIdx)">削除</button>
                             <span @click="mainArea.isExpanded = !mainArea.isExpanded" style="padding: 4px; cursor: pointer;">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
                         </div>
@@ -339,7 +341,11 @@
                                     <span>秒:</span>
                                     <input type="number" v-model.number="subArea.time">
                                 </div>
-                                <button class="btn-outline-red" @click="deleteSubArea(mIdx, sIdx)" style="margin-left: auto;">削除</button>
+                                <div style="display: flex; gap: 4px; margin-left: auto; align-items: center;">
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
+                                    <button class="btn-outline-red" @click="deleteSubArea(mIdx, sIdx)">削除</button>
+                                </div>
                             </div>
                         </div>
                         <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
@@ -363,7 +369,7 @@
             const areas = ref([]);
             const placedItems = ref([]);
             const carryOverPercent = ref(0.0);
-            const candleMemo = ref(""); // ★新機能用の管理メモ
+            const candleMemo = ref("");
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -376,7 +382,6 @@
 
             const uuid = () => crypto.randomUUID();
 
-            // ★変更点：初期ロード時はすべて折りたたまれた状態（isExpanded: false）に設定
             const loadInitialData = () => {
                 areas.value = [
                     { id: uuid(), name: "ホーム", isExpanded: false, subAreas: [{ id: uuid(), name: "花鳥郷", light: 257, time: 0, isSelected: false }] },
@@ -410,8 +415,6 @@
                     try {
                         const decoded = JSON.parse(saved);
                         areas.value = decoded.areas || [];
-                        
-                        // ★「サイトを開いた時は閉じた状態から始めたい」を徹底するため、セーブデータがあっても起動時は一度すべて閉じます
                         areas.value.forEach(a => a.isExpanded = false);
 
                         placedItems.value = (decoded.placedItems || []).map(item => ({
@@ -461,7 +464,6 @@
                 return total;
             });
 
-            // ★新機能：選択全体の総所要時間（秒）を計算
             const totalSeconds = computed(() => {
                 let total = 0;
                 areas.value.forEach(area => {
@@ -472,7 +474,6 @@
                 return total;
             });
 
-            // ★新機能：総所要時間を「〇分〇秒」表記に整形
             const formattedTotalTime = computed(() => {
                 const sec = totalSeconds.value;
                 const m = Math.floor(sec / 60);
@@ -519,13 +520,11 @@
                 return subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
             };
 
-            // ★新機能：メインエリアの一括チェック判定用
             const isAllMainSelected = (mainArea) => {
                 if (!mainArea.subAreas || mainArea.subAreas.length === 0) return false;
                 return mainArea.subAreas.every(sub => sub.isSelected);
             };
 
-            // ★新機能：メインエリアの一括ON/OFF切り替え
             const toggleMainArea = (mainArea) => {
                 const targetState = !isAllMainSelected(mainArea);
                 mainArea.subAreas.forEach(sub => {
@@ -533,7 +532,6 @@
                 });
             };
 
-            // ★新機能：メインエリアごとの選択済みスタッツを計算
             const getMainAreaStats = (mainArea) => {
                 let light = 0;
                 let time = 0;
@@ -545,6 +543,25 @@
                 });
                 const eff = time > 0 ? (light / time) : 0.0;
                 return { light, eff };
+            };
+
+            // ★新機能：メインエリアの並び替えロジック
+            const moveMainArea = (index, direction) => {
+                const targetIndex = index + direction;
+                if (targetIndex < 0 || targetIndex >= areas.value.length) return;
+                const item = areas.value.splice(index, 1)[0];
+                areas.value.splice(targetIndex, 0, item);
+                save();
+            };
+
+            // ★新機能：サブエリアの並び替えロジック
+            const moveSubArea = (mIdx, sIdx, direction) => {
+                const subAreas = areas.value[mIdx].subAreas;
+                const targetIndex = sIdx + direction;
+                if (targetIndex < 0 || targetIndex >= subAreas.length) return;
+                const item = subAreas.splice(sIdx, 1)[0];
+                subAreas.splice(targetIndex, 0, item);
+                save();
             };
 
             const dailyReset = () => {
@@ -642,16 +659,11 @@
                 areas, placedItems, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
+                moveMainArea, moveSubArea, // ★忘れずにreturn
                 addItem, removeItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
             };
         }
     }).mount('#app');
 </script>
 <footer style="text-align: center; padding: 24px 0; color: var(--text-gray); font-size: 13px;">
-    © 2026 キャンドル計算機 | 作成・ご意見: 
-    <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
-        @Skyzztai
-    </a>
-</footer>
-</body>
-</html>
+    © 2026 キャンドル計算機 | 作成
