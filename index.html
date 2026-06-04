@@ -40,7 +40,6 @@
             margin: 0;
         }
 
-        /* レスポンシブ2カラムレイアウト */
         .layout-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -94,7 +93,6 @@
             font-size: 18px;
         }
 
-        /* フォーム部品のスタイル */
         input[type="number"], input[type="text"], input[type="date"], select {
             padding: 8px;
             border: 1px solid var(--border-color);
@@ -121,7 +119,6 @@
             margin-top: 8px;
         }
 
-        /* ボタンデザイン */
         .btn {
             display: block;
             width: 100%;
@@ -139,7 +136,6 @@
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .btn-orange { background-color: var(--accent-orange); color: white; }
         
-        /* モバイル用の押しやすいサイズへ拡張 */
         .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
         .btn-outline-blue:disabled { border-color: var(--border-color); color: var(--text-gray); cursor: not-allowed; }
         .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
@@ -160,7 +156,6 @@
             cursor: pointer;
         }
 
-        /* バッジ */
         .badge {
             font-size: 12px;
             font-weight: bold;
@@ -173,7 +168,6 @@
         .badge-green { background: rgba(52,199,89,0.15); color: var(--accent-green); }
         .badge-gray { background: #e5e5ea; color: #8e8e93; }
 
-        /* インライン通知メッセージ用スタイル */
         .inline-alert {
             padding: 10px;
             border-radius: 8px;
@@ -186,13 +180,11 @@
         .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
         .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
 
-        /* アコーディオン改良 */
         .area-accordion {
             border-bottom: 1px solid var(--border-color);
             padding: 14px 0;
         }
         
-        /* 2行レイアウト構造 */
         .area-title-row1 {
             display: flex;
             align-items: center;
@@ -245,6 +237,71 @@
         
         .flex-group { display: flex; align-items: center; gap: 4px; }
         .flex-group input { width: 65px !important; }
+
+        /* カスタムモーダル（確認画面）用スタイル */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .modal-container {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 320px;
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.2s ease-out;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent-red);
+            margin-bottom: 12px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--text-color);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-btn-cancel {
+            background: #e5e5ea;
+            color: #333;
+        }
+
+        .modal-btn-delete {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -435,7 +492,7 @@
                             <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0">↑ 上へ</button>
                             <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1">↓ 下へ</button>
                         </div>
-                        <button class="btn-outline-red" @click="deleteMainArea(mIdx)">🗑️ エリア削除</button>
+                        <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)">🗑️ エリア削除</button>
                     </div>
 
                     <div v-if="mainArea.isExpanded" class="subarea-list">
@@ -464,7 +521,7 @@
                                     <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0">↑</button>
                                     <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1">↓</button>
                                 </div>
-                                <button class="btn-outline-red" @click="deleteSubArea(mIdx, sIdx)">削除</button>
+                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)">削除</button>
                             </div>
                         </div>
                         <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
@@ -475,6 +532,23 @@
             </div>
         </div>
     </div>
+
+    <div v-if="deleteModal.show" class="modal-overlay" @click.self="cancelDelete">
+        <div class="modal-container">
+            <div class="modal-title">⚠️ 削除の確認</div>
+            <div class="modal-text">
+                「<strong>{{ deleteModal.name }}</strong>」を削除しますか？<br>
+                <div v-if="deleteModal.type === 'main'" style="font-size:12px; color:var(--text-gray); margin-top: 8px;">
+                    ※中のサブエリアもすべて消去されます
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" @click="cancelDelete">キャンセル</button>
+                <button class="modal-btn modal-btn-delete" @click="confirmDelete">削除する</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -496,6 +570,15 @@
             const isConfirming = ref(false);
             const spellMessage = ref("");
             const spellMessageType = ref("");
+            
+            // ★ カスタムモーダルの状態管理
+            const deleteModal = ref({
+                show: false,
+                type: '', // 'main' or 'sub'
+                mIdx: -1,
+                sIdx: -1,
+                name: ''
+            });
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -543,82 +626,58 @@
                 if (saved) {
                     try {
                         const decoded = JSON.parse(saved);
-                        
-                        if (decoded.areas && decoded.areas.length > 0) {
-                            areas.value = decoded.areas;
-                        } else {
-                            areas.value = getDefaultAreas();
-                        }
+                        if (decoded.areas && decoded.areas.length > 0) areas.value = decoded.areas;
+                        else areas.value = getDefaultAreas();
                         areas.value.forEach(a => a.isExpanded = false);
 
                         placedItems.value = (decoded.placedItems || []).map(item => ({
-                            ...item,
-                            placedDate: new Date(item.placedDate),
-                            isSuspended: item.isSuspended || false
+                            ...item, placedDate: new Date(item.placedDate), isSuspended: item.isSuspended || false
                         }));
                         
                         if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
                         carryOverPercent.value = decoded.carryOverPercent || 0;
                         candleMemo.value = decoded.candleMemo || "";
                         
-                        if (decoded.targetDate) {
-                            targetDate.value = decoded.targetDate;
-                        } else if (decoded.eventDays) {
-                            const d = new Date();
-                            d.setDate(d.getDate() + decoded.eventDays);
+                        if (decoded.targetDate) targetDate.value = decoded.targetDate;
+                        else if (decoded.eventDays) {
+                            const d = new Date(); d.setDate(d.getDate() + decoded.eventDays);
                             targetDate.value = d.toISOString().split('T')[0];
                         }
 
                         currentCandles.value = decoded.currentCandles || 0;
                         plannedUsage.value = decoded.plannedUsage || 0;
                         targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
-                    } catch (e) {
-                        loadInitialData();
-                    }
-                } else {
-                    loadInitialData();
-                }
+                    } catch (e) { loadInitialData(); }
+                } else { loadInitialData(); }
             };
 
             const eventDays = computed(() => {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const target = new Date(targetDate.value);
-                target.setHours(0,0,0,0);
+                const today = new Date(); today.setHours(0,0,0,0);
+                const target = new Date(targetDate.value); target.setHours(0,0,0,0);
                 const diffTime = target - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays >= 0 ? diffDays : 0; 
+                return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
             });
 
             const selectedLight = computed(() => {
                 let total = 0;
-                areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => { if (sub.isSelected) total += sub.light; });
-                });
+                areas.value.forEach(area => { area.subAreas.forEach(sub => { if (sub.isSelected) total += sub.light; }); });
                 return total;
             });
 
             const totalSeconds = computed(() => {
                 let total = 0;
-                areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => { if (sub.isSelected) total += sub.time; });
-                });
+                areas.value.forEach(area => { area.subAreas.forEach(sub => { if (sub.isSelected) total += sub.time; }); });
                 return total;
             });
 
             const formattedTotalTime = computed(() => {
                 const sec = totalSeconds.value;
-                const m = Math.floor(sec / 60);
-                const s = sec % 60;
-                return `${m}分${s}秒`;
+                return `${Math.floor(sec / 60)}分${sec % 60}秒`;
             });
 
             const totalEfficiency = computed(() => {
-                let totalLightSelected = 0;
-                let totalTimeSelected = totalSeconds.value;
-                areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => { if (sub.isSelected) totalLightSelected += sub.light; });
-                });
+                let totalLightSelected = 0; let totalTimeSelected = totalSeconds.value;
+                areas.value.forEach(area => { area.subAreas.forEach(sub => { if (sub.isSelected) totalLightSelected += sub.light; }); });
                 return totalTimeSelected > 0 ? (totalLightSelected / totalTimeSelected) : 0.0;
             });
 
@@ -626,31 +685,20 @@
             const totalLight = computed(() => selectedLight.value + Math.floor(carryOverLight.value));
 
             const calculated = computed(() => {
-                let total = totalLight.value;
-                let candles = 0;
+                let total = totalLight.value; let candles = 0;
                 for (let i = 0; i < thresholds.length; i++) {
-                    if (total >= thresholds[i]) {
-                        candles = i + 1;
-                    } else {
-                        return { candles, nextReq: thresholds[i] - total };
-                    }
+                    if (total >= thresholds[i]) candles = i + 1;
+                    else return { candles, nextReq: thresholds[i] - total };
                 }
                 return { candles, nextReq: 0 };
             });
 
-            const projectedCandles = computed(() => {
-                const daily = calculated.value.candles;
-                return currentCandles.value + (daily * eventDays.value) - plannedUsage.value;
-            });
+            const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
 
             const getDaysLeft = (placedDate) => {
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const expiry = new Date(placedDate);
-                expiry.setDate(expiry.getDate() + 14);
-                expiry.setHours(0,0,0,0);
-                const diffTime = expiry - today;
-                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const today = new Date(); today.setHours(0,0,0,0);
+                const expiry = new Date(placedDate); expiry.setDate(expiry.getDate() + 14); expiry.setHours(0,0,0,0);
+                return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
             };
 
             const sortedPlacedItems = computed(() => {
@@ -658,92 +706,57 @@
                     if (a.isSuspended && !b.isSuspended) return 1;
                     if (!a.isSuspended && b.isSuspended) return -1;
                     if (a.isSuspended && b.isSuspended) return 0;
-                    const daysA = getDaysLeft(a.placedDate);
-                    const daysB = getDaysLeft(b.placedDate);
-                    return daysA - daysB;
+                    return getDaysLeft(a.placedDate) - getDaysLeft(b.placedDate);
                 });
             });
 
             const visiblePlacedItems = computed(() => {
-                return sortedPlacedItems.value.filter(item => {
-                    if (isItemsExpanded.value) return true;
-                    if (item.isSuspended) return false;
-                    return getDaysLeft(item.placedDate) <= 3;
-                });
+                return sortedPlacedItems.value.filter(item => isItemsExpanded.value || (!item.isSuspended && getDaysLeft(item.placedDate) <= 3));
             });
 
-            const getEfficiency = (subArea) => {
-                return subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
-            };
-
-            const isAllMainSelected = (mainArea) => {
-                if (!mainArea.subAreas || mainArea.subAreas.length === 0) return false;
-                return mainArea.subAreas.every(sub => sub.isSelected);
-            };
-
+            const getEfficiency = (subArea) => subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
+            const isAllMainSelected = (mainArea) => mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => sub.isSelected);
+            
             const toggleMainArea = (mainArea) => {
                 const targetState = !isAllMainSelected(mainArea);
                 mainArea.subAreas.forEach(sub => { sub.isSelected = targetState; });
             };
 
             const getMainAreaStats = (mainArea) => {
-                let light = 0;
-                let time = 0;
-                mainArea.subAreas.forEach(sub => {
-                    if (sub.isSelected) {
-                        light += sub.light;
-                        time += sub.time;
-                    }
-                });
-                const eff = time > 0 ? (light / time) : 0.0;
-                return { light, eff };
+                let light = 0; let time = 0;
+                mainArea.subAreas.forEach(sub => { if (sub.isSelected) { light += sub.light; time += sub.time; } });
+                return { light, eff: time > 0 ? (light / time) : 0.0 };
             };
 
             const moveMainArea = (index, direction) => {
                 const targetIndex = index + direction;
-                if (targetIndex < 0 || targetIndex >= areas.value.length) return;
-                const item = areas.value.splice(index, 1)[0];
-                areas.value.splice(targetIndex, 0, item);
-                save();
+                if (targetIndex >= 0 && targetIndex < areas.value.length) {
+                    const item = areas.value.splice(index, 1)[0];
+                    areas.value.splice(targetIndex, 0, item);
+                }
             };
 
             const moveSubArea = (mIdx, sIdx, direction) => {
                 const subAreas = areas.value[mIdx].subAreas;
                 const targetIndex = sIdx + direction;
-                if (targetIndex < 0 || targetIndex >= subAreas.length) return;
-                const item = subAreas.splice(sIdx, 1)[0];
-                subAreas.splice(targetIndex, 0, item);
-                save();
+                if (targetIndex >= 0 && targetIndex < subAreas.length) {
+                    const item = subAreas.splice(sIdx, 1)[0];
+                    subAreas.splice(targetIndex, 0, item);
+                }
             };
 
             const generateSpell = () => {
                 try {
-                    const dataToSave = {
-                        areas: areas.value,
-                        placedItems: placedItems.value,
-                        isItemsExpanded: isItemsExpanded.value,
-                        carryOverPercent: carryOverPercent.value,
-                        targetDate: targetDate.value,
-                        currentCandles: currentCandles.value,
-                        plannedUsage: plannedUsage.value,
-                        targetCandlesForOptimization: targetCandlesForOptimization.value,
-                        candleMemo: candleMemo.value
-                    };
-                    const jsonStr = JSON.stringify(dataToSave);
-                    const uint8array = new TextEncoder().encode(jsonStr);
+                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, isItemsExpanded: isItemsExpanded.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value };
+                    const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
-                    for (let i = 0; i < uint8array.length; i++) { binString += String.fromCharCode(uint8array[i]); }
+                    for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
                     generatedSpell.value = btoa(binString);
-                } catch (e) {
-                    showInlineMessage("呪文の生成に失敗しました。", "error");
-                }
+                } catch (e) { showInlineMessage("呪文の生成に失敗しました。", "error"); }
             };
 
             const requestApplySpell = () => {
-                if (!inputSpell.value.trim()) {
-                    showInlineMessage("呪文を入力してください。", "error");
-                    return;
-                }
+                if (!inputSpell.value.trim()) { showInlineMessage("呪文を入力してください。", "error"); return; }
                 isConfirming.value = true;
             };
 
@@ -752,18 +765,11 @@
                 try {
                     const binString = atob(inputSpell.value.trim());
                     const uint8array = new Uint8Array(binString.length);
-                    for (let i = 0; i < binString.length; i++) { uint8array[i] = binString.charCodeAt(i); }
-                    const jsonStr = new TextDecoder().decode(uint8array);
-                    const decoded = JSON.parse(jsonStr);
+                    for (let i = 0; i < binString.length; i++) uint8array[i] = binString.charCodeAt(i);
+                    const decoded = JSON.parse(new TextDecoder().decode(uint8array));
                     
                     if (decoded.areas) areas.value = decoded.areas;
-                    if (decoded.placedItems) {
-                        placedItems.value = decoded.placedItems.map(item => ({
-                            ...item,
-                            placedDate: new Date(item.placedDate),
-                            isSuspended: item.isSuspended || false
-                        }));
-                    }
+                    if (decoded.placedItems) placedItems.value = decoded.placedItems.map(item => ({ ...item, placedDate: new Date(item.placedDate), isSuspended: item.isSuspended || false }));
                     if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
                     if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
                     if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
@@ -772,18 +778,13 @@
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
                     
-                    save();
-                    inputSpell.value = "";
-                    showInlineMessage("🌟 パパパパッパパーン！ データの復元に成功しました！", "success");
-                } catch (e) {
-                    showInlineMessage("😢 じゅもんが ちがいます！", "error");
-                }
+                    inputSpell.value = ""; showInlineMessage("🌟 パパパパッパパーン！ データの復元に成功しました！", "success");
+                } catch (e) { showInlineMessage("😢 じゅもんが ちがいます！", "error"); }
             };
 
             const showInlineMessage = (msg, type) => {
-                spellMessage.value = msg;
-                spellMessageType.value = type;
-                if (type === 'success') { setTimeout(() => { spellMessage.value = ""; }, 5000); }
+                spellMessage.value = msg; spellMessageType.value = type;
+                if (type === 'success') setTimeout(() => { spellMessage.value = ""; }, 5000);
             };
 
             const dailyReset = () => {
@@ -791,15 +792,11 @@
                 let leftoverPercent = 0.0;
                 if (res.candles < thresholds.length) {
                     const currentLevelBase = res.candles === 0 ? 0 : thresholds[res.candles - 1];
-                    const nextLevelReq = thresholds[res.candles];
-                    const levelCost = nextLevelReq - currentLevelBase;
-                    const leftoverLight = totalLight.value - currentLevelBase;
-                    leftoverPercent = leftoverLight / levelCost;
+                    leftoverPercent = (totalLight.value - currentLevelBase) / (thresholds[res.candles] - currentLevelBase);
                 }
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
                 areas.value.forEach(area => { area.subAreas.forEach(sub => { sub.isSelected = false; }); });
-                save();
             };
 
             const optimize = () => {
@@ -807,27 +804,21 @@
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
                 areas.value.forEach(area => { area.subAreas.forEach(sub => { sub.isSelected = false; }); });
                 let refs = [];
-                areas.value.forEach((area, mIdx) => {
-                    area.subAreas.forEach((sub, sIdx) => { refs.push({ mIdx, sIdx, eff: getEfficiency(sub), light: sub.light }); });
-                });
+                areas.value.forEach((area, mIdx) => { area.subAreas.forEach((sub, sIdx) => { refs.push({ mIdx, sIdx, eff: getEfficiency(sub), light: sub.light }); }); });
                 refs.sort((a, b) => b.eff - a.eff);
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
-                    areas.value[ref.mIdx].subAreas[ref.sIdx].isSelected = true;
-                    accumulated += ref.light;
+                    areas.value[ref.mIdx].subAreas[ref.sIdx].isSelected = true; accumulated += ref.light;
                 }
-                save();
             };
 
             const getExpiryDateString = (placedDate) => {
-                const expiry = new Date(placedDate);
-                expiry.setDate(expiry.getDate() + 14);
+                const expiry = new Date(placedDate); expiry.setDate(expiry.getDate() + 14);
                 return expiry.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
             };
 
             const formatDateForInput = (date) => date.toISOString().split('T')[0];
-
             const updateItemDate = (id, dateString) => {
                 if (!dateString) return;
                 const item = placedItems.value.find(i => i.id === id);
@@ -835,33 +826,36 @@
             };
 
             const addItem = () => { placedItems.value.push({ id: uuid(), memo: "", placedDate: new Date(), isSuspended: false }); };
-            const removeItem = (id) => { 
-                const idx = placedItems.value.findIndex(i => i.id === id);
-                if (idx !== -1) placedItems.value.splice(idx, 1); 
-            };
-            const rePlaceItem = (id) => {
-                const item = placedItems.value.find(i => i.id === id);
-                if (item) { item.placedDate = new Date(); item.isSuspended = false; }
-            };
+            const removeItem = (id) => { const idx = placedItems.value.findIndex(i => i.id === id); if (idx !== -1) placedItems.value.splice(idx, 1); };
+            const rePlaceItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) { item.placedDate = new Date(); item.isSuspended = false; } };
             const suspendItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) item.isSuspended = true; };
-            
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
-            
-            // ★誤操作防止ガード：削除ボタン押下時に確認ウィンドウを表示
-            const deleteMainArea = (index) => { 
-                const name = areas.value[index].name || "無題のエリア";
-                if (window.confirm(`⚠️ 本当にエリア「${name}」を削除しますか？\n（エリア内のサブエリアデータもすべて消去されます）`)) {
-                    areas.value.splice(index, 1); 
-                    save();
-                }
-            };
             const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", light: 0, time: 0, isSelected: false }); };
-            const deleteSubArea = (mIdx, sIdx) => { 
-                const name = areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア";
-                if (window.confirm(`⚠️ 本当にサブエリア「${name}」を削除しますか？`)) {
-                    areas.value[mIdx].subAreas.splice(sIdx, 1); 
-                    save();
+
+            // ★ カスタムモーダル呼び出し・実行ロジック
+            const requestDeleteMainArea = (index) => {
+                deleteModal.value = {
+                    show: true, type: 'main', mIdx: index, sIdx: -1, name: areas.value[index].name || "無題のエリア"
+                };
+            };
+
+            const requestDeleteSubArea = (mIdx, sIdx) => {
+                deleteModal.value = {
+                    show: true, type: 'sub', mIdx: mIdx, sIdx: sIdx, name: areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア"
+                };
+            };
+
+            const confirmDelete = () => {
+                if (deleteModal.value.type === 'main') {
+                    areas.value.splice(deleteModal.value.mIdx, 1);
+                } else if (deleteModal.value.type === 'sub') {
+                    areas.value[deleteModal.value.mIdx].subAreas.splice(deleteModal.value.sIdx, 1);
                 }
+                deleteModal.value.show = false;
+            };
+
+            const cancelDelete = () => {
+                deleteModal.value.show = false;
             };
 
             onMounted(() => {
@@ -869,17 +863,16 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            watch([areas, placedItems, isItemsExpanded, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo], () => {
-                save();
-            }, { deep: true });
+            watch([areas, placedItems, isItemsExpanded, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo], () => { save(); }, { deep: true });
 
             return {
                 areas, placedItems, sortedPlacedItems, visiblePlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
+                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
                 moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-                addItem, removeItem, rePlaceItem, suspendItem, addMainArea, deleteMainArea, addSubArea, deleteSubArea
+                addItem, removeItem, rePlaceItem, suspendItem, addMainArea, addSubArea,
+                requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete
             };
         }
     }).mount('#app');
@@ -887,10 +880,9 @@
 
 <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
     <div style="margin-bottom: 16px; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px; font-size: 12px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
-        <span style="font-weight: bold; color: var(--text-color); display: block; margin-bottom: 4px;">📚 参考データ・クレジット</span>
-        ・火種データ：test<br>
-        ・その他参考：test
-    
+        <span style="font-weight: bold; color: var(--text-color); display: block; margin-bottom: 4px;">参考データ・クレジット</span>
+        ・火種基礎データ：test<br>
+        ・その他参考：test様
     </div>
 
     © 2026 キャンドル計算機 | 作成・ご意見: 
