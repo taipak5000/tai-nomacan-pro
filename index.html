@@ -96,7 +96,7 @@
 
         /* フォーム部品のスタイル */
         input[type="number"], input[type="text"], input[type="date"], select {
-            padding: 6px 8px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 14px;
@@ -111,8 +111,8 @@
         }
 
         input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             cursor: pointer;
         }
 
@@ -139,18 +139,19 @@
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .btn-orange { background-color: var(--accent-orange); color: white; }
         
-        .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; cursor: pointer; }
+        /* モバイル用の押しやすいサイズへ拡張 */
+        .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
         .btn-outline-blue:disabled { border-color: var(--border-color); color: var(--text-gray); cursor: not-allowed; }
-        .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 4px 8px; font-size: 12px; width: auto; margin: 0; border-radius: 4px; cursor: pointer; }
+        .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
         
         .btn-add { 
             background: transparent; 
             border: none; 
             color: var(--accent-blue); 
             text-align: left; 
-            padding: 10px 4px; 
+            padding: 12px 4px; 
             font-size: 14px; 
-            font-weight: 500;
+            font-weight: bold;
             width: auto; 
             margin: 4px 0; 
             display: inline-flex; 
@@ -185,36 +186,65 @@
         .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
         .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
 
-        /* アコーディオン */
+        /* アコーディオン改良 */
         .area-accordion {
             border-bottom: 1px solid var(--border-color);
-            padding: 8px 0;
+            padding: 14px 0;
         }
-        .area-title-bar {
+        
+        /* 誤操作を防ぐ2行レイアウト構造 */
+        .area-title-row1 {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 10px;
+        }
+        .area-title-row2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-left: 30px; /* チェックボックス分のインデント */
+        }
+        
+        .expand-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            background: #e5e5ea;
+            border-radius: 6px;
+            font-size: 14px;
             cursor: pointer;
+            user-select: none;
             font-weight: bold;
         }
+
         .subarea-list {
             margin-left: 12px;
             padding-left: 8px;
             border-left: 2px solid var(--border-color);
-            margin-top: 8px;
+            margin-top: 12px;
         }
         .subarea-item {
             background: #f9f9f9;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border: 1px solid var(--border-color);
         }
-        .subarea-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-        .subarea-row2 { display: flex; align-items: center; gap: 12px; padding-left: 28px; font-size: 13px; color: #666; }
+        .subarea-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+        .subarea-row2 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-left: 30px; font-size: 13px; color: #666; }
+        .subarea-row3 { display: flex; align-items: center; justify-content: space-between; padding-left: 30px; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 8px; }
+        
+        .btn-action-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
         
         .flex-group { display: flex; align-items: center; gap: 4px; }
-        .flex-group input { width: 60px !important; }
+        .flex-group input { width: 65px !important; }
     </style>
 </head>
 <body>
@@ -379,6 +409,14 @@
                     </div>
                 </div>
             </div>
+
+            <div class="section-card">
+                <div class="section-header">📚 参考データ・クレジットメモ</div>
+                <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">
+                    参考にさせていただいた攻略サイトのURLや、計算元の情報を自由にメモできます（自動保存されます）。
+                </div>
+                <textarea v-model="creditMemo" placeholder="例：火種基礎データ：〇〇攻略Wiki様より引用、デイリー効率計算機様（URL）など..." style="width: 100%; height: 80px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
         </div>
           
         <div>
@@ -386,54 +424,62 @@
                 <div class="section-header">　エリア管理</div>
                 
                 <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
-                    <div class="area-title-bar">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0; padding-right: 4px;">
+                    <div class="area-title-row1">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
                             <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)">
-                            <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size:16px; background: transparent; border: none; width: 100px; flex-shrink: 0; text-overflow: ellipsis;">
-                            
-                            <span v-if="getMainAreaStats(mainArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">
-                                🔥{{ getMainAreaStats(mainArea).light }} ({{ getMainAreaStats(mainArea).eff.toFixed(1) }}/s)
-                            </span>
+                            <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size:16px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
                         </div>
                         
-                        <div style="display:flex; gap:6px; align-items:center; flex-shrink: 0;">
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
-                            <button class="btn-outline-red" @click="deleteMainArea(mIdx)">削除</button>
-                            <span @click="mainArea.isExpanded = !mainArea.isExpanded" style="padding: 4px; cursor: pointer;">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
+                        <div class="expand-toggle-btn" @click="mainArea.isExpanded = !mainArea.isExpanded">
+                            <span v-if="getMainAreaStats(mainArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.15); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">
+                                🔥{{ getMainAreaStats(mainArea).light }}
+                            </span>
+                            <span>{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
                         </div>
+                    </div>
+
+                    <div class="area-title-row2">
+                        <div class="btn-action-group">
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0">↑ 上へ</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1">↓ 下へ</button>
+                        </div>
+                        <button class="btn-outline-red" @click="deleteMainArea(mIdx)">🗑️ エリア削除</button>
                     </div>
 
                     <div v-if="mainArea.isExpanded" class="subarea-list">
                         <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-item">
                             <div class="subarea-row1">
-                                <input type="checkbox" v-model="subArea.isSelected">
-                                <input type="text" v-model="subArea.name" placeholder="サブエリア名">
-                                <span style="font-size:11px; color:var(--text-gray); min-width:45px; text-align:right;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+                                    <input type="checkbox" v-model="subArea.isSelected">
+                                    <input type="text" v-model="subArea.name" placeholder="サブエリア名" style="width: 100%;">
+                                </div>
+                                <span style="font-size:11px; color:var(--text-gray); font-weight: bold; white-space: nowrap; margin-left: 6px;">
                                     {{ getEfficiency(subArea).toFixed(1) }}/s
                                 </span>
                             </div>
                             <div class="subarea-row2">
                                 <div class="flex-group">
-                                    <span>火:</span>
+                                    <span>火種:</span>
                                     <input type="number" v-model.number="subArea.light">
                                 </div>
                                 <div class="flex-group">
-                                    <span>秒:</span>
+                                    <span>秒数:</span>
                                     <input type="number" v-model.number="subArea.time">
                                 </div>
-                                <div style="display: flex; gap: 4px; margin-left: auto; align-items: center;">
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
-                                    <button class="btn-outline-red" @click="deleteSubArea(mIdx, sIdx)">削除</button>
+                            </div>
+                            <div class="subarea-row3">
+                                <div class="btn-action-group">
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0">↑</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1">↓</button>
                                 </div>
+                                <button class="btn-outline-red" @click="deleteSubArea(mIdx, sIdx)">削除</button>
                             </div>
                         </div>
                         <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
                     </div>
                 </div>
 
-                <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold;">➕ 新規メインエリアを追加</button>
+                <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">➕ 新規メインエリアを追加</button>
             </div>
         </div>
     </div>
@@ -452,6 +498,7 @@
             const isItemsExpanded = ref(true); 
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
+            const creditMemo = ref(""); // クレジット枠用
 
             const generatedSpell = ref("");
             const inputSpell = ref("");
@@ -495,7 +542,8 @@
                     currentCandles: currentCandles.value,
                     plannedUsage: plannedUsage.value,
                     targetCandlesForOptimization: targetCandlesForOptimization.value,
-                    candleMemo: candleMemo.value
+                    candleMemo: candleMemo.value,
+                    creditMemo: creditMemo.value
                 };
                 localStorage.setItem('sky_tracker_storage', JSON.stringify(dataToSave));
             };
@@ -506,7 +554,6 @@
                     try {
                         const decoded = JSON.parse(saved);
                         
-                        // ★レスキュー処理：もし保存されたエリアデータが空っぽ[]なら初期エリアを復元する
                         if (decoded.areas && decoded.areas.length > 0) {
                             areas.value = decoded.areas;
                         } else {
@@ -520,12 +567,10 @@
                             isSuspended: item.isSuspended || false
                         }));
                         
-                        if (decoded.isItemsExpanded !== undefined) {
-                            isItemsExpanded.value = decoded.isItemsExpanded;
-                        }
-
+                        if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
                         carryOverPercent.value = decoded.carryOverPercent || 0;
                         candleMemo.value = decoded.candleMemo || "";
+                        creditMemo.value = decoded.creditMemo || "";
                         
                         if (decoded.targetDate) {
                             targetDate.value = decoded.targetDate;
@@ -586,13 +631,11 @@
             const totalEfficiency = computed(() => {
                 let totalLightSelected = 0;
                 let totalTimeSelected = totalSeconds.value;
-
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => {
                         if (sub.isSelected) totalLightSelected += sub.light;
                     });
                 });
-
                 return totalTimeSelected > 0 ? (totalLightSelected / totalTimeSelected) : 0.0;
             });
 
@@ -632,7 +675,6 @@
                     if (a.isSuspended && !b.isSuspended) return 1;
                     if (!a.isSuspended && b.isSuspended) return -1;
                     if (a.isSuspended && b.isSuspended) return 0;
-                    
                     const daysA = getDaysLeft(a.placedDate);
                     const daysB = getDaysLeft(b.placedDate);
                     return daysA - daysB;
@@ -658,9 +700,7 @@
 
             const toggleMainArea = (mainArea) => {
                 const targetState = !isAllMainSelected(mainArea);
-                mainArea.subAreas.forEach(sub => {
-                    sub.isSelected = targetState;
-                });
+                mainArea.subAreas.forEach(sub => { sub.isSelected = targetState; });
             };
 
             const getMainAreaStats = (mainArea) => {
@@ -704,14 +744,13 @@
                         currentCandles: currentCandles.value,
                         plannedUsage: plannedUsage.value,
                         targetCandlesForOptimization: targetCandlesForOptimization.value,
-                        candleMemo: candleMemo.value
+                        candleMemo: candleMemo.value,
+                        creditMemo: creditMemo.value
                     };
                     const jsonStr = JSON.stringify(dataToSave);
                     const uint8array = new TextEncoder().encode(jsonStr);
                     let binString = "";
-                    for (let i = 0; i < uint8array.length; i++) {
-                        binString += String.fromCharCode(uint8array[i]);
-                    }
+                    for (let i = 0; i < uint8array.length; i++) { binString += String.fromCharCode(uint8array[i]); }
                     generatedSpell.value = btoa(binString);
                 } catch (e) {
                     showInlineMessage("呪文の生成に失敗しました。", "error");
@@ -731,9 +770,7 @@
                 try {
                     const binString = atob(inputSpell.value.trim());
                     const uint8array = new Uint8Array(binString.length);
-                    for (let i = 0; i < binString.length; i++) {
-                        uint8array[i] = binString.charCodeAt(i);
-                    }
+                    for (let i = 0; i < binString.length; i++) { uint8array[i] = binString.charCodeAt(i); }
                     const jsonStr = new TextDecoder().decode(uint8array);
                     const decoded = JSON.parse(jsonStr);
                     
@@ -748,6 +785,7 @@
                     if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
                     if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
                     if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
+                    if (decoded.creditMemo !== undefined) creditMemo.value = decoded.creditMemo;
                     if (decoded.targetDate) targetDate.value = decoded.targetDate;
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
@@ -757,22 +795,19 @@
                     inputSpell.value = "";
                     showInlineMessage("🌟 パパパパッパパーン！ データの復元に成功しました！", "success");
                 } catch (e) {
-                    showInlineMessage("😢 じゅもんが ちがいます！ (正しい呪文がすべて貼り付けられているか確認してください)", "error");
+                    showInlineMessage("😢 じゅもんが ちがいます！", "error");
                 }
             };
 
             const showInlineMessage = (msg, type) => {
                 spellMessage.value = msg;
                 spellMessageType.value = type;
-                if (type === 'success') {
-                    setTimeout(() => { spellMessage.value = ""; }, 5000);
-                }
+                if (type === 'success') { setTimeout(() => { spellMessage.value = ""; }, 5000); }
             };
 
             const dailyReset = () => {
                 const res = calculated.value;
                 let leftoverPercent = 0.0;
-
                 if (res.candles < thresholds.length) {
                     const currentLevelBase = res.candles === 0 ? 0 : thresholds[res.candles - 1];
                     const nextLevelReq = thresholds[res.candles];
@@ -780,33 +815,21 @@
                     const leftoverLight = totalLight.value - currentLevelBase;
                     leftoverPercent = leftoverLight / levelCost;
                 }
-
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
-
-                areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => { sub.isSelected = false; });
-                });
+                areas.value.forEach(area => { area.subAreas.forEach(sub => { sub.isSelected = false; }); });
                 save();
             };
 
             const optimize = () => {
                 const target = Math.max(1, Math.min(targetCandlesForOptimization.value, thresholds.length));
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
-
-                areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => { sub.isSelected = false; });
-                });
-
+                areas.value.forEach(area => { area.subAreas.forEach(sub => { sub.isSelected = false; }); });
                 let refs = [];
                 areas.value.forEach((area, mIdx) => {
-                    area.subAreas.forEach((sub, sIdx) => {
-                        refs.push({ mIdx, sIdx, eff: getEfficiency(sub), light: sub.light });
-                    });
+                    area.subAreas.forEach((sub, sIdx) => { refs.push({ mIdx, sIdx, eff: getEfficiency(sub), light: sub.light }); });
                 });
-
                 refs.sort((a, b) => b.eff - a.eff);
-
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
@@ -822,60 +845,41 @@
                 return expiry.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
             };
 
-            const formatDateForInput = (date) => {
-                return date.toISOString().split('T')[0];
-            };
+            const formatDateForInput = (date) => date.toISOString().split('T')[0];
 
             const updateItemDate = (id, dateString) => {
                 if (!dateString) return;
                 const item = placedItems.value.find(i => i.id === id);
-                if (item) {
-                    item.placedDate = new Date(dateString);
-                    item.isSuspended = false;
-                }
+                if (item) { item.placedDate = new Date(dateString); item.isSuspended = false; }
             };
 
-            const addItem = () => { 
-                placedItems.value.push({ id: uuid(), memo: "", placedDate: new Date(), isSuspended: false }); 
-            };
-            
+            const addItem = () => { placedItems.value.push({ id: uuid(), memo: "", placedDate: new Date(), isSuspended: false }); };
             const removeItem = (id) => { 
                 const idx = placedItems.value.findIndex(i => i.id === id);
                 if (idx !== -1) placedItems.value.splice(idx, 1); 
             };
-
             const rePlaceItem = (id) => {
                 const item = placedItems.value.find(i => i.id === id);
-                if (item) {
-                    item.placedDate = new Date();
-                    item.isSuspended = false;
-                }
+                if (item) { item.placedDate = new Date(); item.isSuspended = false; }
             };
-
-            const suspendItem = (id) => {
-                const item = placedItems.value.find(i => i.id === id);
-                if (item) item.isSuspended = true;
-            };
+            const suspendItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) item.isSuspended = true; };
             
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
             const deleteMainArea = (index) => { areas.value.splice(index, 1); };
-
             const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", light: 0, time: 0, isSelected: false }); };
             const deleteSubArea = (mIdx, sIdx) => { areas.value[mIdx].subAreas.splice(sIdx, 1); };
 
             onMounted(() => {
                 load();
-                window.addEventListener('resize', () => {
-                    isWideScreen.value = window.innerWidth >= 850;
-                });
+                window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            watch([areas, placedItems, isItemsExpanded, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo], () => {
+            watch([areas, placedItems, isItemsExpanded, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, creditMemo], () => {
                 save();
             }, { deep: true });
 
             return {
-                areas, placedItems, sortedPlacedItems, visiblePlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                areas, placedItems, sortedPlacedItems, visiblePlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo, creditMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
