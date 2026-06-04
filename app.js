@@ -78,7 +78,7 @@ createApp({
             toasts: [],
             toastIdCounter: 0,
             
-            // キャンドル精錬の必要火種テーブル（Skyのメーター減衰システムの簡易シミュレート）
+            // キャンドル精錬の必要火種テーブル
             thresholds: [
                 150, 150, 150, 150, 150, // 1〜5本目
                 200, 200, 200, 200, 200, // 6〜10本目
@@ -109,7 +109,7 @@ createApp({
             });
             return totalTime > 0 ? this.totalLight / totalTime : 0;
         },
-        // 総所要時間のフォーマット（◯分◯秒）
+        // 総所要時間のフォーマット
         formattedTotalTime() {
             let totalSeconds = 0;
             this.areas.forEach(main => {
@@ -162,18 +162,30 @@ createApp({
             return this.placedItems;
         }
     },
+    // 🛠️ Vue 3の仕様に合わせて、確実に関数として自動保存が実行されるように全面修正
     watch: {
-        // 各データが変更されたらローカルストレージへ自動保存（リアルタイムセーブ）
-        areas: { handler: 'saveToLocalStorage', deep: true },
-        myRoutes: { handler: 'saveToLocalStorage', deep: true },
-        visibleSections: { handler: 'saveToLocalStorage', deep: true },
-        placedItems: { handler: 'saveToLocalStorage', deep: true },
-        carryOverPercent: 'saveToLocalStorage',
-        currentCandles: 'saveToLocalStorage',
-        plannedUsage: 'saveToLocalStorage',
-        targetDate: 'saveToLocalStorage',
-        candleMemo: 'saveToLocalStorage',
-        isDarkMode: 'applyTheme'
+        areas: {
+            handler() { this.saveToLocalStorage(); },
+            deep: true
+        },
+        myRoutes: {
+            handler() { this.saveToLocalStorage(); },
+            deep: true
+        },
+        visibleSections: {
+            handler() { this.saveToLocalStorage(); },
+            deep: true
+        },
+        placedItems: {
+            handler() { this.saveToLocalStorage(); },
+            deep: true
+        },
+        carryOverPercent() { this.saveToLocalStorage(); },
+        currentCandles() { this.saveToLocalStorage(); },
+        plannedUsage() { this.saveToLocalStorage(); },
+        targetDate() { this.saveToLocalStorage(); },
+        candleMemo() { this.saveToLocalStorage(); },
+        isDarkMode() { this.applyTheme(); }
     },
     mounted() {
         this.loadFromLocalStorage();
@@ -183,16 +195,16 @@ createApp({
         this.applyTheme();
     },
     methods: {
-        // ✨ ポップアップブロッカーに引っかからないトースト通知
+        // ✨ トースト通知
         showToast(message) {
             const id = this.toastIdCounter++;
             this.toasts.push({ id, message });
             setTimeout(() => {
                 this.toasts = this.toasts.filter(t => t.id !== id);
-            }, 3000); // 3秒後に消滅
+            }, 3000);
         },
         
-        // 🌗 ダークモード切り替え制御
+        // 🌗 ダークモード切り替え
         toggleDarkMode() {
             this.isDarkMode = !this.isDarkMode;
         },
@@ -215,7 +227,7 @@ createApp({
             this.showToast("🔄 精錬状況をリセットしました！");
         },
         
-        // ⚡ 効率自動最適化アルゴリズム
+        // ⚡ 効率自動最適化
         optimize() {
             let requiredLight = 0;
             const target = Math.min(this.targetCandlesForOptimization, this.thresholds.length);
@@ -223,7 +235,6 @@ createApp({
                 requiredLight += this.thresholds[i];
             }
             
-            // 全サブエリアを1つの配列にフラット化し、効率の良い順に並び替え
             let allSubAreas = [];
             this.areas.forEach(main => {
                 main.subAreas.forEach(sub => {
@@ -233,10 +244,8 @@ createApp({
             });
             allSubAreas.sort((a, b) => b.eff - a.eff);
             
-            // 一旦すべて未選択にする
             this.areas.forEach(main => main.subAreas.forEach(s => s.isSelected = false));
             
-            // 目標火種に達するまで高効率エリアから順にチェックを入れる
             let currentLight = 0;
             for (let item of allSubAreas) {
                 if (currentLight >= requiredLight) break;
@@ -350,7 +359,6 @@ createApp({
                 });
             });
             
-            // ✨ 未選択ダイアログの代わりに自作トーストを呼び出し（ブロッカー完全回避！）
             if (selectedSubAreaIds.length === 0) {
                 this.showToast("⚠️ エリアが一つも選択されていません！");
                 return;
@@ -362,7 +370,7 @@ createApp({
             this.myRoutes.push({
                 id: 'route_' + Date.now(),
                 name: routeName,
-                isExpanded: false, // ✨ 初期状態は美しく折りたたむ
+                isExpanded: false,
                 memo: '',
                 selectedIds: selectedSubAreaIds
             });
@@ -382,7 +390,6 @@ createApp({
             this.myRoutes.splice(rIdx, 1);
             this.showToast(`🗑️ ルート「${name}」を削除しました`);
         },
-        // ✨ ルートに含まれるエリア名を構築してスモールテキストで表示
         getRouteSummaryText(route) {
             let names = [];
             this.areas.forEach(main => {
@@ -462,7 +469,7 @@ createApp({
             if (item && newDate) item.placedDate = newDate;
         },
         
-        // 🧙‍♂️ データの共有（復活の呪文エンコード・デコード）
+        // 🧙‍♂️ データの共有
         generateSpell() {
             const dataToPack = {
                 areas: this.areas,
