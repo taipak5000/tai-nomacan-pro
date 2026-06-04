@@ -5,6 +5,7 @@ createApp({
         return {
             // モード・設定
             isDarkMode: false,
+            isResetConfirming: false, // 初期化の確認フラグ
             showSettings: false,
             isWideScreen: window.innerWidth > 850,
             
