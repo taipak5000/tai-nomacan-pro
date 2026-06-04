@@ -565,6 +565,15 @@ createApp({
             if (localStorage.getItem('candle_calc_darkMode')) {
                 this.isDarkMode = localStorage.getItem('candle_calc_darkMode') === 'true';
             }
+            // 🚨 サイトを完全に初期状態に戻す
+resetAllData() {
+    localStorage.clear(); // 保存データをすべて削除
+    this.showToast("💥 すべてのデータを初期化しました。再読み込みします...");
+    setTimeout(() => {
+        location.reload(); // ページをリロードして初期状態を読み込む
+    }, 1000);
+},
+
         }
     }
 }).mount('#app');
