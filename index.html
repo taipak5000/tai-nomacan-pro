@@ -32,6 +32,24 @@
             <label><input type="checkbox" v-model="visibleSections.myRoutes"> マイルート管理</label>
             <label><input type="checkbox" v-model="visibleSections.spellShare"> データの共有</label>
         </div>
+            <!-- ⚙️ 各窓の表示・非表示設定の一覧の下あたりに追記 -->
+    <hr style="border: none; border-top: 1px dashed var(--accent-red); margin: 12px 0;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <span style="font-size: 12px; color: var(--accent-red); font-weight: bold;">⚠️ データの完全初期化</span>
+        
+        <!-- 確認前 -->
+        <button v-if="!isResetConfirming" class="btn-outline-red" @click="isResetConfirming = true" style="font-size: 12px; padding: 4px 8px;">
+            サイトを初期状態に戻す
+        </button>
+        
+        <!-- 確認中（インラインで安全に確認） -->
+        <div v-else style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: var(--accent-red);">本当にすべて消去して初期化しますか？</span>
+            <button @click="resetAllData" style="background: var(--accent-red); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">はい</button>
+            <button @click="isResetConfirming = false" class="btn-outline-blue" style="border-color: var(--text-gray); color: var(--text-gray); padding: 4px 8px; font-size: 12px;">いいえ</button>
+        </div>
+    </div>
+
     </div>
 
     <div class="layout-grid">
