@@ -47,10 +47,10 @@
             <h1>🕯️ Sky Candle Calculator</h1>
         </div>
         <div class="header-right">
-            <button @click="toggleDarkMode" class="btn-icon" :title="isDarkMode ? 'ライトモードへ' : 'ダークモードへ'">
+            <button @click="toggleDarkMode" class="btn-icon">
                 {{ isDarkMode ? '☀️' : '🌙' }}
             </button>
-            <button @click="showSettings = !showSettings" class="btn-icon" title="表示設定">
+            <button @click="showSettings = !showSettings" class="btn-icon">
                 ⚙️
             </button>
             <button @click="dailyReset" class="btn-reset">
@@ -85,17 +85,15 @@
             </label>
         </div>
         
-        <hr style="border: none; border-top: 1px dashed var(--accent-red); margin: 16px 0 12px 0;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <span style="font-size: 12px; color: var(--accent-red); font-weight: bold;">⚠️ データの完全初期化</span>
-            <button v-if="!isResetConfirming" class="btn-danger" @click="isResetConfirming = true" style="font-size: 11px; padding: 4px 8px; background: transparent; color: var(--accent-red); border: 1px solid var(--accent-red);">
-                サイトを初期状態に戻す
-            </button>
-            <div v-else style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 11px; color: var(--accent-red);">本当にすべて消去して初期化しますか？</span>
-                <button @click="resetAllData" style="background: var(--accent-red); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">はい</button>
-                <button @click="isResetConfirming = false" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">いいえ</button>
-            </div>
+        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; text-align: right;">
+            <span v-if="!isResetConfirming" @click="isResetConfirming = true" style="color: #e74c3c; font-size: 12px; cursor: pointer; text-decoration: underline;">
+                ⚠️ サイトを完全に初期状態に戻す
+            </span>
+            <span v-else style="font-size: 12px; color: #e74c3c;">
+                本当に初期化しますか？ 
+                <strong @click="resetAllData" style="background: #e74c3c; color: white; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-left: 5px;">はい</strong>
+                <strong @click="isResetConfirming = false" style="background: #ccc; color: #333; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-left: 5px;">いいえ</strong>
+            </span>
         </div>
     </div>
 
@@ -114,11 +112,11 @@
                     </div>
                     <div class="dash-item">
                         <span class="dash-label">次の本数まで</span>
-                        <span class="dash-value text-gray" style="font-size: 1.2rem;">{{ calculated.nextReq }}</span>
+                        <span class="dash-value text-gray">{{ calculated.nextReq }}</span>
                     </div>
                     <div class="dash-item">
                         <span class="dash-label">総所要時間</span>
-                        <span class="dash-value text-blue" style="font-size: 1.2rem;">{{ formattedTotalTime }}</span>
+                        <span class="dash-value text-blue">{{ formattedTotalTime }}</span>
                     </div>
                 </div>
             </section>
@@ -160,7 +158,7 @@
                                     <div class="input-unit">
                                         <input type="number" v-model.number="sub.time" min="0"><span>秒</span>
                                     </div>
-                                    <span class="efficiency-indicator" title="効率（火種/秒）">
+                                    <span class="efficiency-indicator">
                                         ⏱️{{ getEfficiency(sub).toFixed(2) }}
                                     </span>
                                     <button @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" class="btn-arrow">▲</button>
@@ -177,140 +175,110 @@
 
         <div class="layout-right">
             
-            <section v-if="visibleSections.candleManage" class="section-card custom-window">
-                <div class="window-header">
-                    <h3>📊 キャンドル管理・予測</h3>
-                </div>
+            <section v-if="visibleSections.candleManage" class="section-card">
+                <h3>📊 キャンドル管理・予測</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>現在の手持ちキャンドル数</label>
                         <input type="number" v-model.number="currentCandles" min="0">
                     </div>
                     <div class="form-group">
-                        <label>今後の計画消費数（再訪・イベント等）</label>
+                        <label>今後の計画消費数</label>
                         <input type="number" v-model.number="plannedUsage" min="0">
                     </div>
                     <div class="form-group">
-                        <label>目標期日（イベント終了日など）</label>
+                        <label>目標期日</label>
                         <input type="date" v-model="targetDate">
                     </div>
                 </div>
                 
-                <div class="prediction-result-box">
-                    <p>🎯 目標日までの残り日数: <strong class="text-blue">{{ eventDays }} 日</strong></p>
-                    <p>🔮 最終予想残高: <strong :class="projectedCandles >= 0 ? 'text-gold' : 'text-danger'">{{ projectedCandles }} 本</strong></p>
+                <div class="prediction-result-box" style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <p>🎯 残り日数: <strong>{{ eventDays }} 日</strong></p>
+                    <p>🔮 最終予想残高: <strong>{{ projectedCandles }} 本</strong></p>
                 </div>
 
                 <div class="form-group" style="margin-top: 12px;">
                     <label>キャンドルメモ・買い物リスト</label>
-                    <textarea v-model="candleMemo" placeholder="例：再訪のケープに75本、髪型に42本必要..." rows="3"></textarea>
+                    <textarea v-model="candleMemo" rows="3"></textarea>
                 </div>
             </section>
 
-            <section v-if="visibleSections.optimization" class="section-card custom-window">
-                <div class="window-header">
-                    <h3>⚡ 効率自動最適化</h3>
-                </div>
-                <p class="sub-text">設定した目標本数に必要な火種を、全エリアの中から「時間効率の良い順」に自動で選別してチェックを入れます。</p>
+            <section v-if="visibleSections.optimization" class="section-card">
+                <h3>⚡ 効率自動最適化</h3>
+                <p class="sub-text">設定した目標本数に必要な火種を自動選択します。</p>
                 <div class="optimize-control">
-                    <div class="input-unit">
-                        <span>今日の一歩は</span>
-                        <input type="number" v-model.number="targetCandlesForOptimization" min="1" max="25" style="width: 70px;">
-                        <span>本に設定！</span>
-                    </div>
-                    <button @click="optimize" class="btn-optimize">高効率エリアを自動選択</button>
+                    <input type="number" v-model.number="targetCandlesForOptimization" min="1" max="25" style="width: 60px;">
+                    <span>本に設定</span>
+                    <button @click="optimize" class="btn-primary-sm">自動選択を実行</button>
                 </div>
             </section>
 
-            <section v-if="visibleSections.myRoutes" class="section-card custom-window">
-                <div class="window-header">
+            <section v-if="visibleSections.myRoutes" class="section-card">
+                <div class="section-header">
                     <h3>📍 マイルート管理</h3>
                     <button @click="saveCurrentRoute" class="btn-primary-sm">現在の選択を保存</button>
                 </div>
-                <p class="sub-text">日課用、お急ぎ用など、現在のエリアチェック状態を名前をつけて保存・一発適用できます。</p>
                 
                 <div class="route-list" style="margin-top: 10px;">
                     <div v-if="myRoutes.length === 0" class="empty-text">保存されたルートはありません</div>
                     
-                    <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="route-item-box">
-                        <div class="route-item-header">
-                            <div class="route-header-left" @click="route.isExpanded = !route.isExpanded" style="cursor: pointer; flex: 1;">
-                                <span class="btn-toggle-arrow">{{ route.isExpanded ? '▼' : '▶' }}</span>
-                                <strong class="route-name-text">{{ route.name }}</strong>
-                                <div class="route-summary-text">{{ getRouteSummaryText(route) }}</div>
+                    <div v-for="(route, rIdx) in myRoutes" :key="route.id" style="border: 1px solid #ccc; padding: 8px; margin-bottom: 8px; border-radius: 5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div @click="route.isExpanded = !route.isExpanded" style="cursor: pointer; flex: 1;">
+                                <strong>{{ route.name }}</strong>
+                                <div style="font-size: 11px; color: #666;">{{ getRouteSummaryText(route) }}</div>
                             </div>
-                            <div class="route-header-right">
-                                <button @click="applyRoute(route)" class="btn-apply-sm">適用</button>
+                            <div>
+                                <button @click="applyRoute(route)" class="btn-primary-sm">適用</button>
                                 <button @click="deleteRoute(rIdx)" class="btn-delete-sm">🗑️</button>
                             </div>
                         </div>
                         
-                        <div v-if="route.isExpanded" class="route-item-body">
-                            <div class="route-stats-mini">
-                                <span>獲得火種: <strong>{{ getRouteStats(route).light }}</strong></span> | 
-                                <span>予測時間: <strong>{{ getRouteStats(route).timeStr }}</strong></span> | 
-                                <span>効率: <strong>⏱️{{ getRouteStats(route).eff.toFixed(2) }}</strong></span>
+                        <div v-if="route.isExpanded" style="margin-top: 8px; border-top: 1px dashed #ccc; padding-top: 8px;">
+                            <div style="font-size: 11px; margin-bottom: 5px;">
+                                火種: {{ getRouteStats(route).light }} | 時間: {{ getRouteStats(route).timeStr }}
                             </div>
-                            <textarea v-model="route.memo" class="route-memo-textarea" placeholder="このルートのメモや注意点を記入（例：楽園の間欠泉の時間を考慮する、など）"></textarea>
+                            <textarea v-model="route.memo" style="width: 100%; box-sizing: border-box;" placeholder="ルートメモを入力..."></textarea>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section v-if="visibleSections.sharedItems" class="section-card custom-window">
-                <div class="window-header">
+            <section v-if="visibleSections.sharedItems" class="section-card">
+                <div class="section-header">
                     <h3>📦 シェア系創作物管理</h3>
-                    <button @click="addItem" class="btn-primary-sm">+ 設置アイテム追加</button>
+                    <button @click="addItem" class="btn-primary-sm">+ アイテム追加</button>
                 </div>
-                <p class="sub-text">シェアスペースやシェアメモリーの消滅タイマー（14日間）を管理します。一目で残り日数がわかります。</p>
                 
-                <div class="item-list">
-                    <div v-if="placedItems.length === 0" class="empty-text">設置中のアイテムはありません</div>
-                    
-                    <div v-for="item in placedItems" :key="item.id" class="item-row" :class="{ 'item-suspended': item.isSuspended }">
-                        <div class="item-row-top">
-                            <input type="text" v-model="item.memo" placeholder="場所や内容（例：雨林開拓地 火鉢）" class="input-item-memo">
-                            <button @click="removeItem(item.id)" class="btn-delete-sm" title="撤去・削除">🗑️</button>
+                <div class="item-list" style="margin-top:10px;">
+                    <div v-for="item in placedItems" :key="item.id" style="border-bottom: 1px solid #eee; padding: 8px 0;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <input type="text" v-model="item.memo" placeholder="場所や内容" style="flex:1; margin-right:5px;">
+                            <button @click="removeItem(item.id)" class="btn-delete-sm">🗑️</button>
                         </div>
-                        <div class="item-row-bottom">
-                            <div class="item-date-input-group">
-                                <label>設置日:</label>
-                                <input type="date" :value="formatDateForInput(item.placedDate)" @input="updateItemDate(item.id, $target.value)">
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                            <div>
+                                設置: <input type="date" v-model="item.placedDate" style="font-size:11px;">
                             </div>
-                            
-                            <div class="item-status-display">
-                                <template v-if="item.isSuspended">
-                                    <span class="badge-status-suspended">🛑 非表示中</span>
-                                    <button @click="rePlaceItem(item.id)" class="btn-renew-sm">♻️ 再設置</button>
-                                </template>
-                                <template v-else>
-                                    <span class="days-left-text" :class="{ 'text-danger': getDaysLeft(item.placedDate) <= 2 }">
-                                        残り <strong>{{ getDaysLeft(item.placedDate) }}</strong> 日 ({{ getExpiryDateString(item.placedDate) }}迄)
-                                    </span>
-                                    <button @click="suspendItem(item.id)" class="btn-suspend-sm">🛑 非表示</button>
-                                </template>
+                            <div>
+                                <span v-if="item.isSuspended" style="color:#999;">🛑 非表示中</span>
+                                <span v-else>残り <strong>{{ getDaysLeft(item.placedDate) }}</strong> 日</span>
+                                
+                                <button v-if="item.isSuspended" @click="rePlaceItem(item.id)" class="btn-primary-sm" style="font-size:10px; padding:2px 4px; margin-left:5px;">♻️ 再設置</button>
+                                <button v-else @click="suspendItem(item.id)" class="btn-delete-sm" style="font-size:10px; padding:2px 4px; margin-left:5px; background:#999;">🛑 非表示</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section v-if="visibleSections.spellShare" class="section-card custom-window">
-                <div class="window-header">
-                    <h3>🔮 データの共有（復活の呪文）</h3>
-                </div>
-                <p class="sub-text">アプリ内のすべての設定や自作ルートを暗号化コード（呪文）にして書き出します。別のブラウザやスマホにデータを引っ越すことができます。</p>
+            <section v-if="visibleSections.spellShare" class="section-card">
+                <h3>🔮 データの共有</h3>
+                <button @click="generateSpell" class="btn-primary-sm" style="width:100%;">呪文を生成</button>
+                <textarea v-model="generatedSpell" readonly placeholder="ここに呪文が出ます" rows="2" style="width:100%; margin-top:5px; box-sizing:border-box;"></textarea>
                 
-                <div class="spell-box">
-                    <button @click="generateSpell" class="btn-primary">呪文を生成する</button>
-                    <textarea v-model="generatedSpell" readonly placeholder="生成された呪文がここに表示されます" rows="3" style="margin-top:8px;" onClick="this.select();"></textarea>
-                </div>
-                
-                <div class="spell-box" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <p class="sub-text">別の場所で生成した呪文を貼り付けて復元します：</p>
-                    <textarea v-model="inputSpell" placeholder="ここに呪文を貼り付けてください" rows="3"></textarea>
-                    <button @click="requestApplySpell" class="btn-optimize" style="margin-top:8px; background: var(--accent-blue);">呪文を唱える（データを復元）</button>
-                </div>
+                <textarea v-model="inputSpell" placeholder="ここに呪文を貼り付け" rows="2" style="width:100%; margin-top:10px; box-sizing:border-box;"></textarea>
+                <button @click="requestApplySpell" class="btn-primary-sm" style="width:100%; margin-top:5px;">データを復元</button>
             </section>
 
         </div>
