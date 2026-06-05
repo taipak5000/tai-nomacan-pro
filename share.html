@@ -184,9 +184,13 @@
 
 <div class="container" id="app">
     <header>
-        <h1>創作物期限管理 (14日間)</h1>
-        <a href="index.html" class="btn-outline">📊 計算機を開く</a>
-    </header>
+    <h1>創作物期限管理 (14日間)</h1>
+    <div style="display: flex; gap: 8px;">
+        <a href="index.html" class="btn-outline">📊 計算機</a>
+        <a href="companion.html" class="btn-outline">✨ 精霊同行</a>
+    </div>
+</header>
+
 
     <div class="section-card">
         <div class="section-header">📈 現在の状態</div>
@@ -348,8 +352,12 @@
     }).mount('#app');
 </script>
 
-<footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; border-top: 1px solid var(--border-color); margin-top: 40px;">
-    © 2026 創作物期限管理 | 関連ツール: <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">Sky キャンドル計算機</a>
+<footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; border-top: 1px solid var(--border-color); margin-top: 40px; line-height: 1.6;">
+    © 2026 創作物期限管理 | 関連ツール: 
+    <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📊 Sky キャンドル計算機</a> | 
+    <a href="companion.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">✨ 精霊同行計算機</a>
+    <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
 </footer>
+
 </body>
 </html>
