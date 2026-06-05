@@ -304,14 +304,18 @@
         <h1 v-if="isWideScreen">Sky キャンドル計算機 (Web版)</h1>
         <h1 v-else>キャンドル計算機</h1>
         
-        <div class="header-actions">
-            <a href="share.html" target="_blank" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color);">
-                📍 創作物管理 ↗
-            </a>
-            <button class="btn-outline-blue" @click="showSettings = !showSettings">
-                ⚙️ 表示設定
-            </button>
-        </div>
+       <div class="header-actions">
+    <!-- 🔗 追加：精霊同行へのリンクボタン -->
+    <a href="companion.html" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color); margin-right: 4px;">
+        ✨ 精霊同行 ↗
+    </a>
+    <a href="share.html" target="_blank" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color);">
+        📍 創作物管理 ↗
+    </a>
+    <button class="btn-outline-blue" @click="showSettings = !showSettings">
+        ⚙️ 表示設定
+    </button>
+</div>
     </header>
 
     <div v-if="showSettings" class="section-card settings-panel">
@@ -950,13 +954,9 @@
 
 <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
     © 2026 キャンドル計算機 | 関連ツール: 
-    <a href="share.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
-        📍 創作物期限管理ツール
-    </a>
-    <br>作成・ご意見: 
-    <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
-        @Skyzztai
-    </a>
+    <a href="share.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📍 創作物期限管理</a> | 
+    <a href="companion.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">✨ 精霊同行計算機</a>
+    <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
 </footer>
 </body>
 </html>
