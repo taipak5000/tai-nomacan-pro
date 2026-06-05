@@ -108,7 +108,7 @@
             flex: 1;
         }
 
-        input[type="text"], input[type="date"] {
+        input[type="text"], input[type="date"], textarea {
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -135,6 +135,19 @@
 
         .btn-blue {
             background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .btn-orange {
+            background-color: var(--accent-orange);
             color: white;
             border: none;
             width: 100%;
@@ -178,6 +191,20 @@
         .btn-del { color: var(--accent-red); border: 1px solid rgba(255,59,48,0.2); }
         .btn-renew { color: var(--accent-blue); border: 1px solid rgba(0,122,255,0.2); }
         .btn-susp { color: var(--text-gray); border: 1px solid var(--border-color); }
+
+        /* 🧙‍♂️ 呪文用の追加スタイル */
+        .inline-alert {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 8px;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .inline-alert-success { background: rgba(52,199,89,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
     </style>
 </head>
 <body>
@@ -245,6 +272,36 @@
 
         <button class="btn-blue" @click="addItem">➕ 新しい設置物を追加</button>
     </div>
+
+    <div class="section-card">
+        <div class="section-header">🧙‍♂️ 他端末との同期（復活の呪文）</div>
+        <div style="flex-direction: column; align-items: flex-start; display: flex;">
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">この端末のデータを呪文にする（計算機データも含まれます）：</div>
+            <button class="btn-blue" @click="generateSpell" style="margin-top: 0; padding: 8px; font-size:14px; width: auto;">✨ 復活の呪文を生成</button>
+            <textarea v-model="generatedSpell" readonly placeholder="ボタンを押すとここに呪文が生成されます..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: #f9f9f9;" @click="$event.target.select()"></textarea>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
+        
+        <div style="flex-direction: column; align-items: flex-start; display: flex;">
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">他端末の呪文から復元する（計算機データも上書きされます）：</div>
+            <textarea v-model="inputSpell" placeholder="他端末で生成した呪文をここに貼り付けてください..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
+            
+            <div v-if="isConfirming" class="inline-alert inline-alert-confirm" style="width:100%; box-sizing:border-box;">
+                ⚠️ 呪文を唱えると現在の「創作物」および「計算機」の全データが上書きされます。よろしいですか？
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <button class="btn-outline" @click="confirmApplySpell" style="background:var(--accent-orange); color:white; border:none; padding:6px 12px; font-weight:bold;">はい、唱えます</button>
+                    <button class="btn-outline" @click="isConfirming = false" style="background:#ccc; color:#333; border:none; padding:6px 12px;">やめる</button>
+                </div>
+            </div>
+            
+            <button v-else class="btn-orange" @click="requestApplySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱える</button>
+
+            <div v-if="spellMessage" :class="['inline-alert', spellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="width:100%; box-sizing:border-box;">
+                {{ spellMessage }}
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -256,7 +313,14 @@
             const placedItems = ref([]);
             const uuid = () => crypto.randomUUID();
 
-            // 🔒 データの読み込み (計算機と同じキーから読み込む)
+            // 呪文用のリアクティブ変数
+            const generatedSpell = ref("");
+            const inputSpell = ref("");
+            const isConfirming = ref(false);
+            const spellMessage = ref("");
+            const spellMessageType = ref("");
+
+            // 🔒 データの読み込み
             const load = () => {
                 const saved = localStorage.getItem('sky_tracker_storage');
                 if (saved) {
@@ -269,23 +333,16 @@
                                 isSuspended: item.isSuspended || false
                             }));
                         }
-                    } catch (e) {
-                        placedItems.value = [];
-                    }
+                    } catch (e) { placedItems.value = []; }
                 }
             };
 
-            // 💾 データの保存 (既存の計算機データを壊さず、自分のデータだけ上書き)
+            // 💾 データの保存 (既存の計算機データを壊さずマージ)
             const save = () => {
                 const saved = localStorage.getItem('sky_tracker_storage');
                 let currentData = {};
-                if (saved) {
-                    try { currentData = JSON.parse(saved); } catch (e) { currentData = {}; }
-                }
-                
-                // 創作物管理のデータだけをマージする
+                if (saved) { try { currentData = JSON.parse(saved); } catch (e) {} }
                 currentData.placedItems = placedItems.value;
-                
                 localStorage.setItem('sky_tracker_storage', JSON.stringify(currentData));
             };
 
@@ -304,12 +361,10 @@
                 return [...placedItems.value].sort((a, b) => {
                     if (a.isSuspended && !b.isSuspended) return 1;
                     if (!a.isSuspended && b.isSuspended) return -1;
-                    if (a.isSuspended && b.isSuspended) return 0;
                     return getDaysLeft(a.placedDate) - getDaysLeft(b.placedDate);
                 });
             });
 
-            // ダッシュボード用の簡易統計計算
             const stats = computed(() => {
                 let active = 0; let warning = 0; let alertCount = 0;
                 placedItems.value.forEach(item => {
@@ -337,12 +392,68 @@
             const rePlaceItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) { item.placedDate = new Date(); item.isSuspended = false; } };
             const suspendItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) item.isSuspended = true; };
 
+            // 🧙‍♂️ 呪文の生成 (LocalStorageの全データをまとめてBase64化)
+            const generateSpell = () => {
+                try {
+                    const saved = localStorage.getItem('sky_tracker_storage');
+                    let currentData = {};
+                    if (saved) { try { currentData = JSON.parse(saved); } catch (e) {} }
+                    
+                    // 最新の状態のplacedItemsを載せる
+                    currentData.placedItems = placedItems.value;
+
+                    const uint8array = new TextEncoder().encode(JSON.stringify(currentData));
+                    let binString = "";
+                    for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
+                    generatedSpell.value = btoa(binString);
+                } catch (e) { showInlineMessage("呪文の生成に失敗しました。", "error"); }
+            };
+
+            const requestApplySpell = () => {
+                if (!inputSpell.value.trim()) { showInlineMessage("呪文を入力してください。", "error"); return; }
+                isConfirming.value = true;
+            };
+
+            // 🔮 呪文の復元
+            const confirmApplySpell = () => {
+                isConfirming.value = false;
+                try {
+                    const binString = atob(inputSpell.value.trim());
+                    const uint8array = new Uint8Array(binString.length);
+                    for (let i = 0; i < binString.length; i++) uint8array[i] = binString.charCodeAt(i);
+                    const decoded = JSON.parse(new TextDecoder().decode(uint8array));
+                    
+                    // 1. ローカルストレージ全体を新しい呪文データに置き換える
+                    localStorage.setItem('sky_tracker_storage', JSON.stringify(decoded));
+                    
+                    // 2. このアプリ側の画面表示データ（placedItems）も再読込して反映
+                    if (decoded.placedItems) {
+                        placedItems.value = decoded.placedItems.map(item => ({
+                            ...item,
+                            placedDate: new Date(item.placedDate),
+                            isSuspended: item.isSuspended || false
+                        }));
+                    } else {
+                        placedItems.value = [];
+                    }
+                    
+                    inputSpell.value = ""; 
+                    showInlineMessage("🌟 すべてのデータ（計算機・創作物含む）の復元に成功しました！", "success");
+                } catch (e) { showInlineMessage("😢 じゅもんが ちがいます！", "error"); }
+            };
+
+            const showInlineMessage = (msg, type) => {
+                spellMessage.value = msg; spellMessageType.value = type;
+                if (type === 'success') setTimeout(() => { spellMessage.value = ""; }, 5000);
+            };
+
             onMounted(() => { load(); });
             watch(placedItems, () => { save(); }, { deep: true });
 
             return {
-                placedItems, sortedPlacedItems, stats, getDaysLeft, getExpiryDateString, formatDateForInput,
-                updateItemDate, addItem, removeItem, rePlaceItem, suspendItem
+                placedItems, sortedPlacedItems, stats, generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
+                getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, addItem, removeItem, rePlaceItem, suspendItem,
+                generateSpell, requestApplySpell, confirmApplySpell
             };
         }
     }).mount('#app');
