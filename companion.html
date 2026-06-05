@@ -45,6 +45,28 @@
         .subtitle {
             font-size: 13px;
             color: var(--text-gray);
+            margin-bottom: 14px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn-outline-blue {
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
 
         .section-card {
@@ -116,7 +138,7 @@
         /* 精霊ツリーのスタイル（下から積み上げ） */
         .tree-container {
             display: flex;
-            flex-direction: column-reverse; /* 下から順に描画 */
+            flex-direction: column-reverse;
             gap: 16px;
             position: relative;
             padding-left: 20px;
@@ -256,7 +278,6 @@
             color: #0056b3;
         }
 
-        /* 最上部のシーズンハートの特別枠 */
         .heart-goal {
             background: #fff;
             border: 2px solid var(--border-color);
@@ -290,6 +311,12 @@
     <header>
         <h1>✨ Sky 精霊同行ポイント計算機</h1>
         <div class="subtitle">連れ歩き日数とアイテム交換の最適化シミュレーター</div>
+        
+        <!-- 🔗 他アプリへのナビゲーションリンク -->
+        <div class="header-nav">
+            <a href="index.html" class="btn-outline-blue">📊 キャンドル計算機</a>
+            <a href="share.html" class="btn-outline-blue">📍 創作物期限管理</a>
+        </div>
     </header>
 
     <!-- 📊 総合ステータス -->
@@ -318,7 +345,6 @@
             </div>
         </div>
 
-        <!-- 💡 自動アドバイス機能 -->
         <div class="advice-box" :style="totalPoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
             <div v-if="totalPoints >= 280">
                 🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。シーズンハートを獲得可能です！
@@ -356,7 +382,7 @@
 
     <!-- 🗺️ 精霊ツリーシミュレータ -->
     <div class="section-card" style="padding-bottom: 30px;">
-        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 精霊ツリー（下から上に進みます）</div>
+        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 精霊ツリー</div>
         
         <div class="tree-container">
             <div class="tree-line"></div>
@@ -425,7 +451,7 @@
                 </div>
             </div>
 
-            <!-- ゴール：シーズンハート -->
+            <!-- ゴール -->
             <div class="heart-goal" :class="{'heart-active': totalPoints >= 280}">
                 <span v-if="totalPoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
                 <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
@@ -433,13 +459,23 @@
         </div>
     </div>
 
-    <!-- 📚 仕様覚書メモ -->
     <div class="info-memo">
         <strong>📌 連れ歩きシステムの仕様メモ:</strong><br>
-        ・連れ歩きをしなくても、各層のアイテムをすべて取得すれば次の層へ進めます（即コンプ可）。<br>
-        ・先に連れ歩きでポイントを貯めて上の層を開放した後から、スルーしたアイテムを回収してもポイントは正常に加算（反映）されます。<br>
-        ・季節によって魔法や染料を全スルーできるケースがあります（光の修繕者やカーニバルは可能、渡りの季節は不可）。
+        ・連れ歩きをしなくても、各層のアイテムをすべて取得すれば次の層へ進めます。<br>
+        ・先にポイントを貯めて上の層を開放した後から、スルーしたアイテムを回収してもポイントは反映されます。<br>
+        ・季節によって魔法や染料を全スルーできるケースがあります。
     </div>
+
+    <!-- 👤 フッター（ユーザー情報入り） -->
+    <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
+        © 2026 精霊同行ポイント計算機 | 関連ツール: 
+        <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📊 キャンドル計算機</a> | 
+        <a href="share.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📍 創作物期限管理</a>
+        <br>作成・ご意見: 
+        <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
+            @Skyzztai
+        </a>
+    </footer>
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -451,7 +487,6 @@
             const walkDays = ref(0);
             const currentPreset = ref("custom");
 
-            // ツリーのデータ構造
             const treeData = ref({
                 tier1: [
                     { id: 't1_em1', name: '💨 エモートLv1 (初回解放)', points: 20, checked: true },
@@ -471,22 +506,15 @@
                 ]
             });
 
-            // 🧮 総ポイントの計算
             const totalPoints = computed(() => {
                 let points = 0;
-                // チェックされたアイテムのポイントを合算
                 Object.values(treeData.value).forEach(tier => {
-                    tier.forEach(item => {
-                        if (item.checked) points += item.points;
-                    });
+                    tier.forEach(item => { if (item.checked) points += item.points; });
                 });
-                // 連れ歩きポイントを加算 (1日10p)
                 points += (walkDays.value * 10);
-                // 上限は280p
                 return Math.min(280, points);
             });
 
-            // 👑 現在のステータス文字列
             const currentStatusText = computed(() => {
                 const p = totalPoints.value;
                 if (p >= 280) return "コンプリート！";
@@ -496,42 +524,27 @@
                 return "第1層 進行中";
             });
 
-            // ⏱️ ハート獲得に必要な「残りの連れ歩き日数」
             const remainingDaysNeeded = computed(() => {
                 let itemPoints = 0;
                 Object.values(treeData.value).forEach(tier => {
-                    tier.forEach(item => {
-                        if (item.checked) itemPoints += item.points;
-                    });
+                    tier.forEach(item => { if (item.checked) itemPoints += item.points; });
                 });
-                // 280pに届くために必要な総日数を計算
                 const totalDaysNeeded = Math.max(0, Math.ceil((280 - itemPoints) / 10));
-                // そこから「現在の連れ歩き日数」を引く
                 return Math.max(0, totalDaysNeeded - walkDays.value);
             });
 
-            // 📋 プリセット作戦の適用
             const applyPreset = (type) => {
                 currentPreset.value = type;
-                
                 if (type === 'reset') {
-                    walkDays.value = 0;
-                    setAllItems(false);
-                    treeData.value.tier1[0].checked = true; // エモート1だけON
-                    currentPreset.value = 'custom';
-                } 
-                else if (type === 'no-magic') {
-                    // 魔法だけ綺麗に外して、アイテム系は全部ONにする
-                    walkDays.value = 9; // 魔法を全スルーすると残り90p必要＝9日デート
-                    setAllItems(true);
-                    treeData.value.tier1[1].checked = false; // 魔法1 OFF
-                    treeData.value.tier2[1].checked = false; // 魔法2 OFF
-                    treeData.value.tier3[1].checked = false; // 魔法3 OFF
-                } 
-                else if (type === 'all-buy') {
-                    // 連れ歩き0日で、すべてのアイテムを交換（即コンプ）
-                    walkDays.value = 0;
-                    setAllItems(true);
+                    walkDays.value = 0; setAllItems(false);
+                    treeData.value.tier1[0].checked = true; currentPreset.value = 'custom';
+                } else if (type === 'no-magic') {
+                    walkDays.value = 9; setAllItems(true);
+                    treeData.value.tier1[1].checked = false;
+                    treeData.value.tier2[1].checked = false;
+                    treeData.value.tier3[1].checked = false;
+                } else if (type === 'all-buy') {
+                    walkDays.value = 0; setAllItems(true);
                 }
             };
 
@@ -541,13 +554,8 @@
                 });
             };
 
-            // ローカルストレージへの自動保存
             const save = () => {
-                const data = {
-                    walkDays: walkDays.value,
-                    treeData: treeData.value,
-                    currentPreset: currentPreset.value
-                };
+                const data = { walkDays: walkDays.value, treeData: treeData.value, currentPreset: currentPreset.value };
                 localStorage.setItem('sky_companion_calc_data', JSON.stringify(data));
             };
 
@@ -559,28 +567,22 @@
                         if (parsed.walkDays !== undefined) walkDays.value = parsed.walkDays;
                         if (parsed.currentPreset) currentPreset.value = parsed.currentPreset;
                         if (parsed.treeData) {
-                            // 保存されたチェック状態を復元
                             Object.keys(parsed.treeData).forEach(tierKey => {
                                 if (treeData.value[tierKey]) {
                                     parsed.treeData[tierKey].forEach((item, idx) => {
-                                        if (treeData.value[tierKey][idx]) {
-                                            treeData.value[tierKey][idx].checked = item.checked;
-                                        }
+                                        if (treeData.value[tierKey][idx]) treeData.value[tierKey][idx].checked = item.checked;
                                     });
                                 }
                             });
                         }
-                    } catch (e) { console.error(e); }
+                    } catch (e) {}
                 }
             };
 
             onMounted(() => { load(); });
             watch([walkDays, treeData], () => { save(); }, { deep: true });
 
-            return {
-                walkDays, treeData, totalPoints, currentStatusText, remainingDaysNeeded, currentPreset,
-                applyPreset
-            };
+            return { walkDays, treeData, totalPoints, currentStatusText, remainingDaysNeeded, currentPreset, applyPreset };
         }
     }).mount('#app');
 </script>
