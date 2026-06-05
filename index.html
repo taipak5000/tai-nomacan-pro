@@ -30,7 +30,6 @@
             margin: 0 auto;
         }
 
-        /* ⚙️ ヘッダーレイアウトを調整 */
         header {
             display: flex;
             justify-content: space-between;
@@ -43,6 +42,12 @@
         h1 {
             font-size: 24px;
             margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .layout-grid {
@@ -65,7 +70,6 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        /* 設定パネル用の特殊スタイル */
         .settings-panel {
             border: 1px solid var(--accent-blue);
             background: rgba(0, 122, 255, 0.02);
@@ -80,14 +84,6 @@
             font-weight: 600;
         }
         
-        .section-header-clickable {
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 4px;
-        }
-
         .row {
             display: flex;
             justify-content: space-between;
@@ -148,7 +144,7 @@
         .btn-blue { background-color: var(--accent-blue); color: white; }
         .btn-orange { background-color: var(--accent-orange); color: white; }
         
-        .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; }
         .btn-outline-blue:disabled { border-color: var(--border-color); color: var(--text-gray); cursor: not-allowed; }
         .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
         
@@ -167,18 +163,6 @@
             gap: 6px;
             cursor: pointer;
         }
-
-        .badge {
-            font-size: 12px;
-            font-weight: bold;
-            padding: 4px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-        .badge-red { background: rgba(255,59,48,0.15); color: var(--accent-red); }
-        .badge-yellow { background: rgba(255,149,0,0.15); color: var(--accent-orange); }
-        .badge-green { background: rgba(52,199,89,0.15); color: var(--accent-green); }
-        .badge-gray { background: #e5e5ea; color: #8e8e93; }
 
         .inline-alert {
             padding: 10px;
@@ -319,9 +303,15 @@
     <header>
         <h1 v-if="isWideScreen">Sky キャンドル計算機 (Web版)</h1>
         <h1 v-else>キャンドル計算機</h1>
-        <button class="btn-outline-blue" @click="showSettings = !showSettings" style="margin: 0; display: flex; align-items: center; gap: 4px;">
-            ⚙️ 表示設定
-        </button>
+        
+        <div class="header-actions">
+            <a href="share.html" target="_blank" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color);">
+                📍 創作物管理 ↗
+            </a>
+            <button class="btn-outline-blue" @click="showSettings = !showSettings">
+                ⚙️ 表示設定
+            </button>
+        </div>
     </header>
 
     <div v-if="showSettings" class="section-card settings-panel">
@@ -332,9 +322,6 @@
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
                 <input type="checkbox" v-model="visibleSections.optimization" style="width:18px; height:18px;"> 効率自動最適化
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.sharedItems" style="width:18px; height:18px;"> シェア系創作物管理
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
                 <input type="checkbox" v-model="visibleSections.spellShare" style="width:18px; height:18px;"> データの共有
@@ -413,57 +400,6 @@
                     <input type="number" v-model.number="targetCandlesForOptimization">
                 </div>
                 <button class="btn btn-orange" @click="optimize">高効率エリアを自動選択</button>
-            </div>
-
-            <div v-if="visibleSections.sharedItems" class="section-card">
-                <div class="section-header section-header-clickable" @click="isItemsExpanded = !isItemsExpanded">
-                    <span>シェア系創作物管理 (14日間)</span>
-                    <span style="font-size: 14px;">{{ isItemsExpanded ? '▼' : '▶' }}</span>
-                </div>
-                
-                <div>
-                    <div v-for="item in visiblePlacedItems" :key="item.id" class="subarea-item">
-                        <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-                            <input type="text" v-model="item.memo" placeholder="設置メモ (例: 花鳥郷)">
-                            <span v-if="item.isSuspended" class="badge badge-gray">保留中</span>
-                            <span v-else :class="['badge', getDaysLeft(item.placedDate) < 0 ? 'badge-red' : (getDaysLeft(item.placedDate) <= 3 ? 'badge-yellow' : 'badge-green')]">
-                                {{ getDaysLeft(item.placedDate) < 0 ? '消滅' : (getDaysLeft(item.placedDate) === 0 ? '今日まで' : 'あと ' + getDaysLeft(item.placedDate) + '日') }}
-                            </span>
-                        </div>
-
-                        <div v-if="item.isSuspended" style="display: flex; gap: 6px; margin-top: 8px;">
-                            <button class="btn-outline-blue" @click="rePlaceItem(item.id)" style="flex:1; padding: 6px;">♻️ 今日再設置</button>
-                            <button class="btn-outline-red" @click="removeItem(item.id)" style="flex:1; padding: 6px;">🗑️ 削除</button>
-                        </div>
-                        
-                        <div v-else>
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray);">
-                                <div>
-                                    <div>設置日</div>
-                                    <input type="date" :value="formatDateForInput(item.placedDate)" @input="updateItemDate(item.id, $event.target.value)" style="width:120px;">
-                                </div>
-                                <div style="text-align: right;">
-                                    <div>消える日</div>
-                                    <div style="font-weight: bold; margin-top: 6px; color: var(--text-color);">{{ getExpiryDateString(item.placedDate) }}</div>
-                                </div>
-                            </div>
-                            
-                            <div v-if="getDaysLeft(item.placedDate) < 0" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
-                                <div style="font-size: 11px; color: var(--accent-red); margin-bottom: 6px; font-weight: bold;">⚠️ 期限が切れました。どうしますか？</div>
-                                <div style="display:flex; gap:6px;">
-                                    <button class="btn-outline-blue" @click="rePlaceItem(item.id)" style="flex:1; padding: 6px;">♻️ 再設置</button>
-                                    <button class="btn-outline-blue" @click="suspendItem(item.id)" style="flex:1; border-color:var(--text-gray); color:var(--text-gray); padding: 6px;">📦 保留</button>
-                                    <button class="btn-outline-red" @click="removeItem(item.id)" style="flex:1; padding: 6px;">🗑️ 削除</button>
-                                </div>
-                            </div>
-                            
-                            <div v-else style="text-align: right; margin-top: 8px;">
-                                <button class="btn-outline-red" @click="removeItem(item.id)">削除</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button v-if="isItemsExpanded" class="btn-add" @click="addItem">➕ アイテムを追加</button>
-                </div>
             </div>
 
             <div v-if="visibleSections.spellShare" class="section-card">
@@ -621,18 +557,15 @@
             const thresholds = [94, 188, 282, 376, 470, 609, 748, 887, 1026, 1165, 1343, 1521, 1699, 1877, 2055, 2268, 2481, 2719, 3207, 4195, 6195, 10195, 18195];
             
             const areas = ref([]);
-            const placedItems = ref([]);
-            const isItemsExpanded = ref(true); 
+            const placedItems = ref([]); // 🧙‍♂️ 呪文によるバックアップ連携を保つためにデータ構造は維持
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
 
-            // ⚙️ 設定とマイルート用の状態を追加
             const showSettings = ref(false);
             const myRoutes = ref([]);
             const visibleSections = ref({
                 candleManage: true,
                 optimization: true,
-                sharedItems: true,
                 spellShare: true
             });
 
@@ -674,8 +607,7 @@
             const save = () => {
                 const dataToSave = {
                     areas: areas.value,
-                    placedItems: placedItems.value,
-                    isItemsExpanded: isItemsExpanded.value,
+                    placedItems: placedItems.value, // 引っ越しデータも安全に保存
                     carryOverPercent: carryOverPercent.value,
                     targetDate: targetDate.value,
                     currentCandles: currentCandles.value,
@@ -697,21 +629,14 @@
                         else areas.value = getDefaultAreas();
                         areas.value.forEach(a => a.isExpanded = false);
 
-                        placedItems.value = (decoded.placedItems || []).map(item => ({
-                            ...item, placedDate: new Date(item.placedDate), isSuspended: item.isSuspended || false
-                        }));
-                        
-                        if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
+                        if (decoded.placedItems) placedItems.value = decoded.placedItems;
                         carryOverPercent.value = decoded.carryOverPercent || 0;
                         candleMemo.value = decoded.candleMemo || "";
-                        
                         if (decoded.targetDate) targetDate.value = decoded.targetDate;
-                        
                         currentCandles.value = decoded.currentCandles || 0;
                         plannedUsage.value = decoded.plannedUsage || 0;
                         targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
 
-                        // ⚙️ 追加データの読み込み
                         if (decoded.myRoutes) myRoutes.value = decoded.myRoutes;
                         if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
                     } catch (e) { loadInitialData(); }
@@ -762,25 +687,6 @@
 
             const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
 
-            const getDaysLeft = (placedDate) => {
-                const today = new Date(); today.setHours(0,0,0,0);
-                const expiry = new Date(placedDate); expiry.setDate(expiry.getDate() + 14); expiry.setHours(0,0,0,0);
-                return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-            };
-
-            const sortedPlacedItems = computed(() => {
-                return [...placedItems.value].sort((a, b) => {
-                    if (a.isSuspended && !b.isSuspended) return 1;
-                    if (!a.isSuspended && b.isSuspended) return -1;
-                    if (a.isSuspended && b.isSuspended) return 0;
-                    return getDaysLeft(a.placedDate) - getDaysLeft(b.placedDate);
-                });
-            });
-
-            const visiblePlacedItems = computed(() => {
-                return sortedPlacedItems.value.filter(item => isItemsExpanded.value || (!item.isSuspended && getDaysLeft(item.placedDate) <= 3));
-            });
-
             const getEfficiency = (subArea) => subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
             const isAllMainSelected = (mainArea) => mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => sub.isSelected);
             
@@ -812,18 +718,15 @@
                 }
             };
 
-            // 🗺️ マイルート管理ロジック
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => { if (sub.isSelected) selectedIds.push(sub.id); });
                 });
-                
                 if (selectedIds.length === 0) {
                     alert("⚠️ エリアが一つも選択されていません。エリア管理でチェックを入れてから保存してください。");
                     return;
                 }
-                
                 myRoutes.value.push({
                     id: uuid(),
                     name: `マイルート ${myRoutes.value.length + 1}`,
@@ -854,10 +757,9 @@
                 return { light, timeStr, eff };
             };
 
-            // 🧙‍♂️ 呪文（データ構造にルートと表示設定も追加）
             const generateSpell = () => {
                 try {
-                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, isItemsExpanded: isItemsExpanded.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value };
+                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value };
                     const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
                     for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
@@ -879,19 +781,17 @@
                     const decoded = JSON.parse(new TextDecoder().decode(uint8array));
                     
                     if (decoded.areas) areas.value = decoded.areas;
-                    if (decoded.placedItems) placedItems.value = decoded.placedItems.map(item => ({ ...item, placedDate: new Date(item.placedDate), isSuspended: item.isSuspended || false }));
-                    if (decoded.isItemsExpanded !== undefined) isItemsExpanded.value = decoded.isItemsExpanded;
+                    if (decoded.placedItems) placedItems.value = decoded.placedItems;
                     if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
                     if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
                     if (decoded.targetDate) targetDate.value = decoded.targetDate;
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
-                    
                     if (decoded.myRoutes) myRoutes.value = decoded.myRoutes;
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
                     
-                    inputSpell.value = ""; showInlineMessage("🌟 パパパパッパパーン！ データの復元に成功しました！", "success");
+                    inputSpell.value = ""; showInlineMessage("🌟 データの復元に成功しました！", "success");
                 } catch (e) { showInlineMessage("😢 じゅもんが ちがいます！", "error"); }
             };
 
@@ -926,22 +826,6 @@
                 }
             };
 
-            const getExpiryDateString = (placedDate) => {
-                const expiry = new Date(placedDate); expiry.setDate(expiry.getDate() + 14);
-                return expiry.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            };
-
-            const formatDateForInput = (date) => date.toISOString().split('T')[0];
-            const updateItemDate = (id, dateString) => {
-                if (!dateString) return;
-                const item = placedItems.value.find(i => i.id === id);
-                if (item) { item.placedDate = new Date(dateString); item.isSuspended = false; }
-            };
-
-            const addItem = () => { placedItems.value.push({ id: uuid(), memo: "", placedDate: new Date(), isSuspended: false }); };
-            const removeItem = (id) => { const idx = placedItems.value.findIndex(i => i.id === id); if (idx !== -1) placedItems.value.splice(idx, 1); };
-            const rePlaceItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) { item.placedDate = new Date(); item.isSuspended = false; } };
-            const suspendItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) item.isSuspended = true; };
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
             const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", light: 0, time: 0, isSelected: false }); };
 
@@ -954,11 +838,8 @@
             };
 
             const confirmDelete = () => {
-                if (deleteModal.value.type === 'main') {
-                    areas.value.splice(deleteModal.value.mIdx, 1);
-                } else if (deleteModal.value.type === 'sub') {
-                    areas.value[deleteModal.value.mIdx].subAreas.splice(deleteModal.value.sIdx, 1);
-                }
+                if (deleteModal.value.type === 'main') areas.value.splice(deleteModal.value.mIdx, 1);
+                else if (deleteModal.value.type === 'sub') areas.value[deleteModal.value.mIdx].subAreas.splice(deleteModal.value.sIdx, 1);
                 deleteModal.value.show = false;
             };
 
@@ -969,25 +850,27 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            watch([areas, placedItems, isItemsExpanded, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections], () => { save(); }, { deep: true });
+            watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections], () => { save(); }, { deep: true });
 
             return {
-                areas, placedItems, sortedPlacedItems, visiblePlacedItems, isItemsExpanded, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
-                showSettings, myRoutes, visibleSections, // 設定・ルート用
+                showSettings, myRoutes, visibleSections,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
-                getDaysLeft, getExpiryDateString, formatDateForInput, updateItemDate, isAllMainSelected, toggleMainArea, getMainAreaStats,
-                moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-                addItem, removeItem, rePlaceItem, suspendItem, addMainArea, addSubArea,
-                requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete,
-                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats // ルート関数
+                isAllMainSelected, toggleMainArea, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
+                addMainArea, addSubArea, requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete,
+                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats
             };
         }
     }).mount('#app');
 </script>
 
 <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
-    © 2026 キャンドル計算機 | 作成・ご意見: 
+    © 2026 キャンドル計算機 | 関連ツール: 
+    <a href="share.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
+        📍 創作物期限管理ツール
+    </a>
+    <br>作成・ご意見: 
     <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
         @Skyzztai
     </a>
