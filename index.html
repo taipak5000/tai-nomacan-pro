@@ -316,7 +316,7 @@
 
     <div v-if="showSettings" class="section-card settings-panel">
         <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">⚙️ 各窓の表示・非表示設定</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0;">
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0; align-items: center; width:100%;">
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
                 <input type="checkbox" v-model="visibleSections.candleManage" style="width:18px; height:18px;"> キャンドル管理
             </label>
@@ -324,8 +324,15 @@
                 <input type="checkbox" v-model="visibleSections.optimization" style="width:18px; height:18px;"> 効率自動最適化
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" v-model="visibleSections.myRoutes" style="width:18px; height:18px;"> マイルート管理
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
                 <input type="checkbox" v-model="visibleSections.spellShare" style="width:18px; height:18px;"> データの共有
             </label>
+            
+            <button class="btn-outline-red" @click="showResetModal = true" style="padding: 4px 10px; font-size: 12px; margin-left: auto; font-weight: bold; border-radius: 6px;">
+                💥 計算機初期化
+            </button>
         </div>
     </div>
 
@@ -496,34 +503,51 @@
                 <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">➕ 新規メインエリアを追加</button>
             </div>
 
-            <div class="section-card" style="margin-top: 20px;">
+            <div v-if="visibleSections.myRoutes" class="section-card" style="margin-top: 20px;">
                 <div class="section-header">📍 マイルート管理（ルート比較・メモ）</div>
-                <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 16px; font-size: 14px; padding: 10px;">
+                
+                <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 8px; font-size: 14px; padding: 10px;">
                     💾 現在の選択をルートとして保存
                 </button>
+                
+                <div v-if="routeError" class="inline-alert inline-alert-error" style="margin-top:0; margin-bottom:16px; text-align: center;">
+                    {{ routeError }}
+                </div>
                 
                 <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px; line-height: 1.5;">
                     保存されたルートはありません。<br>上のエリア管理でチェックを入れて、お気に入りルートを保存してみましょう！
                 </div>
                 
-                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style="background: #ffffff; border: 1px solid var(--border-color);">
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-                        <input type="text" v-model="route.name" placeholder="ルート名 (例: 平日最速ルート)" style="font-weight: bold; font-size: 15px; flex-grow: 1;">
-                        <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 13px; background: var(--accent-blue); color: white; font-weight: bold; border: none;">選択</button>
+                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style="background: #ffffff; border: 1px solid var(--border-color); padding: 12px;">
+                    <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
+                        <input type="text" v-model="route.name" placeholder="ルート名" style="font-weight: bold; font-size: 15px; flex-grow: 1; border: none; background: transparent; padding: 2px 0; text-align: left;">
+                        
+                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                            <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
+                            <button class="expand-toggle-btn" @click="route.isExpanded = !route.isExpanded" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
+                                {{ route.isExpanded ? '▼' : '▶' }}
+                            </button>
+                        </div>
                     </div>
                     
-                    <div style="margin-bottom: 8px;">
-                        <textarea v-model="route.memo" placeholder="周回順のメモや、ウニ・カニのタイマーメモなど自由にどうぞ..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
+                    <div style="font-size: 11px; color: var(--text-gray); margin-top: 6px; background: rgba(0,0,0,0.02); padding: 3px 6px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="getRouteAreaNames(route)">
+                        🗺️ 経由: <span style="color:#444; font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: #f2f2f7; padding: 8px; border-radius: 6px; flex-wrap: wrap; gap: 6px;">
-                        <div>🔥 火種: <span style="font-weight: bold;">{{ getRouteStats(route).light }}</span></div>
-                        <div>⏱️ 時間: <span style="font-weight: bold;">{{ getRouteStats(route).timeStr }}</span></div>
-                        <div>効率: <span style="font-weight: bold; color: var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</span></div>
-                    </div>
-                    
-                    <div style="text-align: right; margin-top: 8px;">
-                        <button class="btn-outline-red" @click="deleteRoute(rIdx)" style="padding: 3px 8px; font-size: 11px;">削除</button>
+                    <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                        <div style="margin-bottom: 8px;">
+                            <textarea v-model="route.memo" placeholder="周回順のメモや、ウニ・カニのタイマーメモなど自由にどうぞ..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: #f2f2f7; padding: 8px; border-radius: 6px; flex-wrap: wrap; gap: 6px;">
+                            <div>🔥 火種: <span style="font-weight: bold;">{{ getRouteStats(route).light }}</span></div>
+                            <div>⏱️ 時間: <span style="font-weight: bold;">{{ getRouteStats(route).timeStr }}</span></div>
+                            <div>効率: <span style="font-weight: bold; color: var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</span></div>
+                        </div>
+                        
+                        <div style="text-align: right; margin-top: 8px;">
+                            <button class="btn-outline-red" @click="deleteRoute(rIdx)" style="padding: 3px 8px; font-size: 11px;">🗑️ ルート削除</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -546,6 +570,22 @@
         </div>
     </div>
 
+    <div v-if="showResetModal" class="modal-overlay" @click.self="showResetModal = false">
+        <div class="modal-container">
+            <div class="modal-title">⚠️ 計算機データの初期化</div>
+            <div class="modal-text">
+                キャンドル計算機の全設定、カスタムエリア、マイルートをすべて消去し、初期状態に戻します。よろしいですか？<br>
+                <div style="font-size:12px; color:var(--text-gray); margin-top: 8px; font-weight: bold;">
+                    ※「創作物管理」側のデータは消えずに残ります。
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" @click="showResetModal = false">キャンセル</button>
+                <button class="modal-btn modal-btn-delete" @click="resetCalculatorData">初期化する</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -557,16 +597,19 @@
             const thresholds = [94, 188, 282, 376, 470, 609, 748, 887, 1026, 1165, 1343, 1521, 1699, 1877, 2055, 2268, 2481, 2719, 3207, 4195, 6195, 10195, 18195];
             
             const areas = ref([]);
-            const placedItems = ref([]); // 🧙‍♂️ 呪文によるバックアップ連携を保つためにデータ構造は維持
+            const placedItems = ref([]); 
             const carryOverPercent = ref(0.0);
             const candleMemo = ref("");
 
             const showSettings = ref(false);
+            const showResetModal = ref(false); // 初期化モーダル用
             const myRoutes = ref([]);
+            const routeError = ref(""); // インラインエラー用
             const visibleSections = ref({
                 candleManage: true,
                 optimization: true,
-                spellShare: true
+                spellShare: true,
+                myRoutes: true // マイルートの非表示初期値
             });
 
             const generatedSpell = ref("");
@@ -600,14 +643,24 @@
 
             const loadInitialData = () => {
                 areas.value = getDefaultAreas();
-                placedItems.value = [];
                 myRoutes.value = [];
+                carryOverPercent.value = 0;
+                candleMemo.value = "";
+                currentCandles.value = 0;
+                plannedUsage.value = 0;
+                targetCandlesForOptimization.value = 20;
+            };
+
+            const resetCalculatorData = () => {
+                loadInitialData();
+                save();
+                showResetModal.value = false;
             };
 
             const save = () => {
                 const dataToSave = {
                     areas: areas.value,
-                    placedItems: placedItems.value, // 引っ越しデータも安全に保存
+                    placedItems: placedItems.value, 
                     carryOverPercent: carryOverPercent.value,
                     targetDate: targetDate.value,
                     currentCandles: currentCandles.value,
@@ -637,7 +690,12 @@
                         plannedUsage.value = decoded.plannedUsage || 0;
                         targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
 
-                        if (decoded.myRoutes) myRoutes.value = decoded.myRoutes;
+                        if (decoded.myRoutes) {
+                            myRoutes.value = decoded.myRoutes.map(r => ({
+                                ...r,
+                                isExpanded: r.isExpanded !== undefined ? r.isExpanded : false
+                            }));
+                        }
                         if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
                     } catch (e) { loadInitialData(); }
                 } else { loadInitialData(); }
@@ -718,21 +776,41 @@
                 }
             };
 
+            // マイルート保存
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => { if (sub.isSelected) selectedIds.push(sub.id); });
                 });
+                
+                // 🚫 alert() を廃止し、3秒間インラインでエラーを表示
                 if (selectedIds.length === 0) {
-                    alert("⚠️ エリアが一つも選択されていません。エリア管理でチェックを入れてから保存してください。");
+                    routeError.value = "⚠️ エリアが一つも選択されていません。上のエリア管理でチェックを入れてから保存してください。";
+                    setTimeout(() => { routeError.value = ""; }, 4000);
                     return;
                 }
+                
+                routeError.value = ""; // エラーをクリア
                 myRoutes.value.push({
                     id: uuid(),
                     name: `マイルート ${myRoutes.value.length + 1}`,
                     memo: "",
-                    selectedSubAreaIds: selectedIds
+                    selectedSubAreaIds: selectedIds,
+                    isExpanded: false // 初期状態は閉じにする
                 });
+            };
+
+            // ルートに含まれるエリア名をカンマ区切りで抽出する関数
+            const getRouteAreaNames = (route) => {
+                const names = [];
+                areas.value.forEach(area => {
+                    area.subAreas.forEach(sub => {
+                        if (route.selectedSubAreaIds.includes(sub.id)) {
+                            names.push(sub.name);
+                        }
+                    });
+                });
+                return names.join(' → ');
             };
 
             const deleteRoute = (index) => { myRoutes.value.splice(index, 1); };
@@ -788,7 +866,12 @@
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
-                    if (decoded.myRoutes) myRoutes.value = decoded.myRoutes;
+                    if (decoded.myRoutes) {
+                        myRoutes.value = decoded.myRoutes.map(r => ({
+                            ...r,
+                            isExpanded: r.isExpanded !== undefined ? r.isExpanded : false
+                        }));
+                    }
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
                     
                     inputSpell.value = ""; showInlineMessage("🌟 データの復元に成功しました！", "success");
@@ -855,11 +938,11 @@
             return {
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
-                showSettings, myRoutes, visibleSections,
+                showSettings, showResetModal, myRoutes, visibleSections, routeError,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
                 isAllMainSelected, toggleMainArea, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 addMainArea, addSubArea, requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete,
-                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats
+                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData
             };
         }
     }).mount('#app');
