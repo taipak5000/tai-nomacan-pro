@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky 精霊同行ポイント計算機 </title>
+    <title>Sky 精霊同行ポイント計算機</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -27,8 +27,9 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 600px; /* スマホ時のデフォルト幅 */
             margin: 0 auto;
+            transition: max-width 0.3s ease;
         }
 
         header {
@@ -69,11 +70,41 @@
             align-items: center;
         }
 
+        /* 💻 大画面用のレイアウトベース（スマホ時は縦一列） */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 📱 タブレット横画面・PC（画面幅768px以上）での2カラム設定 */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 1050px; /* 横幅を広げて余白を削減 */
+            }
+            .main-layout {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .left-column {
+                flex: 1; /* 比率 1 */
+                position: sticky;
+                top: 16px; /* ツリーが長くても、左側が画面に固定されて追従する便利機能 */
+            }
+            .right-column {
+                flex: 2; /* 比率 2 */
+            }
+        }
+
         .section-card {
             background: var(--card-bg);
             border-radius: 14px;
             padding: 18px;
-            margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
@@ -83,7 +114,6 @@
             background: #e5e5ea;
             padding: 2px;
             border-radius: 9px;
-            margin-bottom: 16px;
             gap: 2px;
         }
 
@@ -158,13 +188,12 @@
         .preset-group {
             display: flex;
             gap: 8px;
-            margin-bottom: 16px;
             flex-wrap: wrap;
         }
 
         .btn-sm {
             flex: 1;
-            min-width: 100px;
+            min-width: 90px;
             padding: 8px 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -183,7 +212,7 @@
             align-items: center;
             justify-content: center;
             gap: 24px;
-            margin: 16px 0 8px 0;
+            margin: 12px 0 4px 0;
         }
 
         .btn-counter {
@@ -253,20 +282,17 @@
         }
         .heart-active { border-color: #ff2d55; background: rgba(255, 45, 85, 0.03); color: #ff2d55; box-shadow: 0 4px 12px rgba(255,45,85,0.15); }
 
-        .info-memo { font-size: 12px; color: var(--text-gray); margin-top: 16px; padding-left: 4px; line-height: 1.6; }
+        .info-memo { font-size: 12px; color: var(--text-gray); margin-top: 24px; padding-left: 4px; line-height: 1.6; }
         
-        /* 🏆 総合目標用のすっきりリボン */
         .total-goal-banner {
             background: linear-gradient(135deg, #ff2d55, #ff9500);
             color: white;
             border-radius: 14px;
             padding: 14px;
-            margin-bottom: 16px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(255, 45, 85, 0.15);
         }
 
-        /* 📝 計算機＆メモ欄の追加スタイル */
         .calc-input {
             width: 100%;
             box-sizing: border-box;
@@ -277,11 +303,8 @@
             background: #fafafa;
             transition: all 0.2s;
         }
-        .calc-input:focus {
-            background: #fff;
-            border-color: var(--accent-blue);
-            outline: none;
-        }
+        .calc-input:focus { background: #fff; border-color: var(--accent-blue); outline: none; }
+        
         .memo-textarea {
             width: 100%;
             box-sizing: border-box;
@@ -295,11 +318,7 @@
             background: #fafafa;
             transition: all 0.2s;
         }
-        .memo-textarea:focus {
-            background: #fff;
-            border-color: var(--accent-blue);
-            outline: none;
-        }
+        .memo-textarea:focus { background: #fff; border-color: var(--accent-blue); outline: none; }
     </style>
 </head>
 <body>
@@ -315,180 +334,208 @@
         </div>
     </header>
 
-    <div class="total-goal-banner">
-        <div style="font-size: 22px; font-weight: bold; margin: 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
-    </div>
-
-    <div class="spirit-tabs">
-        <button v-for="(spirit, index) in spirits" :key="spirit.id" 
-                class="tab-btn" :class="{ active: activeIndex === index }"
-                @click="activeIndex = index">
-            <span>{{ spirit.name }}</span>
-            <span class="tab-p-sub">
-                <template v-if="getSpiritPoints(spirit) >= 280">🧡 完了</template>
-                <template v-else>{{ getSpiritPoints(spirit) }} p</template>
-            </span>
-        </button>
-    </div>
-
-    <div class="section-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: bold; font-size: 15px;">{{ activeSpirit.name }} の進行度</span>
-            <span style="font-weight: bold; color: var(--accent-orange);">{{ activePoints }} / 280 p</span>
-        </div>
+    <!-- 🧭 2カラムレイアウト用ラッパー -->
+    <div class="main-layout">
         
-        <div class="progress-container">
-            <div class="progress-bar" :style="{ width: (activePoints / 280 * 100) + '%' }"></div>
-        </div>
+        <!-- 👈 左側カラム (比率 1) : ステータス・管理エリア -->
+        <div class="left-column">
+            
+            <!-- 🏆 季節全体の最終目標ステータス -->
+            <div class="total-goal-banner">
+                <div style="font-size: 22px; font-weight: bold; margin: 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
+            </div>
 
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div style="font-size: 11px; color: var(--text-gray);">現在の状態</div>
-                <div class="stat-val" :style="{ color: activePoints >= 280 ? '#ff2d55' : 'var(--accent-orange)' }">
-                    {{ activeStatusText }}
+            <!-- 📱 精霊選択タブ -->
+            <div class="spirit-tabs">
+                <button v-for="(spirit, index) in spirits" :key="spirit.id" 
+                        class="tab-btn" :class="{ active: activeIndex === index }"
+                        @click="activeIndex = index">
+                    <span>{{ spirit.name }}</span>
+                    <span class="tab-p-sub">
+                        <template v-if="getSpiritPoints(spirit) >= 280">🧡 完了</template>
+                        <template v-else>{{ getSpiritPoints(spirit) }} p</template>
+                    </span>
+                </button>
+            </div>
+
+            <!-- 📊 選択中精霊のステータス -->
+            <div class="section-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; font-size: 15px;">{{ activeSpirit.name }} の進行度</span>
+                    <span style="font-weight: bold; color: var(--accent-orange);">{{ activePoints }} / 280 p</span>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" :style="{ width: (activePoints / 280 * 100) + '%' }"></div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div style="font-size: 11px; color: var(--text-gray);">現在の状態</div>
+                        <div class="stat-val" :style="{ color: activePoints >= 280 ? '#ff2d55' : 'var(--accent-orange)' }">
+                            {{ activeStatusText }}
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div style="font-size: 11px; color: var(--text-gray);">ハートまでの残り</div>
+                        <div class="stat-val" style="color: #444;">
+                            {{ Math.max(0, 280 - activePoints) }} <span style="font-size: 12px; font-weight: normal;">p</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 💡 自動アドバイス機能 -->
+                <div class="advice-box" :style="activePoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
+                    <div v-if="activePoints >= 280">
+                        🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。
+                    </div>
+                    <div v-else>
+                        💡 <strong>アドバイス:</strong> あと <strong>{{ activeRemainingDays }} 日</strong> 連れ歩けば、280pに到達します！
+                        <span v-if="activeSpirit.walkDays + activeRemainingDays > 77" style="color: #ff3b30; display: block; margin-top: 4px; font-weight: bold;">
+                            ⚠️ 注意: 季節の残り日数を超えてしまうため、魔法などの追加交換が必要です。
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div class="stat-box">
-                <div style="font-size: 11px; color: var(--text-gray);">ハートまでの残り</div>
-                <div class="stat-val" style="color: #444;">
-                    {{ Math.max(0, 280 - activePoints) }} <span style="font-size: 12px; font-weight: normal;">p</span>
+
+            <!-- ⚙️ 作戦・プリセット切り替え -->
+            <div class="preset-group">
+                <button class="btn-sm" :class="{'btn-active': activeSpirit.currentPreset === 'custom'}" @click="activeSpirit.currentPreset = 'custom'">自由入力</button>
+                <button class="btn-sm" @click="applyPreset('no-magic')">🧪 魔法スルー</button>
+                <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
+            </div>
+
+            <!-- 📝 交換計画・メモ欄 -->
+            <div class="section-card" style="border: 1px solid rgba(0, 122, 255, 0.15); background: rgba(0, 122, 255, 0.01);">
+                <div style="font-weight: bold; font-size: 14px; margin-bottom: 12px; color: var(--accent-blue);">
+                    📝 {{ activeSpirit.name }} の交換計画・メモ
                 </div>
-            </div>
-        </div>
-
-        <div class="advice-box" :style="activePoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
-            <div v-if="activePoints >= 280">
-                🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。この精霊からシーズンハートを獲得可能です！
-            </div>
-            <div v-else>
-                💡 <strong>連れ歩きアドバイス:</strong><br>
-                現在のアイテム取得状態の場合、あと <strong>{{ activeRemainingDays }} 日</strong> 連れ歩きをすれば、280p（シーズンハート）に到達します！
-                <span v-if="activeSpirit.walkDays + activeRemainingDays > 77" style="color: #ff3b30; display: block; margin-top: 4px; font-weight: bold;">
-                    ⚠️ 注意: 季節の残り日数(最大77日)を超えてしまうため、魔法かエモートをいくつか追加で交換する必要があります。
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="preset-group">
-        <button class="btn-sm" :class="{'btn-active': activeSpirit.currentPreset === 'custom'}" @click="activeSpirit.currentPreset = 'custom'">自由に入力</button>
-        <button class="btn-sm" @click="applyPreset('no-magic')">🧪 魔法全スルー計画</button>
-        <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
-    </div>
-
-    <div class="section-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
-            <span style="font-weight: bold; color: var(--accent-blue);">+{{ activeSpirit.walkDays * 10 }} p</span>
-        </div>
-        
-        <div class="walk-input-area">
-            <button class="btn-counter" @click="decrementWalkDays" :disabled="activeSpirit.walkDays <= 0">−</button>
-            <div class="counter-value">
-                <span class="days-num">{{ activeSpirit.walkDays }}</span>
-                <span class="days-unit">/ 77 日</span>
-            </div>
-            <button class="btn-counter" @click="incrementWalkDays" :disabled="activeSpirit.walkDays >= 77">+</button>
-        </div>
-    </div>
-
-    <div class="section-card" style="border: 1px solid rgba(0, 122, 255, 0.15); background: rgba(0, 122, 255, 0.01);">
-        <div style="font-weight: bold; font-size: 14px; margin-bottom: 12px; color: var(--accent-blue); display: flex; align-items: center; gap: 6px;">
-            📝 {{ activeSpirit.name }} の交換計画・メモ
-        </div>
-        
-        <div style="margin-bottom: 12px;">
-            <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
-                💰 必要キャンドル計算 (数字を + で繋ぐと自動合計)
-            </label>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <input type="text" v-model="activeSpirit.candleFormula" class="calc-input" placeholder="例: 15+20+35+100">
-                <div style="font-size: 16px; font-weight: bold; min-width: 90px; text-align: right; color: #333;">
-                    ＝ {{ activeCandleTotal }} <span style="font-size: 12px; font-weight: normal; color: var(--text-gray);">本</span>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
-                📌 自由メモ欄 (精霊名やアイテムのメモなど)
-            </label>
-            <textarea v-model="activeSpirit.notes" class="memo-textarea" placeholder="例: ○○の案内人。まずはエモート解放優先、残りは連れ歩き。"></textarea>
-        </div>
-    </div>
-
-    <div class="section-card" style="padding-bottom: 30px;">
-        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
-        
-        <div class="tree-container">
-            <div class="tree-line"></div>
-
-            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 0}">
-                <div class="tier-badge">1</div>
-                <div class="tier-header">
-                    <span class="tier-title">第1層（基礎ティア）</span>
-                    <span class="tier-req">次まで: 40p</span>
-                </div>
-                <div v-for="item in activeSpirit.treeData.tier1" :key="item.id" class="item-row">
-                    <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                        <span>{{ item.name }}</span>
+                
+                <!-- 簡易式計算電卓 -->
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
+                        💰 必要キャンドル計算 (+で自動合計)
                     </label>
-                    <span class="item-p">+{{ item.points }}p</span>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="text" v-model="activeSpirit.candleFormula" class="calc-input" placeholder="例: 15+20+35+100">
+                        <div style="font-size: 16px; font-weight: bold; min-width: 80px; text-align: right; color: #333;">
+                            ＝ {{ activeCandleTotal }} <span style="font-size: 12px; font-weight: normal; color: var(--text-gray);">本</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
-                <div class="tier-badge">2</div>
-                <div class="tier-header">
-                    <span class="tier-title">第2層（必要累計: 40p）</span>
-                    <span class="tier-req">次まで: 60p</span>
-                </div>
-                <div v-for="item in activeSpirit.treeData.tier2" :key="item.id" class="item-row">
-                    <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" :disabled="activePoints < 40 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                        <span :style="activePoints < 40 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                <!-- 自由メモ欄 -->
+                <div>
+                    <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
+                        📌 自由メモ欄
                     </label>
-                    <span class="item-p">+{{ item.points }}p</span>
+                    <textarea v-model="activeSpirit.notes" class="memo-textarea" placeholder="例: まずはエモート解放優先、残りは連れ歩き。"></textarea>
                 </div>
             </div>
 
-            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
-                <div class="tier-badge">3</div>
-                <div class="tier-header">
-                    <span class="tier-title">第3層（必要累計: 100p）</span>
-                    <span class="tier-req">次まで: 80p</span>
-                </div>
-                <div v-for="item in activeSpirit.treeData.tier3" :key="item.id" class="item-row">
-                    <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" :disabled="activePoints < 100 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                        <span :style="activePoints < 100 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
-                    </label>
-                    <span class="item-p">+{{ item.points }}p</span>
-                </div>
-            </div>
-
-            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
-                <div class="tier-badge">4</div>
-                <div class="tier-header">
-                    <span class="tier-title">第4層（必要累計: 180p）</span>
-                    <span class="tier-req">次まで: 100p</span>
-                </div>
-                <div v-for="item in activeSpirit.treeData.tier4" :key="item.id" class="item-row">
-                    <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" :disabled="activePoints < 180 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                        <span :style="activePoints < 180 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
-                    </label>
-                    <span class="item-p">+{{ item.points }}p</span>
-                </div>
-            </div>
-
-            <div class="heart-goal" :class="{'heart-active': activePoints >= 280}">
-                <span v-if="activePoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
-                <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
-            </div>
         </div>
-    </div>
+
+        <!-- 👉 右側カラム (比率 2) : カウンター・ツリー表示エリア（大画面で広々表示） -->
+        <div class="right-column">
+            
+            <!-- 👣 連れ歩き設定 -->
+            <div class="section-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">+{{ activeSpirit.walkDays * 10 }} p</span>
+                </div>
+                
+                <div class="walk-input-area">
+                    <button class="btn-counter" @click="decrementWalkDays" :disabled="activeSpirit.walkDays <= 0">−</button>
+                    <div class="counter-value">
+                        <span class="days-num">{{ activeSpirit.walkDays }}</span>
+                        <span class="days-unit">/ 77 日</span>
+                    </div>
+                    <button class="btn-counter" @click="incrementWalkDays" :disabled="activeSpirit.walkDays >= 77">+</button>
+                </div>
+            </div>
+
+            <!-- 🗺️ 精霊ツリー -->
+            <div class="section-card" style="padding-bottom: 30px;">
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
+                
+                <div class="tree-container">
+                    <div class="tree-line"></div>
+
+                    <!-- 第1層 -->
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 0}">
+                        <div class="tier-badge">1</div>
+                        <div class="tier-header">
+                            <span class="tier-title">第1層（基礎ティア）</span>
+                            <span class="tier-req">次まで: 40p</span>
+                        </div>
+                        <div v-for="item in activeSpirit.treeData.tier1" :key="item.id" class="item-row">
+                            <label class="item-label">
+                                <input type="checkbox" v-model="item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                                <span>{{ item.name }}</span>
+                            </label>
+                            <span class="item-p">+{{ item.points }}p</span>
+                        </div>
+                    </div>
+
+                    <!-- 第2層 -->
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
+                        <div class="tier-badge">2</div>
+                        <div class="tier-header">
+                            <span class="tier-title">第2層（必要累計: 40p）</span>
+                            <span class="tier-req">次まで: 60p</span>
+                        </div>
+                        <div v-for="item in activeSpirit.treeData.tier2" :key="item.id" class="item-row">
+                            <label class="item-label">
+                                <input type="checkbox" v-model="item.checked" :disabled="activePoints < 40 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                                <span :style="activePoints < 40 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                            </label>
+                            <span class="item-p">+{{ item.points }}p</span>
+                        </div>
+                    </div>
+
+                    <!-- 第3層 -->
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
+                        <div class="tier-badge">3</div>
+                        <div class="tier-header">
+                            <span class="tier-title">第3層（必要累計: 100p）</span>
+                            <span class="tier-req">次まで: 80p</span>
+                        </div>
+                        <div v-for="item in activeSpirit.treeData.tier3" :key="item.id" class="item-row">
+                            <label class="item-label">
+                                <input type="checkbox" v-model="item.checked" :disabled="activePoints < 100 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                                <span :style="activePoints < 100 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                            </label>
+                            <span class="item-p">+{{ item.points }}p</span>
+                        </div>
+                    </div>
+
+                    <!-- 第4層 -->
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
+                        <div class="tier-badge">4</div>
+                        <div class="tier-header">
+                            <span class="tier-title">第4層（必要累計: 180p）</span>
+                            <span class="tier-req">次まで: 100p</span>
+                        </div>
+                        <div v-for="item in activeSpirit.treeData.tier4" :key="item.id" class="item-row">
+                            <label class="item-label">
+                                <input type="checkbox" v-model="item.checked" :disabled="activePoints < 180 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                                <span :style="activePoints < 180 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                            </label>
+                            <span class="item-p">+{{ item.points }}p</span>
+                        </div>
+                    </div>
+
+                    <!-- ゴール -->
+                    <div class="heart-goal" :class="{'heart-active': activePoints >= 280}">
+                        <span v-if="activePoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
+                        <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div> <!-- /main-layout -->
 
     <div class="info-memo">
         <strong>📌 連れ歩きシステムの仕様メモ:</strong><br>
@@ -497,6 +544,7 @@
         ・季節によって魔法や染料を全スルーできるケースがあります。
     </div>
 
+    <!-- 👤 フッター -->
     <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
         © 2026 精霊同行ポイント計算機 | 関連ツール: 
         <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📊 キャンドル計算機</a> | 
@@ -534,7 +582,6 @@
         setup() {
             const activeIndex = ref(0);
 
-            // 各精霊のデータに「数式入力欄(candleFormula)」と「自由メモ(notes)」を追加
             const spirits = ref([
                 { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s1') },
                 { id: 2, name: '精霊②', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s2') },
@@ -559,10 +606,8 @@
                 return spirits.value.filter(s => getSpiritPoints(s) >= 280).length;
             });
 
-            // ➕ 【新機能】入力された数式から安全にキャンドル合計本数を計算するプロパティ
             const activeCandleTotal = computed(() => {
                 if (!activeSpirit.value.candleFormula) return 0;
-                // 全角の「＋」を半角「+」に変換し、スペース等を考慮して分割
                 const parts = activeSpirit.value.candleFormula.replace(/＋/g, '+').split('+');
                 let sum = 0;
                 parts.forEach(part => {
@@ -574,11 +619,11 @@
 
             const activeStatusText = computed(() => {
                 const p = activePoints.value;
-                if (p >= 280) return "コンプリート！";
-                if (p >= 180) return "第4層 進行中";
-                if (p >= 100) return "第3層 進行中";
-                if (p >= 40) return "第2層 進行中";
-                return "第1層 進行中";
+                if (p >= 280) return "完了！";
+                if (p >= 180) return "第4層";
+                if (p >= 100) return "第3層";
+                if (p >= 40) return "第2層";
+                return "第1層";
             });
 
             const activeRemainingDays = computed(() => {
@@ -628,7 +673,6 @@
                 });
             };
 
-            // 💾 ローカルストレージ保存（新キー：sky_companion_v4_data）
             const save = () => {
                 const data = { activeIndex: activeIndex.value, spirits: spirits.value };
                 localStorage.setItem('sky_companion_v4_data', JSON.stringify(data));
