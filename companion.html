@@ -27,7 +27,7 @@
         }
 
         .container {
-            max-width: 600px; /* スマホ時のデフォルト幅 */
+            max-width: 600px;
             margin: 0 auto;
             transition: max-width 0.3s ease;
         }
@@ -70,7 +70,6 @@
             align-items: center;
         }
 
-        /* 💻 大画面用のレイアウトベース（スマホ時は縦一列） */
         .main-layout {
             display: flex;
             flex-direction: column;
@@ -82,22 +81,21 @@
             gap: 16px;
         }
 
-        /* 📱 タブレット横画面・PC（画面幅768px以上）での2カラム設定 */
         @media (min-width: 768px) {
             .container {
-                max-width: 1050px; /* 横幅を広げて余白を削減 */
+                max-width: 1050px;
             }
             .main-layout {
                 flex-direction: row;
                 align-items: flex-start;
             }
             .left-column {
-                flex: 1; /* 比率 1 */
+                flex: 1;
                 position: sticky;
-                top: 16px; /* ツリーが長くても、左側が画面に固定されて追従する便利機能 */
+                top: 16px;
             }
             .right-column {
-                flex: 2; /* 比率 2 */
+                flex: 2;
             }
         }
 
@@ -108,7 +106,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
-        /* 📱 精霊切り替えタブ */
         .spirit-tabs {
             display: flex;
             background: #e5e5ea;
@@ -206,7 +203,6 @@
         .btn-sm:hover { background: #f5f5f7; }
         .btn-active { background: rgba(255, 149, 0, 0.1); border-color: var(--accent-orange); color: var(--accent-orange); }
 
-        /* カウンター */
         .walk-input-area {
             display: flex;
             align-items: center;
@@ -266,8 +262,9 @@
         .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; }
         .tier-title { font-size: 14px; font-weight: bold; }
         
-        .tier-req { font-size: 11px; color: var(--text-gray); background: #f2f2f7; padding: 2px 6px; border-radius: 4px; }
-        .tier-unlocked .tier-req { color: var(--accent-orange); background: rgba(255,149,0,0.1); }
+        /* 🏷️ 動的テキストが入る部分のスタイル調整 */
+        .tier-req { font-size: 11px; color: var(--text-gray); background: #f2f2f7; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .tier-unlocked .tier-req { color: var(--accent-green); background: rgba(52,199,89,0.1); }
 
         .item-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
         .item-label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; user-select: none; }
@@ -334,18 +331,14 @@
         </div>
     </header>
 
-    <!-- 🧭 2カラムレイアウト用ラッパー -->
     <div class="main-layout">
         
-        <!-- 👈 左側カラム (比率 1) : ステータス・管理エリア -->
         <div class="left-column">
             
-            <!-- 🏆 季節全体の最終目標ステータス -->
             <div class="total-goal-banner">
                 <div style="font-size: 22px; font-weight: bold; margin: 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
             </div>
 
-            <!-- 📱 精霊選択タブ -->
             <div class="spirit-tabs">
                 <button v-for="(spirit, index) in spirits" :key="spirit.id" 
                         class="tab-btn" :class="{ active: activeIndex === index }"
@@ -358,7 +351,6 @@
                 </button>
             </div>
 
-            <!-- 📊 選択中精霊のステータス -->
             <div class="section-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: bold; font-size: 15px;">{{ activeSpirit.name }} の進行度</span>
@@ -384,7 +376,6 @@
                     </div>
                 </div>
 
-                <!-- 💡 自動アドバイス機能 -->
                 <div class="advice-box" :style="activePoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
                     <div v-if="activePoints >= 280">
                         🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。
@@ -398,20 +389,17 @@
                 </div>
             </div>
 
-            <!-- ⚙️ 作戦・プリセット切り替え -->
             <div class="preset-group">
                 <button class="btn-sm" :class="{'btn-active': activeSpirit.currentPreset === 'custom'}" @click="activeSpirit.currentPreset = 'custom'">自由入力</button>
                 <button class="btn-sm" @click="applyPreset('no-magic')">🧪 魔法スルー</button>
                 <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
             </div>
 
-            <!-- 📝 交換計画・メモ欄 -->
             <div class="section-card" style="border: 1px solid rgba(0, 122, 255, 0.15); background: rgba(0, 122, 255, 0.01);">
                 <div style="font-weight: bold; font-size: 14px; margin-bottom: 12px; color: var(--accent-blue);">
                     📝 {{ activeSpirit.name }} の交換計画・メモ
                 </div>
                 
-                <!-- 簡易式計算電卓 -->
                 <div style="margin-bottom: 12px;">
                     <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
                         💰 必要キャンドル計算 (+で自動合計)
@@ -424,7 +412,6 @@
                     </div>
                 </div>
 
-                <!-- 自由メモ欄 -->
                 <div>
                     <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
                         📌 自由メモ欄
@@ -435,10 +422,8 @@
 
         </div>
 
-        <!-- 👉 右側カラム (比率 2) : カウンター・ツリー表示エリア（大画面で広々表示） -->
         <div class="right-column">
             
-            <!-- 👣 連れ歩き設定 -->
             <div class="section-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
@@ -455,19 +440,17 @@
                 </div>
             </div>
 
-            <!-- 🗺️ 精霊ツリー -->
             <div class="section-card" style="padding-bottom: 30px;">
                 <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
                 
                 <div class="tree-container">
                     <div class="tree-line"></div>
 
-                    <!-- 第1層 -->
-                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 0}">
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
                         <div class="tier-badge">1</div>
                         <div class="tier-header">
                             <span class="tier-title">第1層（基礎ティア）</span>
-                            <span class="tier-req">次まで: 40p</span>
+                            <span class="tier-req">{{ activePoints >= 40 ? '🎉 解放完了' : 'あと ' + (40 - activePoints) + 'p' }}</span>
                         </div>
                         <div v-for="item in activeSpirit.treeData.tier1" :key="item.id" class="item-row">
                             <label class="item-label">
@@ -478,12 +461,11 @@
                         </div>
                     </div>
 
-                    <!-- 第2層 -->
-                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
                         <div class="tier-badge">2</div>
                         <div class="tier-header">
                             <span class="tier-title">第2層（必要累計: 40p）</span>
-                            <span class="tier-req">次まで: 60p</span>
+                            <span class="tier-req">{{ activePoints >= 100 ? '🎉 解放完了' : 'あと ' + (activePoints < 40 ? 60 : 100 - activePoints) + 'p' }}</span>
                         </div>
                         <div v-for="item in activeSpirit.treeData.tier2" :key="item.id" class="item-row">
                             <label class="item-label">
@@ -494,12 +476,11 @@
                         </div>
                     </div>
 
-                    <!-- 第3層 -->
-                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
                         <div class="tier-badge">3</div>
                         <div class="tier-header">
                             <span class="tier-title">第3層（必要累計: 100p）</span>
-                            <span class="tier-req">次まで: 80p</span>
+                            <span class="tier-req">{{ activePoints >= 180 ? '🎉 解放完了' : 'あと ' + (activePoints < 100 ? 80 : 180 - activePoints) + 'p' }}</span>
                         </div>
                         <div v-for="item in activeSpirit.treeData.tier3" :key="item.id" class="item-row">
                             <label class="item-label">
@@ -510,12 +491,11 @@
                         </div>
                     </div>
 
-                    <!-- 第4層 -->
-                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
+                    <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 280}">
                         <div class="tier-badge">4</div>
                         <div class="tier-header">
                             <span class="tier-title">第4層（必要累計: 180p）</span>
-                            <span class="tier-req">次まで: 100p</span>
+                            <span class="tier-req">{{ activePoints >= 280 ? '🎉 解放完了' : 'あと ' + (activePoints < 180 ? 100 : 280 - activePoints) + 'p' }}</span>
                         </div>
                         <div v-for="item in activeSpirit.treeData.tier4" :key="item.id" class="item-row">
                             <label class="item-label">
@@ -526,7 +506,6 @@
                         </div>
                     </div>
 
-                    <!-- ゴール -->
                     <div class="heart-goal" :class="{'heart-active': activePoints >= 280}">
                         <span v-if="activePoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
                         <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
@@ -535,7 +514,7 @@
             </div>
 
         </div>
-    </div> <!-- /main-layout -->
+    </div>
 
     <div class="info-memo">
         <strong>📌 連れ歩きシステムの仕様メモ:</strong><br>
@@ -544,7 +523,6 @@
         ・季節によって魔法や染料を全スルーできるケースがあります。
     </div>
 
-    <!-- 👤 フッター -->
     <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
         © 2026 精霊同行ポイント計算機 | 関連ツール: 
         <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📊 キャンドル計算機</a> | 
