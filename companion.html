@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky 精霊同行ポイント計算機</title>
+    <title>Sky 精霊同行ポイント計算機 (4人管理版)</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -77,6 +77,48 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
+        /* 📱 精霊切り替えタブ (iOSセグメント風) */
+        .spirit-tabs {
+            display: flex;
+            background: #e5e5ea;
+            padding: 2px;
+            border-radius: 9px;
+            margin-bottom: 16px;
+            gap: 2px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 8px 0;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #444;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-p-sub {
+            font-size: 10px;
+            font-weight: normal;
+            color: var(--text-gray);
+        }
+        .tab-btn.active .tab-p-sub {
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -135,7 +177,7 @@
         .btn-sm:hover { background: #f5f5f7; }
         .btn-active { background: rgba(255, 149, 0, 0.1); border-color: var(--accent-orange); color: var(--accent-orange); }
 
-        /* ➕ ➖ カウンターのスタイル */
+        /* ➕ ➖ カウンター */
         .walk-input-area {
             display: flex;
             align-items: center;
@@ -161,55 +203,17 @@
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .btn-counter:active {
-            background: #f2f2f7;
-            transform: scale(0.95);
-        }
-        .btn-counter:disabled {
-            color: var(--text-gray);
-            background: #e5e5ea;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
+        .btn-counter:active { background: #f2f2f7; transform: scale(0.95); }
+        .btn-counter:disabled { color: var(--text-gray); background: #e5e5ea; cursor: not-allowed; box-shadow: none; }
 
-        .counter-value {
-            text-align: center;
-            min-width: 100px;
-        }
+        .counter-value { text-align: center; min-width: 100px; }
+        .days-num { font-size: 32px; font-weight: bold; color: var(--accent-blue); font-variant-numeric: tabular-nums; }
+        .days-unit { font-size: 14px; color: var(--text-gray); margin-left: 4px; font-weight: bold; }
 
-        .days-num {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--accent-blue);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .days-unit {
-            font-size: 14px;
-            color: var(--text-gray);
-            margin-left: 4px;
-            font-weight: bold;
-        }
-
-        /* 精霊ツリーのスタイル（下から積み上げ） */
-        .tree-container {
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 16px;
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .tree-line {
-            position: absolute;
-            left: 28px;
-            top: 20px;
-            bottom: 20px;
-            width: 3px;
-            background: var(--border-color);
-            z-index: 1;
-        }
-
+        /* 精霊ツリー */
+        .tree-container { display: flex; flex-direction: column-reverse; gap: 16px; position: relative; padding-left: 20px; }
+        .tree-line { position: absolute; left: 28px; top: 20px; bottom: 20px; width: 3px; background: var(--border-color); z-index: 1; }
+        
         .tree-tier {
             position: relative;
             z-index: 2;
@@ -221,122 +225,45 @@
             transition: all 0.2s;
         }
 
-        .tier-unlocked {
-            border-color: var(--accent-orange);
-            box-shadow: 0 2px 10px rgba(255,149,0,0.08);
-            background: rgba(255, 149, 0, 0.01);
-        }
-
+        .tier-unlocked { border-color: var(--accent-orange); box-shadow: 0 2px 10px rgba(255,149,0,0.08); background: rgba(255, 149, 0, 0.01); }
+        
         .tier-badge {
-            position: absolute;
-            left: -12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--border-color);
-            color: #fff;
-            font-size: 11px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #fff;
+            position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px;
+            border-radius: 50%; background: var(--border-color); color: #fff; font-size: 11px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #fff;
         }
+        .tier-unlocked .tier-badge { background: var(--accent-orange); }
 
-        .tier-unlocked .tier-badge {
-            background: var(--accent-orange);
-        }
+        .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; }
+        .tier-title { font-size: 14px; font-weight: bold; }
+        
+        .tier-req { font-size: 11px; color: var(--text-gray); background: #f2f2f7; padding: 2px 6px; border-radius: 4px; }
+        .tier-unlocked .tier-req { color: var(--accent-orange); background: rgba(255,149,0,0.1); }
 
-        .tier-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 4px;
-        }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+        .item-label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; user-select: none; }
+        .item-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .item-p { font-size: 12px; color: var(--text-gray); font-weight: 500; }
 
-        .tier-title {
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .tier-req {
-            font-size: 11px;
-            color: var(--text-gray);
-            background: #f2f2f7;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        .tier-unlocked .tier-req {
-            color: var(--accent-orange);
-            background: rgba(255,149,0,0.1);
-        }
-
-        .item-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-        }
-
-        .item-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .item-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .item-p {
-            font-size: 12px;
-            color: var(--text-gray);
-            font-weight: 500;
-        }
-
-        .advice-box {
-            background: rgba(0, 122, 255, 0.05);
-            border: 1px solid rgba(0, 122, 255, 0.2);
-            border-radius: 10px;
-            padding: 12px;
-            margin-top: 12px;
-            font-size: 13px;
-            color: #0056b3;
-        }
-
+        .advice-box { background: rgba(0, 122, 255, 0.05); border: 1px solid rgba(0, 122, 255, 0.2); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: #0056b3; }
+        
         .heart-goal {
-            background: #fff;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px;
-            text-align: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 2;
-            transition: all 0.3s;
+            background: #fff; border: 2px solid var(--border-color); border-radius: 12px; padding: 14px;
+            text-align: center; font-weight: bold; position: relative; z-index: 2; transition: all 0.3s;
         }
-        .heart-active {
-            border-color: #ff2d55;
-            background: rgba(255, 45, 85, 0.03);
-            color: #ff2d55;
-            box-shadow: 0 4px 12px rgba(255,45,85,0.15);
-        }
+        .heart-active { border-color: #ff2d55; background: rgba(255, 45, 85, 0.03); color: #ff2d55; box-shadow: 0 4px 12px rgba(255,45,85,0.15); }
 
-        .info-memo {
-            font-size: 12px;
-            color: var(--text-gray);
-            margin-top: 16px;
-            padding-left: 4px;
-            line-height: 1.6;
+        .info-memo { font-size: 12px; color: var(--text-gray); margin-top: 16px; padding-left: 4px; line-height: 1.6; }
+        
+        /* 🏆 総合目標用のリボン */
+        .total-goal-banner {
+            background: linear-gradient(135deg, #ff2d55, #ff9500);
+            color: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(255, 45, 85, 0.15);
         }
     </style>
 </head>
@@ -353,88 +280,108 @@
         </div>
     </header>
 
-    <!-- 📊 総合ステータス -->
+    <!-- 🏆 季節全体の最終目標ステータス -->
+    <div class="total-goal-banner">
+        <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; opacity: 0.9;">季節の最終目標</div>
+        <div style="font-size: 24px; font-weight: bold; margin: 4px 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
+        <div style="font-size: 11px; opacity: 0.85;">4人の精霊全員を280pまで到達させ、究極の贈り物を目指しましょう！</div>
+    </div>
+
+    <!-- 📱 精霊選択タブ（各精霊の現在の状況もバッジ表示） -->
+    <div class="spirit-tabs">
+        <button v-for="(spirit, index) in spirits" :key="spirit.id" 
+                class="tab-btn" :class="{ active: activeIndex === index }"
+                @click="activeIndex = index">
+            <span>{{ spirit.name }}</span>
+            <span class="tab-p-sub">
+                <template v-if="getSpiritPoints(spirit) >= 280">🧡 完了</template>
+                <template v-else>{{ getSpiritPoints(spirit) }} p</template>
+            </span>
+        </button>
+    </div>
+
+    <!-- 📊 選択中精霊のステータス -->
     <div class="section-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: bold; font-size: 15px;">🧡 シーズンハートまでの進行度</span>
-            <span style="font-weight: bold; color: var(--accent-orange);">{{ totalPoints }} / 280 p</span>
+            <span style="font-weight: bold; font-size: 15px;">{{ activeSpirit.name }} の進行度</span>
+            <span style="font-weight: bold; color: var(--accent-orange);">{{ activePoints }} / 280 p</span>
         </div>
         
         <div class="progress-container">
-            <div class="progress-bar" :style="{ width: (totalPoints / 280 * 100) + '%' }"></div>
+            <div class="progress-bar" :style="{ width: (activePoints / 280 * 100) + '%' }"></div>
         </div>
 
         <div class="stats-grid">
             <div class="stat-box">
                 <div style="font-size: 11px; color: var(--text-gray);">現在の状態</div>
-                <div class="stat-val" :style="{ color: totalPoints >= 280 ? '#ff2d55' : 'var(--accent-orange)' }">
-                    {{ currentStatusText }}
+                <div class="stat-val" :style="{ color: activePoints >= 280 ? '#ff2d55' : 'var(--accent-orange)' }">
+                    {{ activeStatusText }}
                 </div>
             </div>
             <div class="stat-box">
                 <div style="font-size: 11px; color: var(--text-gray);">ハートまでの残り</div>
                 <div class="stat-val" style="color: #444;">
-                    {{ Math.max(0, 280 - totalPoints) }} <span style="font-size: 12px; font-weight: normal;">p</span>
+                    {{ Math.max(0, 280 - activePoints) }} <span style="font-size: 12px; font-weight: normal;">p</span>
                 </div>
             </div>
         </div>
 
-        <!-- 💡 自動アドバイス機能（デートを削除してすっきり） -->
-        <div class="advice-box" :style="totalPoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
-            <div v-if="totalPoints >= 280">
-                🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。シーズンハートを獲得可能です！
+        <!-- 💡 自動アドバイス機能（すっきり修正） -->
+        <div class="advice-box" :style="activePoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
+            <div v-if="activePoints >= 280">
+                🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。この精霊からシーズンハートを獲得可能です！
             </div>
             <div v-else>
                 💡 <strong>連れ歩きアドバイス:</strong><br>
-                現在のアイテム取得状態の場合、あと <strong>{{ remainingDaysNeeded }} 日</strong> 連れ歩きをすれば、280p（シーズンハート）に到達します！
-                <span v-if="walkDays + remainingDaysNeeded > 77" style="color: #ff3b30; display: block; margin-top: 4px; font-weight: bold;">
+                現在のアイテム取得状態の場合、あと <strong>{{ activeRemainingDays }} 日</strong> 連れ歩きをすれば、280p（シーズンハート）に到達します！
+                <span v-if="activeSpirit.walkDays + activeRemainingDays > 77" style="color: #ff3b30; display: block; margin-top: 4px; font-weight: bold;">
                     ⚠️ 注意: 季節の残り日数(最大77日)を超えてしまうため、魔法かエモートをいくつか追加で交換する必要があります。
                 </span>
             </div>
         </div>
     </div>
 
-    <!-- ⚙️ 作戦・プリセット切り替え（即コンプを削除） -->
+    <!-- ⚙️ 作戦・プリセット切り替え -->
     <div class="preset-group">
-        <button class="btn-sm" :class="{'btn-active': currentPreset === 'custom'}" @click="currentPreset = 'custom'">自由に入力</button>
+        <button class="btn-sm" :class="{'btn-active': activeSpirit.currentPreset === 'custom'}" @click="activeSpirit.currentPreset = 'custom'">自由に入力</button>
         <button class="btn-sm" @click="applyPreset('no-magic')">🧪 魔法全スルー計画</button>
         <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
     </div>
 
-    <!-- 👣 連れ歩き（同行）設定（＋/− ボタン化） -->
+    <!-- 👣 連れ歩き（同行）設定 -->
     <div class="section-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: bold; font-size: 14px;">👣 精霊との連れ歩き（同行）日数</span>
-            <span style="font-weight: bold; color: var(--accent-blue);">+{{ walkDays * 10 }} p</span>
+            <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
+            <span style="font-weight: bold; color: var(--accent-blue);">+{{ activeSpirit.walkDays * 10 }} p</span>
         </div>
         
         <div class="walk-input-area">
-            <button class="btn-counter" @click="decrementWalkDays" :disabled="walkDays <= 0">−</button>
+            <button class="btn-counter" @click="decrementWalkDays" :disabled="activeSpirit.walkDays <= 0">−</button>
             <div class="counter-value">
-                <span class="days-num">{{ walkDays }}</span>
+                <span class="days-num">{{ activeSpirit.walkDays }}</span>
                 <span class="days-unit">/ 77 日</span>
             </div>
-            <button class="btn-counter" @click="incrementWalkDays" :disabled="walkDays >= 77">+</button>
+            <button class="btn-counter" @click="incrementWalkDays" :disabled="activeSpirit.walkDays >= 77">+</button>
         </div>
     </div>
 
     <!-- 🗺️ 精霊ツリー -->
     <div class="section-card" style="padding-bottom: 30px;">
-        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 精霊ツリー</div>
+        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
         
         <div class="tree-container">
             <div class="tree-line"></div>
 
             <!-- 第1層 -->
-            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 0}">
+            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 0}">
                 <div class="tier-badge">1</div>
                 <div class="tier-header">
                     <span class="tier-title">第1層（基礎ティア）</span>
                     <span class="tier-req">次まで: 40p</span>
                 </div>
-                <div v-for="item in treeData.tier1" :key="item.id" class="item-row">
+                <div v-for="item in activeSpirit.treeData.tier1" :key="item.id" class="item-row">
                     <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" @change="currentPreset = 'custom'">
+                        <input type="checkbox" v-model="item.checked" @change="activeSpirit.currentPreset = 'custom'">
                         <span>{{ item.name }}</span>
                     </label>
                     <span class="item-p">+{{ item.points }}p</span>
@@ -442,56 +389,56 @@
             </div>
 
             <!-- 第2層 -->
-            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 40}">
+            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
                 <div class="tier-badge">2</div>
                 <div class="tier-header">
                     <span class="tier-title">第2層（必要累計: 40p）</span>
                     <span class="tier-req">次まで: 60p</span>
                 </div>
-                <div v-for="item in treeData.tier2" :key="item.id" class="item-row">
+                <div v-for="item in activeSpirit.treeData.tier2" :key="item.id" class="item-row">
                     <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" :disabled="totalPoints < 40 && !item.checked" @change="currentPreset = 'custom'">
-                        <span :style="totalPoints < 40 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                        <input type="checkbox" v-model="item.checked" :disabled="activePoints < 40 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                        <span :style="activePoints < 40 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
                     </label>
                     <span class="item-p">+{{ item.points }}p</span>
                 </div>
             </div>
 
             <!-- 第3層 -->
-            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 100}">
+            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
                 <div class="tier-badge">3</div>
                 <div class="tier-header">
                     <span class="tier-title">第3層（必要累計: 100p）</span>
                     <span class="tier-req">次まで: 80p</span>
                 </div>
-                <div v-for="item in treeData.tier3" :key="item.id" class="item-row">
+                <div v-for="item in activeSpirit.treeData.tier3" :key="item.id" class="item-row">
                     <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" :disabled="totalPoints < 100 && !item.checked" @change="currentPreset = 'custom'">
-                        <span :style="totalPoints < 100 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                        <input type="checkbox" v-model="item.checked" :disabled="activePoints < 100 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                        <span :style="activePoints < 100 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
                     </label>
                     <span class="item-p">+{{ item.points }}p</span>
                 </div>
             </div>
 
             <!-- 第4層 -->
-            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 180}">
+            <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
                 <div class="tier-badge">4</div>
                 <div class="tier-header">
                     <span class="tier-title">第4層（必要累計: 180p）</span>
                     <span class="tier-req">次まで: 100p</span>
                 </div>
-                <div v-for="item in treeData.tier4" :key="item.id" class="item-row">
+                <div v-for="item in activeSpirit.treeData.tier4" :key="item.id" class="item-row">
                     <label class="item-label">
-                        <input type="checkbox" v-model="item.checked" :disabled="totalPoints < 180 && !item.checked" @change="currentPreset = 'custom'">
-                        <span :style="totalPoints < 180 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                        <input type="checkbox" v-model="item.checked" :disabled="activePoints < 180 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
+                        <span :style="activePoints < 180 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
                     </label>
                     <span class="item-p">+{{ item.points }}p</span>
                 </div>
             </div>
 
             <!-- ゴール -->
-            <div class="heart-goal" :class="{'heart-active': totalPoints >= 280}">
-                <span v-if="totalPoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
+            <div class="heart-goal" :class="{'heart-active': activePoints >= 280}">
+                <span v-if="activePoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
                 <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
             </div>
         </div>
@@ -520,57 +467,61 @@
 <script>
     const { createApp, ref, computed, watch, onMounted } = Vue;
 
+    // 各精霊用の新規ツリーデータを生成するヘルパー関数
+    const createInitialTree = (prefix) => ({
+        tier1: [
+            { id: prefix + '_em1', name: '💨 エモートLv1 (初回解放)', points: 20, checked: true },
+            { id: prefix + '_mag1', name: '🧪 魔法①', points: 20, checked: false }
+        ],
+        tier2: [
+            { id: prefix + '_it1', name: '✨ 季節アイテム①', points: 30, checked: false },
+            { id: prefix + '_mag2', name: '🧪 魔法②', points: 30, checked: false }
+        ],
+        tier3: [
+            { id: prefix + '_em2', name: '💨 エモートLv2', points: 40, checked: false },
+            { id: prefix + '_mag3', name: '🧪 魔法③', points: 40, checked: false }
+        ],
+        tier4: [
+            { id: prefix + '_it2', name: '✨ 季節アイテム②', points: 50, checked: false },
+            { id: prefix + '_pass', name: '♢ シーズンパス系枠', points: 50, checked: false }
+        ]
+    });
+
     createApp({
         setup() {
-            const walkDays = ref(0);
-            const currentPreset = ref("custom");
+            const activeIndex = ref(0);
 
-            const treeData = ref({
-                tier1: [
-                    { id: 't1_em1', name: '💨 エモートLv1 (初回解放)', points: 20, checked: true },
-                    { id: 't1_mag1', name: '🧪 魔法①', points: 20, checked: false }
-                ],
-                tier2: [
-                    { id: 't2_it1', name: '✨ 季節アイテム①', points: 30, checked: false },
-                    { id: 't2_mag2', name: '🧪 魔法②', points: 30, checked: false }
-                ],
-                tier3: [
-                    { id: 't3_em2', name: '💨 エモートLv2', points: 40, checked: false },
-                    { id: 't3_mag3', name: '🧪 魔法③', points: 40, checked: false }
-                ],
-                tier4: [
-                    { id: 't4_it2', name: '✨ 季節アイテム②', points: 50, checked: false },
-                    { id: 't4_pass', name: '♢ シーズンパス系枠', points: 50, checked: false }
-                ]
-            });
+            // 4人の精霊データを配列で管理
+            const spirits = ref([
+                { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s1') },
+                { id: 2, name: '精霊②', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s2') },
+                { id: 3, name: '精霊③', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s3') },
+                { id: 4, name: '精霊④', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s4') }
+            ]);
 
-            // ➕ 日数を増やす
-            const incrementWalkDays = () => {
-                if (walkDays.value < 77) {
-                    walkDays.value++;
-                    currentPreset.value = 'custom';
-                }
-            };
+            // 現在選択されている精霊
+            const activeSpirit = computed(() => spirits.value[activeIndex.value]);
 
-            // ➖ 日数を減らす
-            const decrementWalkDays = () => {
-                if (walkDays.value > 0) {
-                    walkDays.value--;
-                    currentPreset.value = 'custom';
-                }
-            };
-
-            const totalPoints = computed(() => {
+            // 特定の精霊の合計ポイントを計算する共通処理
+            const getSpiritPoints = (spirit) => {
                 let points = 0;
-                Object.values(treeData.value).forEach(tier => {
+                Object.values(spirit.treeData).forEach(tier => {
                     tier.forEach(item => { if (item.checked) points += item.points; });
                 });
-                points += (walkDays.value * 10);
+                points += (spirit.walkDays * 10);
                 return Math.min(280, points);
+            };
+
+            // 選択中精霊のポイント
+            const activePoints = computed(() => getSpiritPoints(activeSpirit.value));
+
+            // 🏆 全体の獲得シーズンハート数（280pに達した精霊の数）
+            const totalHearts = computed(() => {
+                return spirits.value.filter(s => getSpiritPoints(s) >= 280).length;
             });
 
-            const currentStatusText = computed(() => {
-                const p = totalPoints.value;
+            const activeStatusText = computed(() => {
+                const p = activePoints.value;
                 if (p >= 280) return "コンプリート！";
                 if (p >= 180) return "第4層 進行中";
                 if (p >= 100) return "第3層 進行中";
@@ -578,65 +529,96 @@
                 return "第1層 進行中";
             });
 
-            const remainingDaysNeeded = computed(() => {
+            const activeRemainingDays = computed(() => {
                 let itemPoints = 0;
-                Object.values(treeData.value).forEach(tier => {
+                Object.values(activeSpirit.value.treeData).forEach(tier => {
                     tier.forEach(item => { if (item.checked) itemPoints += item.points; });
                 });
                 const totalDaysNeeded = Math.max(0, Math.ceil((280 - itemPoints) / 10));
-                return Math.max(0, totalDaysNeeded - walkDays.value);
+                return Math.max(0, totalDaysNeeded - activeSpirit.value.walkDays);
             });
 
-            const applyPreset = (type) => {
-                currentPreset.value = type;
-                if (type === 'reset') {
-                    walkDays.value = 0; setAllItems(false);
-                    treeData.value.tier1[0].checked = true; currentPreset.value = 'custom';
-                } else if (type === 'no-magic') {
-                    walkDays.value = 9; setAllItems(true);
-                    treeData.value.tier1[1].checked = false;
-                    treeData.value.tier2[1].checked = false;
-                    treeData.value.tier3[1].checked = false;
+            const incrementWalkDays = () => {
+                if (activeSpirit.value.walkDays < 77) {
+                    activeSpirit.value.walkDays++;
+                    activeSpirit.value.currentPreset = 'custom';
                 }
             };
 
-            const setAllItems = (status) => {
-                Object.values(treeData.value).forEach(tier => {
+            const decrementWalkDays = () => {
+                if (activeSpirit.value.walkDays > 0) {
+                    activeSpirit.value.walkDays--;
+                    activeSpirit.value.currentPreset = 'custom';
+                }
+            };
+
+            const applyPreset = (type) => {
+                activeSpirit.value.currentPreset = type;
+                if (type === 'reset') {
+                    activeSpirit.value.walkDays = 0;
+                    setSpiritItems(activeSpirit.value, false);
+                    activeSpirit.value.treeData.tier1[0].checked = true;
+                    activeSpirit.value.currentPreset = 'custom';
+                } else if (type === 'no-magic') {
+                    activeSpirit.value.walkDays = 9;
+                    setSpiritItems(activeSpirit.value, true);
+                    activeSpirit.value.treeData.tier1[1].checked = false;
+                    activeSpirit.value.treeData.tier2[1].checked = false;
+                    activeSpirit.value.treeData.tier3[1].checked = false;
+                }
+            };
+
+            const setSpiritItems = (spirit, status) => {
+                Object.values(spirit.treeData).forEach(tier => {
                     tier.forEach(item => { item.checked = status; });
                 });
             };
 
+            // 💾 ローカルストレージ保存（キーを変更してバグを防止）
             const save = () => {
-                const data = { walkDays: walkDays.value, treeData: treeData.value, currentPreset: currentPreset.value };
-                localStorage.setItem('sky_companion_calc_data', JSON.stringify(data));
+                const data = {
+                    activeIndex: activeIndex.value,
+                    spirits: spirits.value
+                };
+                localStorage.setItem('sky_companion_multi_calc_data', JSON.stringify(data));
             };
 
             const load = () => {
-                const saved = localStorage.getItem('sky_companion_calc_data');
+                const saved = localStorage.getItem('sky_companion_multi_calc_data');
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
-                        if (parsed.walkDays !== undefined) walkDays.value = parsed.walkDays;
-                        if (parsed.currentPreset) currentPreset.value = parsed.currentPreset;
-                        if (parsed.treeData) {
-                            Object.keys(parsed.treeData).forEach(tierKey => {
-                                if (treeData.value[tierKey]) {
-                                    parsed.treeData[tierKey].forEach((item, idx) => {
-                                        if (treeData.value[tierKey][idx]) treeData.value[tierKey][idx].checked = item.checked;
+                        if (parsed.activeIndex !== undefined) activeIndex.value = parsed.activeIndex;
+                        if (parsed.spirits && Array.isArray(parsed.spirits)) {
+                            parsed.spirits.forEach((savedSpirit, sIdx) => {
+                                if (spirits.value[sIdx]) {
+                                    if (savedSpirit.walkDays !== undefined) spirits.value[sIdx].walkDays = savedSpirit.walkDays;
+                                    if (savedSpirit.currentPreset) spirits.value[sIdx].currentPreset = savedSpirit.currentPreset;
+                                    
+                                    // ツリーのチェック状態を復元
+                                    Object.keys(savedSpirit.treeData).forEach(tierKey => {
+                                        if (spirits.value[sIdx].treeData[tierKey]) {
+                                            savedSpirit.treeData[tierKey].forEach((savedItem, iIdx) => {
+                                                if (spirits.value[sIdx].treeData[tierKey][iIdx]) {
+                                                    spirits.value[sIdx].treeData[tierKey][iIdx].checked = savedItem.checked;
+                                                }
+                                            });
+                                        }
                                     });
                                 }
                             });
                         }
-                    } catch (e) {}
+                    } catch (e) { console.error(e); }
                 }
             };
 
             onMounted(() => { load(); });
-            watch([walkDays, treeData], () => { save(); }, { deep: true });
+            watch([activeIndex, spirits], () => { save(); }, { deep: true });
 
-            return { 
-                walkDays, treeData, totalPoints, currentStatusText, remainingDaysNeeded, currentPreset, 
-                incrementWalkDays, decrementWalkDays, applyPreset 
+            return {
+                activeIndex, spirits, activeSpirit, activePoints, totalHearts,
+                activeStatusText, activeRemainingDays, getSpiritPoints,
+                incrementWalkDays, decrementWalkDays, applyPreset
             };
         }
     }).mount('#app');
