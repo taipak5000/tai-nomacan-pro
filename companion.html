@@ -77,7 +77,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
-        /* 📱 精霊切り替えタブ (iOSセグメント風) */
+        /* 📱 精霊切り替えタブ */
         .spirit-tabs {
             display: flex;
             background: #e5e5ea;
@@ -177,7 +177,7 @@
         .btn-sm:hover { background: #f5f5f7; }
         .btn-active { background: rgba(255, 149, 0, 0.1); border-color: var(--accent-orange); color: var(--accent-orange); }
 
-        /* ➕ ➖ カウンター */
+        /* カウンター */
         .walk-input-area {
             display: flex;
             align-items: center;
@@ -255,12 +255,12 @@
 
         .info-memo { font-size: 12px; color: var(--text-gray); margin-top: 16px; padding-left: 4px; line-height: 1.6; }
         
-        /* 🏆 総合目標用のリボン */
+        /* 🏆 総合目標用のすっきりリボン */
         .total-goal-banner {
             background: linear-gradient(135deg, #ff2d55, #ff9500);
             color: white;
             border-radius: 14px;
-            padding: 16px;
+            padding: 14px;
             margin-bottom: 16px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(255, 45, 85, 0.15);
@@ -280,14 +280,12 @@
         </div>
     </header>
 
-    <!-- 🏆 季節全体の最終目標ステータス -->
+    <!-- 🏆 季節全体の最終目標ステータス (スッキリ版) -->
     <div class="total-goal-banner">
-        <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; opacity: 0.9;">季節の最終目標</div>
-        <div style="font-size: 24px; font-weight: bold; margin: 4px 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
-        <div style="font-size: 11px; opacity: 0.85;">4人の精霊全員を280pまで到達させ、究極の贈り物を目指しましょう！</div>
+        <div style="font-size: 22px; font-weight: bold; margin: 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
     </div>
 
-    <!-- 📱 精霊選択タブ（各精霊の現在の状況もバッジ表示） -->
+    <!-- 📱 精霊選択タブ -->
     <div class="spirit-tabs">
         <button v-for="(spirit, index) in spirits" :key="spirit.id" 
                 class="tab-btn" :class="{ active: activeIndex === index }"
@@ -326,7 +324,7 @@
             </div>
         </div>
 
-        <!-- 💡 自動アドバイス機能（すっきり修正） -->
+        <!-- 💡 自動アドバイス機能 -->
         <div class="advice-box" :style="activePoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
             <div v-if="activePoints >= 280">
                 🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。この精霊からシーズンハートを獲得可能です！
@@ -348,7 +346,7 @@
         <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
     </div>
 
-    <!-- 👣 連れ歩き（同行）設定 -->
+    <!-- 👣 連れ歩き設定 -->
     <div class="section-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
@@ -420,7 +418,7 @@
                 </div>
             </div>
 
-            <!-- 第4層 -->
+            <!-- 第4層 (修正版) -->
             <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
                 <div class="tier-badge">4</div>
                 <div class="tier-header">
@@ -467,7 +465,7 @@
 <script>
     const { createApp, ref, computed, watch, onMounted } = Vue;
 
-    // 各精霊用の新規ツリーデータを生成するヘルパー関数
+    // 各精霊用の新規ツリーデータを生成するヘルパー関数 (第4層を100ptに修正・パス枠撤去)
     const createInitialTree = (prefix) => ({
         tier1: [
             { id: prefix + '_em1', name: '💨 エモートLv1 (初回解放)', points: 20, checked: true },
@@ -482,8 +480,7 @@
             { id: prefix + '_mag3', name: '🧪 魔法③', points: 40, checked: false }
         ],
         tier4: [
-            { id: prefix + '_it2', name: '✨ 季節アイテム②', points: 50, checked: false },
-            { id: prefix + '_pass', name: '♢ シーズンパス系枠', points: 50, checked: false }
+            { id: prefix + '_it2', name: '✨ 季節アイテム②', points: 100, checked: false }
         ]
     });
 
@@ -560,7 +557,7 @@
                     activeSpirit.value.treeData.tier1[0].checked = true;
                     activeSpirit.value.currentPreset = 'custom';
                 } else if (type === 'no-magic') {
-                    activeSpirit.value.walkDays = 9;
+                    activeSpirit.value.walkDays = 9; // 魔法を全スルーすると、連れ歩き9日でぴったり280p
                     setSpiritItems(activeSpirit.value, true);
                     activeSpirit.value.treeData.tier1[1].checked = false;
                     activeSpirit.value.treeData.tier2[1].checked = false;
@@ -574,17 +571,17 @@
                 });
             };
 
-            // 💾 ローカルストレージ保存（キーを変更してバグを防止）
+            // 💾 ローカルストレージ保存（新キー：sky_companion_multi_v3_data）
             const save = () => {
                 const data = {
                     activeIndex: activeIndex.value,
                     spirits: spirits.value
                 };
-                localStorage.setItem('sky_companion_multi_calc_data', JSON.stringify(data));
+                localStorage.setItem('sky_companion_multi_v3_data', JSON.stringify(data));
             };
 
             const load = () => {
-                const saved = localStorage.getItem('sky_companion_multi_calc_data');
+                const saved = localStorage.getItem('sky_companion_multi_v3_data');
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
