@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky 精霊同行ポイント計算機 (4人管理版)</title>
+    <title>Sky 精霊同行ポイント計算機 (4人管理・メモ電卓付)</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -265,6 +265,41 @@
             text-align: center;
             box-shadow: 0 4px 12px rgba(255, 45, 85, 0.15);
         }
+
+        /* 📝 計算機＆メモ欄の追加スタイル */
+        .calc-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+        .calc-input:focus {
+            background: #fff;
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+        .memo-textarea {
+            width: 100%;
+            box-sizing: border-box;
+            height: 64px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            resize: none;
+            font-family: inherit;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+        .memo-textarea:focus {
+            background: #fff;
+            border-color: var(--accent-blue);
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -280,12 +315,10 @@
         </div>
     </header>
 
-    <!-- 🏆 季節全体の最終目標ステータス (スッキリ版) -->
     <div class="total-goal-banner">
         <div style="font-size: 22px; font-weight: bold; margin: 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
     </div>
 
-    <!-- 📱 精霊選択タブ -->
     <div class="spirit-tabs">
         <button v-for="(spirit, index) in spirits" :key="spirit.id" 
                 class="tab-btn" :class="{ active: activeIndex === index }"
@@ -298,7 +331,6 @@
         </button>
     </div>
 
-    <!-- 📊 選択中精霊のステータス -->
     <div class="section-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: bold; font-size: 15px;">{{ activeSpirit.name }} の進行度</span>
@@ -324,7 +356,6 @@
             </div>
         </div>
 
-        <!-- 💡 自動アドバイス機能 -->
         <div class="advice-box" :style="activePoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
             <div v-if="activePoints >= 280">
                 🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。この精霊からシーズンハートを獲得可能です！
@@ -339,14 +370,12 @@
         </div>
     </div>
 
-    <!-- ⚙️ 作戦・プリセット切り替え -->
     <div class="preset-group">
         <button class="btn-sm" :class="{'btn-active': activeSpirit.currentPreset === 'custom'}" @click="activeSpirit.currentPreset = 'custom'">自由に入力</button>
         <button class="btn-sm" @click="applyPreset('no-magic')">🧪 魔法全スルー計画</button>
         <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
     </div>
 
-    <!-- 👣 連れ歩き設定 -->
     <div class="section-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
@@ -363,14 +392,37 @@
         </div>
     </div>
 
-    <!-- 🗺️ 精霊ツリー -->
+    <div class="section-card" style="border: 1px solid rgba(0, 122, 255, 0.15); background: rgba(0, 122, 255, 0.01);">
+        <div style="font-weight: bold; font-size: 14px; margin-bottom: 12px; color: var(--accent-blue); display: flex; align-items: center; gap: 6px;">
+            📝 {{ activeSpirit.name }} の交換計画・メモ
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+            <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
+                💰 必要キャンドル計算 (数字を + で繋ぐと自動合計)
+            </label>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <input type="text" v-model="activeSpirit.candleFormula" class="calc-input" placeholder="例: 15+20+35+100">
+                <div style="font-size: 16px; font-weight: bold; min-width: 90px; text-align: right; color: #333;">
+                    ＝ {{ activeCandleTotal }} <span style="font-size: 12px; font-weight: normal; color: var(--text-gray);">本</span>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
+                📌 自由メモ欄 (精霊名やアイテムのメモなど)
+            </label>
+            <textarea v-model="activeSpirit.notes" class="memo-textarea" placeholder="例: ○○の案内人。まずはエモート解放優先、残りは連れ歩き。"></textarea>
+        </div>
+    </div>
+
     <div class="section-card" style="padding-bottom: 30px;">
         <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
         
         <div class="tree-container">
             <div class="tree-line"></div>
 
-            <!-- 第1層 -->
             <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 0}">
                 <div class="tier-badge">1</div>
                 <div class="tier-header">
@@ -386,7 +438,6 @@
                 </div>
             </div>
 
-            <!-- 第2層 -->
             <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
                 <div class="tier-badge">2</div>
                 <div class="tier-header">
@@ -402,7 +453,6 @@
                 </div>
             </div>
 
-            <!-- 第3層 -->
             <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
                 <div class="tier-badge">3</div>
                 <div class="tier-header">
@@ -418,7 +468,6 @@
                 </div>
             </div>
 
-            <!-- 第4層 (修正版) -->
             <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
                 <div class="tier-badge">4</div>
                 <div class="tier-header">
@@ -434,7 +483,6 @@
                 </div>
             </div>
 
-            <!-- ゴール -->
             <div class="heart-goal" :class="{'heart-active': activePoints >= 280}">
                 <span v-if="activePoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
                 <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
@@ -449,7 +497,6 @@
         ・季節によって魔法や染料を全スルーできるケースがあります。
     </div>
 
-    <!-- 👤 フッター -->
     <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
         © 2026 精霊同行ポイント計算機 | 関連ツール: 
         <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📊 キャンドル計算機</a> | 
@@ -465,7 +512,6 @@
 <script>
     const { createApp, ref, computed, watch, onMounted } = Vue;
 
-    // 各精霊用の新規ツリーデータを生成するヘルパー関数 (第4層を100ptに修正・パス枠撤去)
     const createInitialTree = (prefix) => ({
         tier1: [
             { id: prefix + '_em1', name: '💨 エモートLv1 (初回解放)', points: 20, checked: true },
@@ -488,18 +534,16 @@
         setup() {
             const activeIndex = ref(0);
 
-            // 4人の精霊データを配列で管理
+            // 各精霊のデータに「数式入力欄(candleFormula)」と「自由メモ(notes)」を追加
             const spirits = ref([
-                { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s1') },
-                { id: 2, name: '精霊②', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s2') },
-                { id: 3, name: '精霊③', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s3') },
-                { id: 4, name: '精霊④', walkDays: 0, currentPreset: 'custom', treeData: createInitialTree('s4') }
+                { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s1') },
+                { id: 2, name: '精霊②', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s2') },
+                { id: 3, name: '精霊③', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s3') },
+                { id: 4, name: '精霊④', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s4') }
             ]);
 
-            // 現在選択されている精霊
             const activeSpirit = computed(() => spirits.value[activeIndex.value]);
 
-            // 特定の精霊の合計ポイントを計算する共通処理
             const getSpiritPoints = (spirit) => {
                 let points = 0;
                 Object.values(spirit.treeData).forEach(tier => {
@@ -509,12 +553,23 @@
                 return Math.min(280, points);
             };
 
-            // 選択中精霊のポイント
             const activePoints = computed(() => getSpiritPoints(activeSpirit.value));
 
-            // 🏆 全体の獲得シーズンハート数（280pに達した精霊の数）
             const totalHearts = computed(() => {
                 return spirits.value.filter(s => getSpiritPoints(s) >= 280).length;
+            });
+
+            // ➕ 【新機能】入力された数式から安全にキャンドル合計本数を計算するプロパティ
+            const activeCandleTotal = computed(() => {
+                if (!activeSpirit.value.candleFormula) return 0;
+                // 全角の「＋」を半角「+」に変換し、スペース等を考慮して分割
+                const parts = activeSpirit.value.candleFormula.replace(/＋/g, '+').split('+');
+                let sum = 0;
+                parts.forEach(part => {
+                    const num = parseInt(part.trim(), 10);
+                    if (!isNaN(num)) sum += num;
+                });
+                return sum;
             });
 
             const activeStatusText = computed(() => {
@@ -555,9 +610,11 @@
                     activeSpirit.value.walkDays = 0;
                     setSpiritItems(activeSpirit.value, false);
                     activeSpirit.value.treeData.tier1[0].checked = true;
+                    activeSpirit.value.candleFormula = '';
+                    activeSpirit.value.notes = '';
                     activeSpirit.value.currentPreset = 'custom';
                 } else if (type === 'no-magic') {
-                    activeSpirit.value.walkDays = 9; // 魔法を全スルーすると、連れ歩き9日でぴったり280p
+                    activeSpirit.value.walkDays = 9;
                     setSpiritItems(activeSpirit.value, true);
                     activeSpirit.value.treeData.tier1[1].checked = false;
                     activeSpirit.value.treeData.tier2[1].checked = false;
@@ -571,17 +628,14 @@
                 });
             };
 
-            // 💾 ローカルストレージ保存（新キー：sky_companion_multi_v3_data）
+            // 💾 ローカルストレージ保存（新キー：sky_companion_v4_data）
             const save = () => {
-                const data = {
-                    activeIndex: activeIndex.value,
-                    spirits: spirits.value
-                };
-                localStorage.setItem('sky_companion_multi_v3_data', JSON.stringify(data));
+                const data = { activeIndex: activeIndex.value, spirits: spirits.value };
+                localStorage.setItem('sky_companion_v4_data', JSON.stringify(data));
             };
 
             const load = () => {
-                const saved = localStorage.getItem('sky_companion_multi_v3_data');
+                const saved = localStorage.getItem('sky_companion_v4_data');
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
@@ -591,8 +645,9 @@
                                 if (spirits.value[sIdx]) {
                                     if (savedSpirit.walkDays !== undefined) spirits.value[sIdx].walkDays = savedSpirit.walkDays;
                                     if (savedSpirit.currentPreset) spirits.value[sIdx].currentPreset = savedSpirit.currentPreset;
+                                    if (savedSpirit.candleFormula !== undefined) spirits.value[sIdx].candleFormula = savedSpirit.candleFormula;
+                                    if (savedSpirit.notes !== undefined) spirits.value[sIdx].notes = savedSpirit.notes;
                                     
-                                    // ツリーのチェック状態を復元
                                     Object.keys(savedSpirit.treeData).forEach(tierKey => {
                                         if (spirits.value[sIdx].treeData[tierKey]) {
                                             savedSpirit.treeData[tierKey].forEach((savedItem, iIdx) => {
@@ -613,7 +668,7 @@
             watch([activeIndex, spirits], () => { save(); }, { deep: true });
 
             return {
-                activeIndex, spirits, activeSpirit, activePoints, totalHearts,
+                activeIndex, spirits, activeSpirit, activePoints, totalHearts, activeCandleTotal,
                 activeStatusText, activeRemainingDays, getSpiritPoints,
                 incrementWalkDays, decrementWalkDays, applyPreset
             };
