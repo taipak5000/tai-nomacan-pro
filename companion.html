@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky 精霊同行ポイント計算機</title>
+    <style>
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-color: #000000;
+            --text-gray: #8e8e93;
+            --accent-blue: #007aff;
+            --accent-orange: #ff9500;
+            --accent-purple: #af52de;
+            --accent-green: #34c759;
+            --border-color: #e5e5ea;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 4px 0;
+            color: #333;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .stat-box {
+            background: #fdfdfd;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .progress-container {
+            background: #e5e5ea;
+            border-radius: 8px;
+            height: 12px;
+            width: 100%;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--accent-orange), #ffcc00);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .preset-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-sm:hover { background: #f5f5f7; }
+        .btn-active { background: rgba(255, 149, 0, 0.1); border-color: var(--accent-orange); color: var(--accent-orange); }
+
+        /* 精霊ツリーのスタイル（下から積み上げ） */
+        .tree-container {
+            display: flex;
+            flex-direction: column-reverse; /* 下から順に描画 */
+            gap: 16px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .tree-line {
+            position: absolute;
+            left: 28px;
+            top: 20px;
+            bottom: 20px;
+            width: 3px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .tree-tier {
+            position: relative;
+            z-index: 2;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            padding-left: 36px;
+            transition: all 0.2s;
+        }
+
+        .tier-unlocked {
+            border-color: var(--accent-orange);
+            box-shadow: 0 2px 10px rgba(255,149,0,0.08);
+            background: rgba(255, 149, 0, 0.01);
+        }
+
+        .tier-badge {
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--border-color);
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+        }
+
+        .tier-unlocked .tier-badge {
+            background: var(--accent-orange);
+        }
+
+        .tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .tier-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .tier-req {
+            font-size: 11px;
+            color: var(--text-gray);
+            background: #f2f2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .tier-unlocked .tier-req {
+            color: var(--accent-orange);
+            background: rgba(255,149,0,0.1);
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .item-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .item-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .item-p {
+            font-size: 12px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        .walk-input-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .advice-box {
+            background: rgba(0, 122, 255, 0.05);
+            border: 1px solid rgba(0, 122, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #0056b3;
+        }
+
+        /* 最上部のシーズンハートの特別枠 */
+        .heart-goal {
+            background: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+        .heart-active {
+            border-color: #ff2d55;
+            background: rgba(255, 45, 85, 0.03);
+            color: #ff2d55;
+            box-shadow: 0 4px 12px rgba(255,45,85,0.15);
+        }
+
+        .info-memo {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 16px;
+            padding-left: 4px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <header>
+        <h1>✨ Sky 精霊同行ポイント計算機</h1>
+        <div class="subtitle">連れ歩き日数とアイテム交換の最適化シミュレーター</div>
+    </header>
+
+    <!-- 📊 総合ステータス -->
+    <div class="section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold; font-size: 15px;">🧡 シーズンハートまでの進行度</span>
+            <span style="font-weight: bold; color: var(--accent-orange);">{{ totalPoints }} / 280 p</span>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" :style="{ width: (totalPoints / 280 * 100) + '%' }"></div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div style="font-size: 11px; color: var(--text-gray);">現在の状態</div>
+                <div class="stat-val" :style="{ color: totalPoints >= 280 ? '#ff2d55' : 'var(--accent-orange)' }">
+                    {{ currentStatusText }}
+                </div>
+            </div>
+            <div class="stat-box">
+                <div style="font-size: 11px; color: var(--text-gray);">ハートまでの残り</div>
+                <div class="stat-val" style="color: #444;">
+                    {{ Math.max(0, 280 - totalPoints) }} <span style="font-size: 12px; font-weight: normal;">p</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💡 自動アドバイス機能 -->
+        <div class="advice-box" :style="totalPoints >= 280 ? 'background:rgba(52,197,89,0.08); color:#1e7e34; border-color:rgba(52,197,89,0.2);' : ''">
+            <div v-if="totalPoints >= 280">
+                🎉 <strong>おめでとうございます！</strong> 必要ポイントを満たしました。シーズンハートを獲得可能です！
+            </div>
+            <div v-else>
+                💡 <strong>連れ歩きアドバイス:</strong><br>
+                現在のアイテム取得状態の場合、あと <strong>{{ remainingDaysNeeded }} 日</strong> 連れ歩き（デート）をすれば、280p（シーズンハート）に到達します！
+                <span v-if="walkDays + remainingDaysNeeded > 77" style="color: var(--accent-red); display: block; margin-top: 4px; font-weight: bold;">
+                    ⚠️ 注意: 季節の残り日数(最大77日)を超えてしまうため、魔法かエモートをいくつか追加で交換する必要があります。
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚙️ 作戦・プリセット切り替え -->
+    <div class="preset-group">
+        <button class="btn-sm" :class="{'btn-active': currentPreset === 'custom'}" @click="currentPreset = 'custom'">自由に入力</button>
+        <button class="btn-sm" @click="applyPreset('no-magic')">🧪 魔法全スルー計画</button>
+        <button class="btn-sm" @click="applyPreset('all-buy')">💰 即コンプ計画(連れ歩き0)</button>
+        <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
+    </div>
+
+    <!-- 👣 連れ歩き（同行）設定 -->
+    <div class="section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold; font-size: 14px;">👣 精霊との連れ歩き（同行）日数</span>
+            <span style="font-weight: bold; color: var(--accent-blue);">+{{ walkDays * 10 }} p</span>
+        </div>
+        <div class="walk-input-area">
+            <input type="range" v-model.number="walkDays" min="0" max="77" step="1" @input="currentPreset = 'custom'">
+            <input type="number" v-model.number="walkDays" min="0" max="77" @input="currentPreset = 'custom'">
+            <span style="font-size: 13px; font-weight: bold; color: var(--text-gray);">日目 / 77日</span>
+        </div>
+    </div>
+
+    <!-- 🗺️ 精霊ツリーシミュレータ -->
+    <div class="section-card" style="padding-bottom: 30px;">
+        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 精霊ツリー（下から上に進みます）</div>
+        
+        <div class="tree-container">
+            <div class="tree-line"></div>
+
+            <!-- 第1層 -->
+            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 0}">
+                <div class="tier-badge">1</div>
+                <div class="tier-header">
+                    <span class="tier-title">第1層（基礎ティア）</span>
+                    <span class="tier-req">次まで: 40p</span>
+                </div>
+                <div v-for="item in treeData.tier1" :key="item.id" class="item-row">
+                    <label class="item-label">
+                        <input type="checkbox" v-model="item.checked" @change="currentPreset = 'custom'">
+                        <span>{{ item.name }}</span>
+                    </label>
+                    <span class="item-p">+{{ item.points }}p</span>
+                </div>
+            </div>
+
+            <!-- 第2層 -->
+            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 40}">
+                <div class="tier-badge">2</div>
+                <div class="tier-header">
+                    <span class="tier-title">第2層（必要累計: 40p）</span>
+                    <span class="tier-req">次まで: 60p</span>
+                </div>
+                <div v-for="item in treeData.tier2" :key="item.id" class="item-row">
+                    <label class="item-label">
+                        <input type="checkbox" v-model="item.checked" :disabled="totalPoints < 40 && !item.checked" @change="currentPreset = 'custom'">
+                        <span :style="totalPoints < 40 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                    </label>
+                    <span class="item-p">+{{ item.points }}p</span>
+                </div>
+            </div>
+
+            <!-- 第3層 -->
+            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 100}">
+                <div class="tier-badge">3</div>
+                <div class="tier-header">
+                    <span class="tier-title">第3層（必要累計: 100p）</span>
+                    <span class="tier-req">次まで: 80p</span>
+                </div>
+                <div v-for="item in treeData.tier3" :key="item.id" class="item-row">
+                    <label class="item-label">
+                        <input type="checkbox" v-model="item.checked" :disabled="totalPoints < 100 && !item.checked" @change="currentPreset = 'custom'">
+                        <span :style="totalPoints < 100 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                    </label>
+                    <span class="item-p">+{{ item.points }}p</span>
+                </div>
+            </div>
+
+            <!-- 第4層 -->
+            <div class="tree-tier" :class="{'tier-unlocked': totalPoints >= 180}">
+                <div class="tier-badge">4</div>
+                <div class="tier-header">
+                    <span class="tier-title">第4層（必要累計: 180p）</span>
+                    <span class="tier-req">次まで: 100p</span>
+                </div>
+                <div v-for="item in treeData.tier4" :key="item.id" class="item-row">
+                    <label class="item-label">
+                        <input type="checkbox" v-model="item.checked" :disabled="totalPoints < 180 && !item.checked" @change="currentPreset = 'custom'">
+                        <span :style="totalPoints < 180 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
+                    </label>
+                    <span class="item-p">+{{ item.points }}p</span>
+                </div>
+            </div>
+
+            <!-- ゴール：シーズンハート -->
+            <div class="heart-goal" :class="{'heart-active': totalPoints >= 280}">
+                <span v-if="totalPoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
+                <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📚 仕様覚書メモ -->
+    <div class="info-memo">
+        <strong>📌 連れ歩きシステムの仕様メモ:</strong><br>
+        ・連れ歩きをしなくても、各層のアイテムをすべて取得すれば次の層へ進めます（即コンプ可）。<br>
+        ・先に連れ歩きでポイントを貯めて上の層を開放した後から、スルーしたアイテムを回収してもポイントは正常に加算（反映）されます。<br>
+        ・季節によって魔法や染料を全スルーできるケースがあります（光の修繕者やカーニバルは可能、渡りの季節は不可）。
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+    const { createApp, ref, computed, watch, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            const walkDays = ref(0);
+            const currentPreset = ref("custom");
+
+            // ツリーのデータ構造
+            const treeData = ref({
+                tier1: [
+                    { id: 't1_em1', name: '💨 エモートLv1 (初回解放)', points: 20, checked: true },
+                    { id: 't1_mag1', name: '🧪 魔法①', points: 20, checked: false }
+                ],
+                tier2: [
+                    { id: 't2_it1', name: '✨ 季節アイテム①', points: 30, checked: false },
+                    { id: 't2_mag2', name: '🧪 魔法②', points: 30, checked: false }
+                ],
+                tier3: [
+                    { id: 't3_em2', name: '💨 エモートLv2', points: 40, checked: false },
+                    { id: 't3_mag3', name: '🧪 魔法③', points: 40, checked: false }
+                ],
+                tier4: [
+                    { id: 't4_it2', name: '✨ 季節アイテム②', points: 50, checked: false },
+                    { id: 't4_pass', name: '♢ シーズンパス系枠', points: 50, checked: false }
+                ]
+            });
+
+            // 🧮 総ポイントの計算
+            const totalPoints = computed(() => {
+                let points = 0;
+                // チェックされたアイテムのポイントを合算
+                Object.values(treeData.value).forEach(tier => {
+                    tier.forEach(item => {
+                        if (item.checked) points += item.points;
+                    });
+                });
+                // 連れ歩きポイントを加算 (1日10p)
+                points += (walkDays.value * 10);
+                // 上限は280p
+                return Math.min(280, points);
+            });
+
+            // 👑 現在のステータス文字列
+            const currentStatusText = computed(() => {
+                const p = totalPoints.value;
+                if (p >= 280) return "コンプリート！";
+                if (p >= 180) return "第4層 進行中";
+                if (p >= 100) return "第3層 進行中";
+                if (p >= 40) return "第2層 進行中";
+                return "第1層 進行中";
+            });
+
+            // ⏱️ ハート獲得に必要な「残りの連れ歩き日数」
+            const remainingDaysNeeded = computed(() => {
+                let itemPoints = 0;
+                Object.values(treeData.value).forEach(tier => {
+                    tier.forEach(item => {
+                        if (item.checked) itemPoints += item.points;
+                    });
+                });
+                // 280pに届くために必要な総日数を計算
+                const totalDaysNeeded = Math.max(0, Math.ceil((280 - itemPoints) / 10));
+                // そこから「現在の連れ歩き日数」を引く
+                return Math.max(0, totalDaysNeeded - walkDays.value);
+            });
+
+            // 📋 プリセット作戦の適用
+            const applyPreset = (type) => {
+                currentPreset.value = type;
+                
+                if (type === 'reset') {
+                    walkDays.value = 0;
+                    setAllItems(false);
+                    treeData.value.tier1[0].checked = true; // エモート1だけON
+                    currentPreset.value = 'custom';
+                } 
+                else if (type === 'no-magic') {
+                    // 魔法だけ綺麗に外して、アイテム系は全部ONにする
+                    walkDays.value = 9; // 魔法を全スルーすると残り90p必要＝9日デート
+                    setAllItems(true);
+                    treeData.value.tier1[1].checked = false; // 魔法1 OFF
+                    treeData.value.tier2[1].checked = false; // 魔法2 OFF
+                    treeData.value.tier3[1].checked = false; // 魔法3 OFF
+                } 
+                else if (type === 'all-buy') {
+                    // 連れ歩き0日で、すべてのアイテムを交換（即コンプ）
+                    walkDays.value = 0;
+                    setAllItems(true);
+                }
+            };
+
+            const setAllItems = (status) => {
+                Object.values(treeData.value).forEach(tier => {
+                    tier.forEach(item => { item.checked = status; });
+                });
+            };
+
+            // ローカルストレージへの自動保存
+            const save = () => {
+                const data = {
+                    walkDays: walkDays.value,
+                    treeData: treeData.value,
+                    currentPreset: currentPreset.value
+                };
+                localStorage.setItem('sky_companion_calc_data', JSON.stringify(data));
+            };
+
+            const load = () => {
+                const saved = localStorage.getItem('sky_companion_calc_data');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.walkDays !== undefined) walkDays.value = parsed.walkDays;
+                        if (parsed.currentPreset) currentPreset.value = parsed.currentPreset;
+                        if (parsed.treeData) {
+                            // 保存されたチェック状態を復元
+                            Object.keys(parsed.treeData).forEach(tierKey => {
+                                if (treeData.value[tierKey]) {
+                                    parsed.treeData[tierKey].forEach((item, idx) => {
+                                        if (treeData.value[tierKey][idx]) {
+                                            treeData.value[tierKey][idx].checked = item.checked;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    } catch (e) { console.error(e); }
+                }
+            };
+
+            onMounted(() => { load(); });
+            watch([walkDays, treeData], () => { save(); }, { deep: true });
+
+            return {
+                walkDays, treeData, totalPoints, currentStatusText, remainingDaysNeeded, currentPreset,
+                applyPreset
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
