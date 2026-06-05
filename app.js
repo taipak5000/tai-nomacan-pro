@@ -5,9 +5,9 @@ createApp({
         return {
             // モード・設定
             isDarkMode: false,
-            isResetConfirming: false, // 初期化の確認フラグ
             showSettings: false,
             isWideScreen: window.innerWidth > 850,
+            isResetConfirming: false, // ✨ 初期化ボタンの確認状態
             
             // 表示セクション管理（カスタム窓の切り替え状態）
             visibleSections: {
@@ -28,16 +28,7 @@ createApp({
             // 効率最適化の目標本数
             targetCandlesForOptimization: 15,
             
-            // シェア系創作物
-            isItemsExpanded: true,
-            placedItems: [],
-            
-            // データの共有（復活の呪文）
-            generatedSpell: '',
-            inputSpell: '',
-            isConfirming: false,
-            
-            // エリア管理（初期デフォルトデータ）
+            // 🗺️ エリア管理（初期デフォルトデータ、あとで正確なデータに差し替えます！）
             areas: [
                 {
                     id: 'a1', name: '孤島', isExpanded: true,
@@ -66,6 +57,15 @@ createApp({
             // マイルート配列
             myRoutes: [],
             
+            // シェア系創作物
+            isItemsExpanded: true,
+            placedItems: [],
+            
+            // データの共有（復活の呪文）
+            generatedSpell: '',
+            inputSpell: '',
+            isConfirming: false,
+            
             // カスタム削除確認モーダルの状態
             deleteModal: {
                 show: false,
@@ -90,7 +90,6 @@ createApp({
         };
     },
     computed: {
-        // 現在選択中の総火種数
         totalLight() {
             let total = 0;
             this.areas.forEach(main => {
@@ -100,7 +99,6 @@ createApp({
             });
             return total;
         },
-        // 全体の総合効率（火種/秒）
         totalEfficiency() {
             let totalTime = 0;
             this.areas.forEach(main => {
@@ -110,7 +108,6 @@ createApp({
             });
             return totalTime > 0 ? this.totalLight / totalTime : 0;
         },
-        // 総所要時間のフォーマット
         formattedTotalTime() {
             let totalSeconds = 0;
             this.areas.forEach(main => {
@@ -124,7 +121,6 @@ createApp({
             if (h > 0) return `${h}時間${m}分${s}秒`;
             return `${m}分${s}秒`;
         },
-        // 火種からキャンドル本数への精錬計算
         calculated() {
             let light = this.totalLight;
             let candles = 0;
@@ -144,7 +140,6 @@ createApp({
                 nextReq: candles < this.thresholds.length ? `${nextReq} 火種` : 'MAX'
             };
         },
-        // イベント終了日までの残日数
         eventDays() {
             const today = new Date();
             today.setHours(0,0,0,0);
@@ -154,7 +149,6 @@ createApp({
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays >= 0 ? diffDays : 0;
         },
-        // 最終予想残キャンドル数
         projectedCandles() {
             const dailyGain = this.calculated.candles;
             return this.currentCandles + (dailyGain * this.eventDays) - this.plannedUsage;
@@ -163,24 +157,11 @@ createApp({
             return this.placedItems;
         }
     },
-    // 🛠️ Vue 3の仕様に合わせて、確実に関数として自動保存が実行されるように全面修正
     watch: {
-        areas: {
-            handler() { this.saveToLocalStorage(); },
-            deep: true
-        },
-        myRoutes: {
-            handler() { this.saveToLocalStorage(); },
-            deep: true
-        },
-        visibleSections: {
-            handler() { this.saveToLocalStorage(); },
-            deep: true
-        },
-        placedItems: {
-            handler() { this.saveToLocalStorage(); },
-            deep: true
-        },
+        areas: { handler() { this.saveToLocalStorage(); }, deep: true },
+        myRoutes: { handler() { this.saveToLocalStorage(); }, deep: true },
+        visibleSections: { handler() { this.saveToLocalStorage(); }, deep: true },
+        placedItems: { handler() { this.saveToLocalStorage(); }, deep: true },
         carryOverPercent() { this.saveToLocalStorage(); },
         currentCandles() { this.saveToLocalStorage(); },
         plannedUsage() { this.saveToLocalStorage(); },
@@ -196,7 +177,6 @@ createApp({
         this.applyTheme();
     },
     methods: {
-        // ✨ トースト通知
         showToast(message) {
             const id = this.toastIdCounter++;
             this.toasts.push({ id, message });
@@ -204,8 +184,6 @@ createApp({
                 this.toasts = this.toasts.filter(t => t.id !== id);
             }, 3000);
         },
-        
-        // 🌗 ダークモード切り替え
         toggleDarkMode() {
             this.isDarkMode = !this.isDarkMode;
         },
@@ -217,8 +195,6 @@ createApp({
             }
             localStorage.setItem('candle_calc_darkMode', this.isDarkMode);
         },
-        
-        // 🔥 今日の状況リセット
         dailyReset() {
             this.areas.forEach(main => {
                 main.subAreas.forEach(sub => {
@@ -227,15 +203,12 @@ createApp({
             });
             this.showToast("🔄 精錬状況をリセットしました！");
         },
-        
-        // ⚡ 効率自動最適化
         optimize() {
             let requiredLight = 0;
             const target = Math.min(this.targetCandlesForOptimization, this.thresholds.length);
             for (let i = 0; i < target; i++) {
                 requiredLight += this.thresholds[i];
             }
-            
             let allSubAreas = [];
             this.areas.forEach(main => {
                 main.subAreas.forEach(sub => {
@@ -244,20 +217,25 @@ createApp({
                 });
             });
             allSubAreas.sort((a, b) => b.eff - a.eff);
-            
             this.areas.forEach(main => main.subAreas.forEach(s => s.isSelected = false));
-            
             let currentLight = 0;
             for (let item of allSubAreas) {
                 if (currentLight >= requiredLight) break;
                 item.sub.isSelected = true;
                 currentLight += item.sub.light;
             }
-            
             this.showToast(`⚡ 目標 ${target}本 に向けた高効率エリアを自動選択しました！`);
         },
         
-        // 🗺️ エリア管理ロジック
+        // 🚨 サイトを完全に工場出荷時の状態に戻すメソッド
+        resetAllData() {
+            localStorage.clear();
+            this.showToast("💥 全データを初期化しました。再読み込みします...");
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        },
+
         isAllMainSelected(mainArea) {
             if (mainArea.subAreas.length === 0) return false;
             return mainArea.subAreas.every(sub => sub.isSelected);
@@ -348,8 +326,6 @@ createApp({
         cancelDelete() {
             this.deleteModal.show = false;
         },
-        
-        // 📍 マイルート管理ロジック
         saveCurrentRoute() {
             let selectedSubAreaIds = [];
             this.areas.forEach(main => {
@@ -359,12 +335,10 @@ createApp({
                     }
                 });
             });
-            
             if (selectedSubAreaIds.length === 0) {
                 this.showToast("⚠️ エリアが一つも選択されていません！");
                 return;
             }
-            
             const routeName = prompt("このマイルートの名前を入力してください:", `マイカスタムルート (${this.myRoutes.length + 1})`);
             if (!routeName) return;
             
@@ -375,7 +349,6 @@ createApp({
                 memo: '',
                 selectedIds: selectedSubAreaIds
             });
-            
             this.showToast(`💾 ルート「${routeName}」を保存しました！`);
         },
         applyRoute(route) {
@@ -423,8 +396,6 @@ createApp({
                 eff: totalSeconds > 0 ? light / totalSeconds : 0
             };
         },
-        
-        // 📦 シェア系創作物管理ロジック
         addItem() {
             this.placedItems.push({
                 id: 'item_' + Date.now(),
@@ -443,7 +414,7 @@ createApp({
         rePlaceItem(id) {
             const item = this.placedItems.find(item => item.id === id);
             if (item) {
-                item.placedDate = new Date().toISOString().split('T')[0];
+                item.placedDate = new Date().toISOString().split('T')[0],
                 item.isSuspended = false;
                 this.showToast("♻️ アイテムを本日付で再設置しました！");
             }
@@ -469,8 +440,6 @@ createApp({
             const item = this.placedItems.find(item => item.id === id);
             if (item && newDate) item.placedDate = newDate;
         },
-        
-        // 🧙‍♂️ データの共有
         generateSpell() {
             const dataToPack = {
                 areas: this.areas,
@@ -521,8 +490,6 @@ createApp({
                 this.showToast("❌ 呪文が間違っているか、データが壊れています");
             }
         },
-        
-        // 💾 ローカルストレージ連携
         saveToLocalStorage() {
             localStorage.setItem('candle_calc_areas', JSON.stringify(this.areas));
             localStorage.setItem('candle_calc_myRoutes', JSON.stringify(this.myRoutes));
@@ -565,15 +532,6 @@ createApp({
             if (localStorage.getItem('candle_calc_darkMode')) {
                 this.isDarkMode = localStorage.getItem('candle_calc_darkMode') === 'true';
             }
-            // 🚨 サイトを完全に初期状態に戻す
-resetAllData() {
-    localStorage.clear(); // 保存データをすべて削除
-    this.showToast("💥 すべてのデータを初期化しました。再読み込みします...");
-    setTimeout(() => {
-        location.reload(); // ページをリロードして初期状態を読み込む
-    }, 1000);
-},
-
         }
     }
 }).mount('#app');
