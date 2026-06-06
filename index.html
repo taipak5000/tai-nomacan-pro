@@ -627,6 +627,21 @@ body {
         setup() {
             const thresholds = [94, 188, 282, 376, 470, 609, 748, 887, 1026, 1165, 1343, 1521, 1699, 1877, 2055, 2268, 2481, 2719, 3207, 4195, 6195, 10195, 18195];
             
+            // 🌓 ダークモード用の設定（ここを追加しました）
+            const isDarkMode = ref(false);
+
+            const toggleTheme = () => {
+                isDarkMode.value = !isDarkMode.value;
+                localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
+            };
+
+            const applyThemeToDOM = () => {
+                document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+            };
+
+            watch(isDarkMode, () => { applyThemeToDOM(); });
+            // ------------------------------------------------
+
             const areas = ref([]);
             const placedItems = ref([]); 
             const carryOverPercent = ref(0.0);
@@ -807,31 +822,28 @@ body {
                 }
             };
 
-            // マイルート保存
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => { if (sub.isSelected) selectedIds.push(sub.id); });
                 });
                 
-                // 🚫 alert() を廃止し、3秒間インラインでエラーを表示
                 if (selectedIds.length === 0) {
                     routeError.value = "⚠️ エリアが一つも選択されていません。上のエリア管理でチェックを入れてから保存してください。";
                     setTimeout(() => { routeError.value = ""; }, 4000);
                     return;
                 }
                 
-                routeError.value = ""; // エラーをクリア
+                routeError.value = "";
                 myRoutes.value.push({
                     id: uuid(),
                     name: `マイルート ${myRoutes.value.length + 1}`,
                     memo: "",
                     selectedSubAreaIds: selectedIds,
-                    isExpanded: false // 初期状態は閉じにする
+                    isExpanded: false
                 });
             };
 
-            // ルートに含まれるエリア名をカンマ区切りで抽出する関数
             const getRouteAreaNames = (route) => {
                 const names = [];
                 areas.value.forEach(area => {
@@ -959,14 +971,25 @@ body {
 
             const cancelDelete = () => { deleteModal.value.show = false; };
 
+            // 🌟 既存の onMounted にテーマの初期読み込み処理をブレンドしました
             onMounted(() => {
+                const savedTheme = localStorage.getItem('sky_app_theme');
+                if (savedTheme) {
+                    isDarkMode.value = (savedTheme === 'dark');
+                } else {
+                    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                applyThemeToDOM();
+
                 load();
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
             watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections], () => { save(); }, { deep: true });
 
+            // 🌟 最後の return に「isDarkMode」と「toggleTheme」をばっちり追加してあります
             return {
+                isDarkMode, toggleTheme,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
                 showSettings, showResetModal, myRoutes, visibleSections, routeError,
@@ -978,12 +1001,3 @@ body {
         }
     }).mount('#app');
 </script>
-
-<footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
-    © 2026 キャンドル計算機 | 関連ツール: 
-    <a href="share.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📍 創作物期限管理</a> | 
-    <a href="companion.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">✨ 精霊同行計算機</a>
-    <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
-</footer>
-</body>
-</html>
