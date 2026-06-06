@@ -5,47 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky キャンドル計算機 (Web版)</title>
     <style>
-       /* 🎨 ライトモード標準の共通色 */
-:root {
-    --bg-color: #f2f2f7;
-    --card-bg: #ffffff;
-    --text-color: #000000;
-    --text-gray: #8e8e93;
-    --border-color: #e5e5ea;
-    --input-bg: #fafafa;
-    --tab-bg: #e5e5ea;
-    --tab-btn-active: #ffffff;
-    --stat-box-bg: #fdfdfd;
-    
-    /* 既存のアクセントカラーはそのまま */
-    --accent-blue: #007aff;
-    --accent-orange: #ff9500;
-    --accent-purple: #af52de;
-    --accent-green: #34c759;
-}
+   /* 🎨 ライトモード標準の共通色 */
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-color: #000000;
+            --text-gray: #8e8e93;
+            --border-color: #e5e5ea;
+            --input-bg: #fafafa;
+            --tab-bg: #e5e5ea;
+            --tab-btn-active: #ffffff;
+            --stat-box-bg: #fdfdfd;
+            
+            /* 既存のアクセントカラーはそのまま */
+            --accent-blue: #007aff;
+            --accent-orange: #ff9500;
+            --accent-purple: #af52de;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30; /* 不足していた赤を追加 */
+        }
 
-/* 🌙 ダークモード用の共通色 */
-[data-theme="dark"] {
-    --bg-color: #0c081a;
-    --card-bg: #1b1535;
-    --text-color: #ffffff;
-    --text-gray: #aaa4c4;
-    --border-color: rgba(255, 255, 255, 0.15);
-    --input-bg: rgba(0, 0, 0, 0.25);
-    --tab-bg: rgba(255, 255, 255, 0.1);
-    --tab-btn-active: rgba(255, 255, 255, 0.15);
-    --stat-box-bg: rgba(255, 255, 255, 0.04);
-}
+        /* 🌙 ダークモード用の共通色 */
+        [data-theme="dark"] {
+            --bg-color: #0c081a;
+            --card-bg: #1b1535;
+            --text-color: #ffffff;
+            --text-gray: #aaa4c4;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(0, 0, 0, 0.25);
+            --tab-bg: rgba(255, 255, 255, 0.1);
+            --tab-btn-active: rgba(255, 255, 255, 0.15);
+            --stat-box-bg: rgba(255, 255, 255, 0.04);
+        }
 
-/* 💡 bodyやカードの固定カラー（#fff など）を、上記の変数（var(...)）に書き換えます */
-body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-.section-card { /* もしくは .card など既存のクラス名 */
-    background: var(--card-bg);
-}
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
         .container {
             max-width: 1000px;
@@ -123,11 +120,18 @@ body {
             font-size: 18px;
         }
 
-        input[type="number"], input[type="text"], input[type="date"], select {
-            padding: 8px;
+        /* 🔧 入力欄・セレクトボックス・テキストエリアの共通ダークモード対応 */
+        input[type="number"], input[type="text"], input[type="date"], select, textarea {
+            background-color: var(--input-bg);
+            color: var(--text-color);
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 14px;
+            padding: 8px;
+            font-family: inherit;
+        }
+
+        input[type="number"], input[type="date"], select {
             text-align: right;
             width: 80px;
         }
@@ -217,12 +221,13 @@ body {
             padding-left: 32px; 
         }
         
+        /* 🔧 開閉ボタンの背景を白固定からCSS変数へ */
         .expand-toggle-btn {
             display: flex;
             align-items: center;
             gap: 6px;
             padding: 6px 10px;
-            background: #ffffff;
+            background: var(--stat-box-bg);
             border: 1px solid var(--border-color);
             box-shadow: 0 2px 5px rgba(0,0,0,0.03);
             border-radius: 8px;
@@ -240,8 +245,9 @@ body {
             margin-top: 12px;
         }
 
+        /* 🔧 サブエリアの背景を白固定からCSS変数へ */
         .subarea-item {
-            background: #ffffff;
+            background: var(--stat-box-bg);
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 12px;
@@ -249,7 +255,8 @@ body {
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .subarea-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-        .subarea-row2 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-left: 32px; font-size: 13px; color: #666; }
+        /* 🔧 サブエリアの文字色を #666 固定から変数へ */
+        .subarea-row2 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-left: 32px; font-size: 13px; color: var(--text-gray); }
         .subarea-row3 { display: flex; align-items: center; justify-content: space-between; padding-left: 32px; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 8px; }
         
         .btn-action-group {
@@ -312,7 +319,8 @@ body {
             cursor: pointer;
         }
 
-        .modal-btn-cancel { background: #e5e5ea; color: #333; }
+        /* 🔧 キャンセルボタンの色指定をダークモード対応へ */
+        .modal-btn-cancel { background: var(--tab-bg); color: var(--text-color); }
         .modal-btn-delete { background: var(--accent-red); color: white; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
