@@ -206,6 +206,10 @@ body {
 <div class="container" id="app">
     <header>
     <h1>創作物期限管理 (14日間)</h1>
+        <button class="theme-toggle-btn" @click="toggleTheme">
+    <span v-if="isDarkMode">🌙 ダーク</span>
+    <span v-else>☀️ ライト</span>
+</button>
     <div style="display: flex; gap: 8px;">
         <a href="index.html" class="btn-outline">📊 計算機</a>
         <a href="companion.html" class="btn-outline">✨ 精霊同行</a>
@@ -277,7 +281,31 @@ body {
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
     createApp({
-        setup() {
+        setup()const isDarkMode = ref(false);
+
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+    localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
+};
+
+const applyThemeToDOM = () => {
+    document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+};
+
+watch(isDarkMode, () => { applyThemeToDOM(); });
+
+// 既存の load() や onMounted() の中に以下を追記します
+onMounted(() => {
+    const savedTheme = localStorage.getItem('sky_app_theme');
+    if (savedTheme) {
+        isDarkMode.value = (savedTheme === 'dark');
+    } else {
+        isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    applyThemeToDOM();
+    
+    // ここから下は既存のload処理...
+}); {
             const placedItems = ref([]);
             const uuid = () => crypto.randomUUID();
 
