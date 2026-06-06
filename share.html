@@ -4,47 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky シェア系創作物管理ツール</title>
-   /* 🎨 ライトモード標準の共通色 */
-:root {
-    --bg-color: #f2f2f7;
-    --card-bg: #ffffff;
-    --text-color: #000000;
-    --text-gray: #8e8e93;
-    --border-color: #e5e5ea;
-    --input-bg: #fafafa;
-    --tab-bg: #e5e5ea;
-    --tab-btn-active: #ffffff;
-    --stat-box-bg: #fdfdfd;
-    
-    /* 既存のアクセントカラーはそのまま */
-    --accent-blue: #007aff;
-    --accent-orange: #ff9500;
-    --accent-purple: #af52de;
-    --accent-green: #34c759;
-}
+    <style>
+        /* 🎨 ライトモード標準の共通色 */
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-color: #000000;
+            --text-gray: #8e8e93;
+            --border-color: #e5e5ea;
+            --input-bg: #fafafa;
+            --tab-bg: #e5e5ea;
+            --tab-btn-active: #ffffff;
+            --stat-box-bg: #fdfdfd;
+            
+            /* アクセントカラー */
+            --accent-blue: #007aff;
+            --accent-orange: #ff9500;
+            --accent-purple: #af52de;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30;
+        }
 
-/* 🌙 ダークモード用の共通色 */
-[data-theme="dark"] {
-    --bg-color: #0c081a;
-    --card-bg: #1b1535;
-    --text-color: #ffffff;
-    --text-gray: #aaa4c4;
-    --border-color: rgba(255, 255, 255, 0.15);
-    --input-bg: rgba(0, 0, 0, 0.25);
-    --tab-bg: rgba(255, 255, 255, 0.1);
-    --tab-btn-active: rgba(255, 255, 255, 0.15);
-    --stat-box-bg: rgba(255, 255, 255, 0.04);
-}
+        /* 🌙 ダークモード用の共通色 */
+        [data-theme="dark"] {
+            --bg-color: #0c081a;
+            --card-bg: #1b1535;
+            --text-color: #ffffff;
+            --text-gray: #aaa4c4;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(0, 0, 0, 0.25);
+            --tab-bg: rgba(255, 255, 255, 0.1);
+            --tab-btn-active: rgba(255, 255, 255, 0.15);
+            --stat-box-bg: rgba(255, 255, 255, 0.04);
+        }
 
-/* 💡 bodyやカードの固定カラー（#fff など）を、上記の変数（var(...)）に書き換えます */
-body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-.section-card { /* もしくは .card など既存のクラス名 */
-    background: var(--card-bg);
-}
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px 8px;
+        }
 
         .container {
             max-width: 600px;
@@ -60,8 +61,19 @@ body {
         }
 
         h1 {
-            font-size: 20px;
+            font-size: 18px;
             margin: 0;
+        }
+
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
         }
 
         .section-card {
@@ -101,7 +113,7 @@ body {
         }
 
         .item-card {
-            background: #ffffff;
+            background: var(--card-bg);
             padding: 14px;
             border-radius: 8px;
             margin-bottom: 12px;
@@ -135,6 +147,8 @@ body {
             border-radius: 6px;
             font-size: 14px;
             box-sizing: border-box;
+            background-color: var(--input-bg);
+            color: var(--text-color);
         }
 
         input[type="text"] { width: 100%; }
@@ -177,7 +191,7 @@ body {
         .badge-red { background: rgba(255,59,48,0.15); color: var(--accent-red); }
         .badge-yellow { background: rgba(255,149,0,0.15); color: var(--accent-orange); }
         .badge-green { background: rgba(52,199,89,0.15); color: var(--accent-green); }
-        .badge-gray { background: #e5e5ea; color: #8e8e93; }
+        .badge-gray { background: rgba(142,142,147,0.15); color: var(--text-gray); }
 
         .action-links {
             display: flex;
@@ -205,17 +219,16 @@ body {
 
 <div class="container" id="app">
     <header>
-    <h1>創作物期限管理 (14日間)</h1>
-        <button class="theme-toggle-btn" @click="toggleTheme">
-    <span v-if="isDarkMode">🌙 ダーク</span>
-    <span v-else>☀️ ライト</span>
-</button>
-    <div style="display: flex; gap: 8px;">
-        <a href="index.html" class="btn-outline">📊 計算機</a>
-        <a href="companion.html" class="btn-outline">✨ 精霊同行</a>
-    </div>
-</header>
-
+        <h1>創作物期限管理 (14日間)</h1>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="theme-toggle-btn" @click="toggleTheme">
+                <span v-if="isDarkMode">🌙 ダーク</span>
+                <span v-else>☀️ ライト</span>
+            </button>
+            <a href="index.html" class="btn-outline">📊 計算機</a>
+            <a href="companion.html" class="btn-outline">✨ 精霊同行</a>
+        </div>
+    </header>
 
     <div class="section-card">
         <div class="section-header">📈 現在の状態</div>
@@ -281,35 +294,26 @@ body {
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
     createApp({
-        setup()const isDarkMode = ref(false);
+        setup() {
+            // 🌓 ダークモード用の設定
+            const isDarkMode = ref(false);
 
-const toggleTheme = () => {
-    isDarkMode.value = !isDarkMode.value;
-    localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
-};
+            const toggleTheme = () => {
+                isDarkMode.value = !isDarkMode.value;
+                localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
+            };
 
-const applyThemeToDOM = () => {
-    document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
-};
+            const applyThemeToDOM = () => {
+                document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+            };
 
-watch(isDarkMode, () => { applyThemeToDOM(); });
+            watch(isDarkMode, () => { applyThemeToDOM(); });
 
-// 既存の load() や onMounted() の中に以下を追記します
-onMounted(() => {
-    const savedTheme = localStorage.getItem('sky_app_theme');
-    if (savedTheme) {
-        isDarkMode.value = (savedTheme === 'dark');
-    } else {
-        isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    applyThemeToDOM();
-    
-    // ここから下は既存のload処理...
-}); {
+            // 既存の設定
             const placedItems = ref([]);
             const uuid = () => crypto.randomUUID();
 
-            // 🔒 データの読み込み (計算機と同じキーから読み込む)
+            // 🔒 データの読み込み
             const load = () => {
                 const saved = localStorage.getItem('sky_tracker_storage');
                 if (saved) {
@@ -328,7 +332,7 @@ onMounted(() => {
                 }
             };
 
-            // 💾 データの保存 (既存の計算機データを壊さず、自分のデータだけ上書き)
+            // 💾 データの保存
             const save = () => {
                 const saved = localStorage.getItem('sky_tracker_storage');
                 let currentData = {};
@@ -336,9 +340,7 @@ onMounted(() => {
                     try { currentData = JSON.parse(saved); } catch (e) { currentData = {}; }
                 }
                 
-                // 創作物管理のデータだけをマージする
                 currentData.placedItems = placedItems.value;
-                
                 localStorage.setItem('sky_tracker_storage', JSON.stringify(currentData));
             };
 
@@ -362,7 +364,6 @@ onMounted(() => {
                 });
             });
 
-            // ダッシュボード用の簡易統計計算
             const stats = computed(() => {
                 let active = 0; let warning = 0; let alertCount = 0;
                 placedItems.value.forEach(item => {
@@ -377,7 +378,10 @@ onMounted(() => {
                 return { active, warning, alert: alertCount };
             });
 
-            const formatDateForInput = (date) => date.toISOString().split('T')[0];
+            const formatDateForInput = (date) => {
+                if (!date || isNaN(date.getTime())) return "";
+                return date.toISOString().split('T')[0];
+            };
             
             const updateItemDate = (id, dateString) => {
                 if (!dateString) return;
@@ -390,10 +394,24 @@ onMounted(() => {
             const rePlaceItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) { item.placedDate = new Date(); item.isSuspended = false; } };
             const suspendItem = (id) => { const item = placedItems.value.find(i => i.id === id); if (item) item.isSuspended = true; };
 
-            onMounted(() => { load(); });
+            onMounted(() => {
+                // テーマの読み込み
+                const savedTheme = localStorage.getItem('sky_app_theme');
+                if (savedTheme) {
+                    isDarkMode.value = (savedTheme === 'dark');
+                } else {
+                    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                applyThemeToDOM();
+
+                // 既存データの読み込み
+                load();
+            });
+
             watch(placedItems, () => { save(); }, { deep: true });
 
             return {
+                isDarkMode, toggleTheme,
                 placedItems, sortedPlacedItems, stats, getDaysLeft, getExpiryDateString, formatDateForInput,
                 updateItemDate, addItem, removeItem, rePlaceItem, suspendItem
             };
