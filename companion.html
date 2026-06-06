@@ -235,50 +235,8 @@
         .days-num { font-size: 32px; font-weight: bold; color: var(--accent-blue); font-variant-numeric: tabular-nums; }
         .days-unit { font-size: 14px; color: var(--text-gray); margin-left: 4px; font-weight: bold; }
 
-        /* 精霊ツリー */
-        .tree-container { display: flex; flex-direction: column-reverse; gap: 16px; position: relative; padding-left: 20px; }
-        .tree-line { position: absolute; left: 28px; top: 20px; bottom: 20px; width: 3px; background: var(--border-color); z-index: 1; }
-        
-        .tree-tier {
-            position: relative;
-            z-index: 2;
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px;
-            padding-left: 36px;
-            transition: all 0.2s;
-        }
-
-        .tier-unlocked { border-color: var(--accent-orange); box-shadow: 0 2px 10px rgba(255,149,0,0.08); background: rgba(255, 149, 0, 0.01); }
-        
-        .tier-badge {
-            position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px;
-            border-radius: 50%; background: var(--border-color); color: #fff; font-size: 11px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; border: 2px solid #fff;
-        }
-        .tier-unlocked .tier-badge { background: var(--accent-orange); }
-
-        .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; }
-        .tier-title { font-size: 14px; font-weight: bold; }
-        
-        /* 🏷️ 動的テキストが入る部分のスタイル調整 */
-        .tier-req { font-size: 11px; color: var(--text-gray); background: #f2f2f7; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
-        .tier-unlocked .tier-req { color: var(--accent-green); background: rgba(52,199,89,0.1); }
-
-        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
-        .item-label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; user-select: none; }
-        .item-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-        .item-p { font-size: 12px; color: var(--text-gray); font-weight: 500; }
-
         .advice-box { background: rgba(0, 122, 255, 0.05); border: 1px solid rgba(0, 122, 255, 0.2); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: #0056b3; }
         
-        .heart-goal {
-            background: #fff; border: 2px solid var(--border-color); border-radius: 12px; padding: 14px;
-            text-align: center; font-weight: bold; position: relative; z-index: 2; transition: all 0.3s;
-        }
-        .heart-active { border-color: #ff2d55; background: rgba(255, 45, 85, 0.03); color: #ff2d55; box-shadow: 0 4px 12px rgba(255,45,85,0.15); }
-
         .info-memo { font-size: 12px; color: var(--text-gray); margin-top: 24px; padding-left: 4px; line-height: 1.6; }
         
         .total-goal-banner {
@@ -316,6 +274,179 @@
             transition: all 0.2s;
         }
         .memo-textarea:focus { background: #fff; border-color: var(--accent-blue); outline: none; }
+
+
+        /* 🌌 💻 ゲーム画面風ツリー専用スタイル */
+        .tree-card {
+            background: linear-gradient(180deg, #1b1535 0%, #0c081a 100%);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tree-container {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 24px;
+            position: relative;
+            padding: 15px 0;
+        }
+
+        /* 中央を縦に走る星座の光の線 */
+        .tree-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 20px;
+            bottom: 100px;
+            width: 2px;
+            background: linear-gradient(to top, rgba(255,255,255,0.05), rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.05));
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            z-index: 1;
+        }
+        
+        .tree-tier {
+            position: relative;
+            z-index: 2;
+            border-top: 1px dashed rgba(255, 255, 255, 0.12);
+            padding-top: 14px;
+        }
+        .tree-container .tree-tier:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.45);
+            padding: 0 4px;
+        }
+        .tier-title { font-weight: bold; letter-spacing: 0.5px; }
+        
+        .tier-req { font-size: 11px; color: #ff9500; background: rgba(255, 149, 0, 0.12); padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .tier-unlocked .tier-req { color: #34c759; background: rgba(52, 199, 89, 0.18); }
+
+        /* 🎮 ゲーム風のボタン（ノード）配置エリア */
+        .game-node-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 36px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .game-node-btn {
+            width: 84px;
+            height: 84px;
+            background: rgba(25, 22, 38, 0.85);
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px;
+            box-sizing: border-box;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.1, 0.8, 0.2, 1);
+            user-select: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .game-node-btn:hover {
+            background: rgba(45, 40, 70, 0.9);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.04);
+        }
+
+        /* 🧡 解放（取得済み）のオレンジに光るエフェクト */
+        .game-node-btn.node-checked {
+            border-color: #ff9500;
+            background: rgba(255, 149, 0, 0.15);
+            box-shadow: 0 0 16px rgba(255, 149, 0, 0.5), inset 0 0 8px rgba(255, 149, 0, 0.25);
+        }
+        .game-node-btn.node-checked .node-icon {
+            filter: drop-shadow(0 0 5px rgba(255, 149, 0, 0.7));
+        }
+
+        /* 🔒 未解放（ロック）の半透明表現 */
+        .game-node-btn.node-disabled {
+            opacity: 0.22;
+            pointer-events: none;
+            filter: grayscale(50%);
+            box-shadow: none;
+        }
+
+        /* エモートレベル（右上） */
+        .node-level {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1px 4px;
+            border-radius: 3px;
+            line-height: 1;
+        }
+
+        /* 中央アイコン */
+        .node-icon {
+            font-size: 26px;
+            margin-top: auto;
+            margin-bottom: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+        }
+
+        /* 下部の名称と獲得ポイント */
+        .node-name {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            margin-bottom: 1px;
+        }
+
+        .node-cost {
+            font-size: 10px;
+            color: #ffcc00;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            line-height: 1;
+        }
+
+        /* 🧡 最上層シーズンハートの特別仕様配置 */
+        .heart-goal-container {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            margin-top: 12px;
+        }
+        .heart-node {
+            width: 96px;
+            height: 96px;
+            border-color: rgba(255, 45, 85, 0.25);
+        }
+        .heart-node.node-checked {
+            border-color: #ff2d55;
+            background: rgba(255, 45, 85, 0.15);
+            box-shadow: 0 0 18px rgba(255, 45, 85, 0.6), inset 0 0 8px rgba(255, 45, 85, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -440,76 +571,92 @@
                 </div>
             </div>
 
-            <div class="section-card" style="padding-bottom: 30px;">
-                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
+            <div class="tree-card" style="padding-bottom: 30px;">
+                <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
                 
                 <div class="tree-container">
                     <div class="tree-line"></div>
 
                     <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
-                        <div class="tier-badge">1</div>
                         <div class="tier-header">
                             <span class="tier-title">第1層（基礎ティア）</span>
                             <span class="tier-req">{{ activePoints >= 40 ? '🎉 解放完了' : 'あと ' + (40 - activePoints) + 'p' }}</span>
                         </div>
-                        <div v-for="item in activeSpirit.treeData.tier1" :key="item.id" class="item-row">
-                            <label class="item-label">
-                                <input type="checkbox" v-model="item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                                <span>{{ item.name }}</span>
-                            </label>
-                            <span class="item-p">+{{ item.points }}p</span>
+                        <div class="game-node-wrapper">
+                            <div v-for="item in activeSpirit.treeData.tier1" :key="item.id" 
+                                 class="game-node-btn" :class="{'node-checked': item.checked}"
+                                 @click="item.checked = !item.checked; activeSpirit.currentPreset = 'custom'">
+                                <div v-if="getLevel(item.name)" class="node-level">{{ getLevel(item.name) }}</div>
+                                <div class="node-icon">{{ getIcon(item.name) }}</div>
+                                <div class="node-name">{{ cleanName(item.name) }}</div>
+                                <div class="node-cost">🕯️ +{{ item.points }}p</div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 100}">
-                        <div class="tier-badge">2</div>
                         <div class="tier-header">
                             <span class="tier-title">第2層（必要累計: 40p）</span>
                             <span class="tier-req">{{ activePoints >= 100 ? '🎉 解放完了' : 'あと ' + (activePoints < 40 ? 60 : 100 - activePoints) + 'p' }}</span>
                         </div>
-                        <div v-for="item in activeSpirit.treeData.tier2" :key="item.id" class="item-row">
-                            <label class="item-label">
-                                <input type="checkbox" v-model="item.checked" :disabled="activePoints < 40 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                                <span :style="activePoints < 40 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
-                            </label>
-                            <span class="item-p">+{{ item.points }}p</span>
+                        <div class="game-node-wrapper">
+                            <div v-for="item in activeSpirit.treeData.tier2" :key="item.id" 
+                                 class="game-node-btn" 
+                                 :class="{'node-checked': item.checked, 'node-disabled': activePoints < 40 && !item.checked}"
+                                 @click="if(!(activePoints < 40 && !item.checked)) { item.checked = !item.checked; activeSpirit.currentPreset = 'custom'; }">
+                                <div v-if="getLevel(item.name)" class="node-level">{{ getLevel(item.name) }}</div>
+                                <div class="node-icon">{{ getIcon(item.name) }}</div>
+                                <div class="node-name">{{ cleanName(item.name) }}</div>
+                                <div class="node-cost">🕯️ +{{ item.points }}p</div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 180}">
-                        <div class="tier-badge">3</div>
                         <div class="tier-header">
                             <span class="tier-title">第3層（必要累計: 100p）</span>
                             <span class="tier-req">{{ activePoints >= 180 ? '🎉 解放完了' : 'あと ' + (activePoints < 100 ? 80 : 180 - activePoints) + 'p' }}</span>
                         </div>
-                        <div v-for="item in activeSpirit.treeData.tier3" :key="item.id" class="item-row">
-                            <label class="item-label">
-                                <input type="checkbox" v-model="item.checked" :disabled="activePoints < 100 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                                <span :style="activePoints < 100 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
-                            </label>
-                            <span class="item-p">+{{ item.points }}p</span>
+                        <div class="game-node-wrapper">
+                            <div v-for="item in activeSpirit.treeData.tier3" :key="item.id" 
+                                 class="game-node-btn" 
+                                 :class="{'node-checked': item.checked, 'node-disabled': activePoints < 100 && !item.checked}"
+                                 @click="if(!(activePoints < 100 && !item.checked)) { item.checked = !item.checked; activeSpirit.currentPreset = 'custom'; }">
+                                <div v-if="getLevel(item.name)" class="node-level">{{ getLevel(item.name) }}</div>
+                                <div class="node-icon">{{ getIcon(item.name) }}</div>
+                                <div class="node-name">{{ cleanName(item.name) }}</div>
+                                <div class="node-cost">🕯️ +{{ item.points }}p</div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 280}">
-                        <div class="tier-badge">4</div>
                         <div class="tier-header">
                             <span class="tier-title">第4層（必要累計: 180p）</span>
                             <span class="tier-req">{{ activePoints >= 280 ? '🎉 解放完了' : 'あと ' + (activePoints < 180 ? 100 : 280 - activePoints) + 'p' }}</span>
                         </div>
-                        <div v-for="item in activeSpirit.treeData.tier4" :key="item.id" class="item-row">
-                            <label class="item-label">
-                                <input type="checkbox" v-model="item.checked" :disabled="activePoints < 180 && !item.checked" @change="activeSpirit.currentPreset = 'custom'">
-                                <span :style="activePoints < 180 ? 'color:var(--text-gray);' : ''">{{ item.name }}</span>
-                            </label>
-                            <span class="item-p">+{{ item.points }}p</span>
+                        <div class="game-node-wrapper">
+                            <div v-for="item in activeSpirit.treeData.tier4" :key="item.id" 
+                                 class="game-node-btn" 
+                                 :class="{'node-checked': item.checked, 'node-disabled': activePoints < 180 && !item.checked}"
+                                 @click="if(!(activePoints < 180 && !item.checked)) { item.checked = !item.checked; activeSpirit.currentPreset = 'custom'; }">
+                                <div v-if="getLevel(item.name)" class="node-level">{{ getLevel(item.name) }}</div>
+                                <div class="node-icon">{{ getIcon(item.name) }}</div>
+                                <div class="node-name">{{ cleanName(item.name) }}</div>
+                                <div class="node-cost">🕯️ +{{ item.points }}p</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="heart-goal" :class="{'heart-active': activePoints >= 280}">
-                        <span v-if="activePoints >= 280">🧡 シーズンハート解放完了！ 🎉</span>
-                        <span v-else style="color: var(--text-gray);">🔒 最上層: シーズンハート (累計280pで解放)</span>
+                    <div class="heart-goal-container">
+                        <div class="game-node-btn heart-node" :class="{'node-checked': activePoints >= 280}">
+                            <div class="node-level" style="color: #ff2d55;">MAX</div>
+                            <div class="node-icon">🧡</div>
+                            <div class="node-name" style="font-size: 10px; color: rgba(255,255,255,0.8);">最上層ハート</div>
+                            <div class="node-cost" style="color: #ff5e7e;">{{ activePoints >= 280 ? '🎉 獲得!' : '280p' }}</div>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -613,6 +760,23 @@
                 return Math.max(0, totalDaysNeeded - activeSpirit.value.walkDays);
             });
 
+            // 🛠️ 【文字列解析用ヘルパー関数】
+            const getIcon = (name) => {
+                if (name.includes('💨')) return '💨';
+                if (name.includes('🧪')) return '🧪';
+                if (name.includes('✨')) return '✨';
+                return '🎁';
+            };
+
+            const getLevel = (name) => {
+                const match = name.match(/Lv\.?\d+/);
+                return match ? match[0] : '';
+            };
+
+            const cleanName = (name) => {
+                return name.replace(/[💨🧪✨]/g, '').replace(/Lv\.?\d+/, '').replace(/\(.*?\)/g, '').trim();
+            };
+
             const incrementWalkDays = () => {
                 if (activeSpirit.value.walkDays < 77) {
                     activeSpirit.value.walkDays++;
@@ -692,7 +856,8 @@
             return {
                 activeIndex, spirits, activeSpirit, activePoints, totalHearts, activeCandleTotal,
                 activeStatusText, activeRemainingDays, getSpiritPoints,
-                incrementWalkDays, decrementWalkDays, applyPreset
+                incrementWalkDays, decrementWalkDays, applyPreset,
+                getIcon, getLevel, cleanName
             };
         }
     }).mount('#app');
