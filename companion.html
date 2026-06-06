@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky 精霊同行ポイント計算機</title>
     <style>
+        /* 🎨 カラー変数の定義（ライトモード標準） */
         :root {
             --bg-color: #f2f2f7;
             --card-bg: #ffffff;
@@ -15,6 +16,23 @@
             --accent-purple: #af52de;
             --accent-green: #34c759;
             --border-color: #e5e5ea;
+            --input-bg: #fafafa;
+            --tab-bg: #e5e5ea;
+            --tab-btn-active: #ffffff;
+            --stat-box-bg: #fdfdfd;
+        }
+
+        /* 🌙 ダークモード用のカラー上書き設定 */
+        [data-theme="dark"] {
+            --bg-color: #0c081a;
+            --card-bg: #1b1535;
+            --text-color: #ffffff;
+            --text-gray: #aaa4c4;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(0, 0, 0, 0.25);
+            --tab-bg: rgba(255, 255, 255, 0.1);
+            --tab-btn-active: rgba(255, 255, 255, 0.15);
+            --stat-box-bg: rgba(255, 255, 255, 0.04);
         }
 
         body {
@@ -24,6 +42,7 @@
             margin: 0;
             padding: 16px;
             line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -35,12 +54,12 @@
         header {
             text-align: center;
             margin-bottom: 24px;
+            position: relative;
         }
 
         h1 {
             font-size: 22px;
             margin: 0 0 4px 0;
-            color: #333;
         }
 
         .subtitle {
@@ -54,6 +73,7 @@
             gap: 8px;
             justify-content: center;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .btn-outline-blue {
@@ -68,6 +88,23 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+        }
+
+        /* 🌓 モード切替ボタンのスタイル */
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
         }
 
         .main-layout {
@@ -104,13 +141,14 @@
             border-radius: 14px;
             padding: 18px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: background-color 0.3s ease;
         }
 
         .spirit-tabs {
-            display: flex;
-            background: #e5e5ea;
+            background: var(--tab-bg);
             padding: 2px;
             border-radius: 9px;
+            display: flex;
             gap: 2px;
         }
 
@@ -127,12 +165,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #444;
+            color: var(--text-color);
         }
 
         .tab-btn.active {
-            background: #fff;
-            color: #000;
+            background: var(--tab-btn-active);
+            color: var(--text-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
@@ -154,7 +192,7 @@
         }
 
         .stat-box {
-            background: #fdfdfd;
+            background: var(--stat-box-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
             padding: 12px;
@@ -168,7 +206,7 @@
         }
 
         .progress-container {
-            background: #e5e5ea;
+            background: var(--border-color);
             border-radius: 8px;
             height: 12px;
             width: 100%;
@@ -194,13 +232,14 @@
             padding: 8px 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: #fff;
+            background: var(--card-bg);
+            color: var(--text-color);
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-sm:hover { background: #f5f5f7; }
+        .btn-sm:hover { filter: brightness(0.95); }
         .btn-active { background: rgba(255, 149, 0, 0.1); border-color: var(--accent-orange); color: var(--accent-orange); }
 
         .walk-input-area {
@@ -216,10 +255,10 @@
             height: 44px;
             border-radius: 50%;
             border: 1px solid var(--border-color);
-            background: #fff;
+            background: var(--card-bg);
+            color: var(--accent-blue);
             font-size: 20px;
             font-weight: bold;
-            color: var(--accent-blue);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -228,14 +267,14 @@
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .btn-counter:active { background: #f2f2f7; transform: scale(0.95); }
-        .btn-counter:disabled { color: var(--text-gray); background: #e5e5ea; cursor: not-allowed; box-shadow: none; }
+        .btn-counter:active { filter: brightness(0.9); transform: scale(0.95); }
+        .btn-counter:disabled { color: var(--text-gray); background: var(--border-color); cursor: not-allowed; box-shadow: none; }
 
         .counter-value { text-align: center; min-width: 100px; }
         .days-num { font-size: 32px; font-weight: bold; color: var(--accent-blue); font-variant-numeric: tabular-nums; }
         .days-unit { font-size: 14px; color: var(--text-gray); margin-left: 4px; font-weight: bold; }
 
-        .advice-box { background: rgba(0, 122, 255, 0.05); border: 1px solid rgba(0, 122, 255, 0.2); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: #0056b3; }
+        .advice-box { background: rgba(0, 122, 255, 0.05); border: 1px solid rgba(0, 122, 255, 0.2); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: var(--accent-blue); }
         
         .info-memo { font-size: 12px; color: var(--text-gray); margin-top: 24px; padding-left: 4px; line-height: 1.6; }
         
@@ -255,10 +294,11 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
-            background: #fafafa;
+            background: var(--input-bg);
+            color: var(--text-color);
             transition: all 0.2s;
         }
-        .calc-input:focus { background: #fff; border-color: var(--accent-blue); outline: none; }
+        .calc-input:focus { background: var(--card-bg); border-color: var(--accent-blue); outline: none; }
         
         .memo-textarea {
             width: 100%;
@@ -270,13 +310,13 @@
             font-size: 13px;
             resize: none;
             font-family: inherit;
-            background: #fafafa;
+            background: var(--input-bg);
+            color: var(--text-color);
             transition: all 0.2s;
         }
-        .memo-textarea:focus { background: #fff; border-color: var(--accent-blue); outline: none; }
+        .memo-textarea:focus { background: var(--card-bg); border-color: var(--accent-blue); outline: none; }
 
-
-        /* 🌌 💻 ゲーム画面風ツリー専用スタイル */
+        /* 🌌 ゲーム画面風ツリーエリア（縦線削除・常にゲーム風の暗闇） */
         .tree-card {
             background: linear-gradient(180deg, #1b1535 0%, #0c081a 100%);
             border-radius: 14px;
@@ -294,18 +334,7 @@
             padding: 15px 0;
         }
 
-        /* 中央を縦に走る星座の光の線 */
-        .tree-line {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 20px;
-            bottom: 100px;
-            width: 2px;
-            background: linear-gradient(to top, rgba(255,255,255,0.05), rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.05));
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-            z-index: 1;
-        }
+        /* ⚠️ 縦線（.tree-line）はご要望通り綺麗に削除しました */
         
         .tree-tier {
             position: relative;
@@ -332,7 +361,6 @@
         .tier-req { font-size: 11px; color: #ff9500; background: rgba(255, 149, 0, 0.12); padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         .tier-unlocked .tier-req { color: #34c759; background: rgba(52, 199, 89, 0.18); }
 
-        /* 🎮 ゲーム風のボタン（ノード）配置エリア */
         .game-node-wrapper {
             display: flex;
             justify-content: center;
@@ -366,7 +394,6 @@
             transform: scale(1.04);
         }
 
-        /* 🧡 解放（取得済み）のオレンジに光るエフェクト */
         .game-node-btn.node-checked {
             border-color: #ff9500;
             background: rgba(255, 149, 0, 0.15);
@@ -376,7 +403,6 @@
             filter: drop-shadow(0 0 5px rgba(255, 149, 0, 0.7));
         }
 
-        /* 🔒 未解放（ロック）の半透明表現 */
         .game-node-btn.node-disabled {
             opacity: 0.22;
             pointer-events: none;
@@ -384,7 +410,6 @@
             box-shadow: none;
         }
 
-        /* エモートレベル（右上） */
         .node-level {
             position: absolute;
             top: 4px;
@@ -398,7 +423,6 @@
             line-height: 1;
         }
 
-        /* 中央アイコン */
         .node-icon {
             font-size: 26px;
             margin-top: auto;
@@ -409,7 +433,6 @@
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
         }
 
-        /* 下部の名称と獲得ポイント */
         .node-name {
             font-size: 9px;
             color: rgba(255, 255, 255, 0.6);
@@ -429,7 +452,6 @@
             line-height: 1;
         }
 
-        /* 🧡 最上層シーズンハートの特別仕様配置 */
         .heart-goal-container {
             display: flex;
             justify-content: center;
@@ -453,7 +475,13 @@
 
 <div id="app" class="container">
     <header>
-        <h1>✨ Sky 精霊同行ポイント計算機</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="width: 80px;"></div> <h1>✨ Sky 精霊同行ポイント計算機</h1>
+            <button class="theme-toggle-btn" @click="toggleTheme">
+                <span v-if="isDarkMode">🌙 ダーク</span>
+                <span v-else>☀️ ライト</span>
+            </button>
+        </div>
         <div class="subtitle">連れ歩き日数とアイテム交換の最適化シミュレーター</div>
         
         <div class="header-nav">
@@ -501,8 +529,8 @@
                     </div>
                     <div class="stat-box">
                         <div style="font-size: 11px; color: var(--text-gray);">ハートまでの残り</div>
-                        <div class="stat-val" style="color: #444;">
-                            {{ Math.max(0, 280 - activePoints) }} <span style="font-size: 12px; font-weight: normal;">p</span>
+                        <div class="stat-val">
+                            {{ Math.max(0, 280 - activePoints) }} <span style="font-size: 12px; font-weight: normal; color: var(--text-gray);">p</span>
                         </div>
                     </div>
                 </div>
@@ -526,7 +554,7 @@
                 <button class="btn-sm" @click="applyPreset('reset')" style="color: var(--text-gray);">💥 リセット</button>
             </div>
 
-            <div class="section-card" style="border: 1px solid rgba(0, 122, 255, 0.15); background: rgba(0, 122, 255, 0.01);">
+            <div class="section-card" style="border: 1px solid var(--accent-blue); background: rgba(0, 122, 255, 0.01);">
                 <div style="font-weight: bold; font-size: 14px; margin-bottom: 12px; color: var(--accent-blue);">
                     📝 {{ activeSpirit.name }} の交換計画・メモ
                 </div>
@@ -537,7 +565,7 @@
                     </label>
                     <div style="display: flex; gap: 12px; align-items: center;">
                         <input type="text" v-model="activeSpirit.candleFormula" class="calc-input" placeholder="例: 15+20+35+100">
-                        <div style="font-size: 16px; font-weight: bold; min-width: 80px; text-align: right; color: #333;">
+                        <div style="font-size: 16px; font-weight: bold; min-width: 80px; text-align: right;">
                             ＝ {{ activeCandleTotal }} <span style="font-size: 12px; font-weight: normal; color: var(--text-gray);">本</span>
                         </div>
                     </div>
@@ -575,8 +603,6 @@
                 <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
                 
                 <div class="tree-container">
-                    <div class="tree-line"></div>
-
                     <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
                         <div class="tier-header">
                             <span class="tier-title">第1層（基礎ティア）</span>
@@ -666,18 +692,14 @@
     <div class="info-memo">
         <strong>📌 連れ歩きシステムの仕様メモ:</strong><br>
         ・連れ歩きをしなくても、各層のアイテムをすべて取得すれば次の層へ進めます。<br>
-        ・先にポイントを貯めて上の層を開放した後から、スルーしたアイテムを回収してもポイントは反映されます。<br>
-        ・季節によって魔法や染料を全スルーできるケースがあります。
+        ・先にポイントを貯めて上の層を開放した後から、スルーしたアイテムを回収してもポイントは反映されます。
     </div>
 
     <footer style="text-align: center; padding: 24px 16px; color: var(--text-gray); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); margin-top: 40px;">
         © 2026 精霊同行ポイント計算機 | 関連ツール: 
         <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📊 キャンドル計算機</a> | 
         <a href="share.html" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">📍 創作物期限管理</a>
-        <br>作成・ご意見: 
-        <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">
-            @Skyzztai
-        </a>
+        <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
     </footer>
 </div>
 
@@ -706,6 +728,7 @@
     createApp({
         setup() {
             const activeIndex = ref(0);
+            const isDarkMode = ref(false); // 🌓 ダークモード管理
 
             const spirits = ref([
                 { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s1') },
@@ -726,10 +749,7 @@
             };
 
             const activePoints = computed(() => getSpiritPoints(activeSpirit.value));
-
-            const totalHearts = computed(() => {
-                return spirits.value.filter(s => getSpiritPoints(s) >= 280).length;
-            });
+            const totalHearts = computed(() => spirits.value.filter(s => getSpiritPoints(s) >= 280).length);
 
             const activeCandleTotal = computed(() => {
                 if (!activeSpirit.value.candleFormula) return 0;
@@ -760,7 +780,6 @@
                 return Math.max(0, totalDaysNeeded - activeSpirit.value.walkDays);
             });
 
-            // 🛠️ 【文字列解析用ヘルパー関数】
             const getIcon = (name) => {
                 if (name.includes('💨')) return '💨';
                 if (name.includes('🧪')) return '🧪';
@@ -815,12 +834,34 @@
                 });
             };
 
+            // 🌓 テーマ切り替えロジック
+            const toggleTheme = () => {
+                isDarkMode.value = !isDarkMode.value;
+                localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
+            };
+
+            const applyThemeToDOM = () => {
+                document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+            };
+
+            watch(isDarkMode, () => { applyThemeToDOM(); });
+
             const save = () => {
                 const data = { activeIndex: activeIndex.value, spirits: spirits.value };
                 localStorage.setItem('sky_companion_v4_data', JSON.stringify(data));
             };
 
             const load = () => {
+                // テーマの読み込み
+                const savedTheme = localStorage.getItem('sky_app_theme');
+                if (savedTheme) {
+                    isDarkMode.value = (savedTheme === 'dark');
+                } else {
+                    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                applyThemeToDOM();
+
+                // データの読み込み
                 const saved = localStorage.getItem('sky_companion_v4_data');
                 if (saved) {
                     try {
@@ -857,7 +898,7 @@
                 activeIndex, spirits, activeSpirit, activePoints, totalHearts, activeCandleTotal,
                 activeStatusText, activeRemainingDays, getSpiritPoints,
                 incrementWalkDays, decrementWalkDays, applyPreset,
-                getIcon, getLevel, cleanName
+                getIcon, getLevel, cleanName, isDarkMode, toggleTheme
             };
         }
     }).mount('#app');
