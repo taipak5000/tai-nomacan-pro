@@ -325,6 +325,11 @@ body {
     <header>
         <h1 v-if="isWideScreen">Sky キャンドル計算機 (Web版)</h1>
         <h1 v-else>キャンドル計算機</h1>
+        <button class="theme-toggle-btn" @click="toggleTheme">
+    <span v-if="isDarkMode">🌙 ダーク</span>
+    <span v-else>☀️ ライト</span>
+</button>
+
         
        <div class="header-actions">
     <!-- 🔗 追加：精霊同行へのリンクボタン -->
