@@ -42,6 +42,9 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
         }
 
         .container {
@@ -273,6 +276,26 @@
         .flex-group { display: flex; align-items: center; gap: 4px; }
         .flex-group input { width: 65px !important; }
 
+        /* 🛠️ マイルート横伸び対策スタイル */
+        .route-path-box {
+            font-size: 11px;
+            color: var(--text-gray);
+            margin-top: 6px;
+            background: rgba(0,0,0,0.02);
+            padding: 4px 8px;
+            border-radius: 4px;
+            
+            /* 横伸びを徹底ガードして3点リーダー表示にする魔法 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        [data-theme="dark"] .route-path-box {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
         /* ⏱️ タイマーセクション用スタイル */
         .timer-box {
             background: rgba(0, 0, 0, 0.04);
@@ -351,6 +374,24 @@
 
         .modal-btn-cancel { background: var(--tab-bg); color: var(--text-color); }
         .modal-btn-delete { background: var(--accent-red); color: white; }
+
+        /* 📜 フッタースタイル */
+        footer {
+            text-align: center;
+            padding: 24px 0;
+            margin-top: 30px;
+            font-size: 12px;
+            color: var(--text-gray);
+            border-top: 1px solid var(--border-color);
+        }
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -619,7 +660,7 @@
                         </div>
                     </div>
                     
-                    <div style="font-size: 11px; color: var(--text-gray); margin-top: 6px; background: rgba(0,0,0,0.02); padding: 3px 6px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="getRouteAreaNames(route)">
+                    <div class="route-path-box" :title="getRouteAreaNames(route)">
                         🗺️ 経由スポット: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
                     </div>
                     
@@ -725,6 +766,10 @@
         </div>
     </div>
 
+    <footer>
+        作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer">@Skyzztai</a>
+    </footer>
+
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -787,7 +832,6 @@
 
             const uuid = () => crypto.randomUUID();
 
-            // 🎁 ご提供いただいた「ホーム」データを初期データとして定義
             const getDefaultAreas = () => [
                 {
                     id: uuid(), name: "ホーム", isExpanded: true,
@@ -929,7 +973,6 @@
                 return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
             });
 
-            // 🧮 3階層の選択スポットを基準に集計
             const selectedLight = computed(() => {
                 let total = 0;
                 areas.value.forEach(area => {
@@ -979,7 +1022,6 @@
 
             const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
 
-            // 階層連動ロジック
             const isAllSubSelected = (subArea) => subArea.spots && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
             const toggleSubArea = (subArea) => {
                 const targetState = !isAllSubSelected(subArea);
@@ -1029,7 +1071,6 @@
                 }
             };
 
-            // 📍 マイルート（3階層・スポット単位対応）
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
@@ -1141,7 +1182,6 @@
                 route.selectedSpotIds.splice(index, 1);
             };
 
-            // ⏱️ ミリ秒対応高精度タイマー
             const formatSeconds = (totalSec) => {
                 const hrs = Math.floor(totalSec / 3600);
                 const mins = Math.floor((totalSec % 3600) / 60);
@@ -1207,7 +1247,6 @@
                 route.isExpanded = !route.isExpanded;
             };
 
-            // 🔮 復活の呪文
             const generateSpell = () => {
                 try {
                     stopAnyActiveTimer();
@@ -1270,7 +1309,6 @@
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
                 
-                // 全スポットのチェックを外す
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => {
                         if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
@@ -1278,7 +1316,6 @@
                 });
             };
 
-            // 自動最適化ロジック（スポット単位）
             const optimize = () => {
                 const target = Math.max(1, Math.min(targetCandlesForOptimization.value, thresholds.length));
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
