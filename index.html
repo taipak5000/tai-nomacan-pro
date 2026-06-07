@@ -45,11 +45,14 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 16px;
+            overflow-x: hidden; /* 念のための横スクロール防止 */
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         header {
@@ -72,15 +75,18 @@
             align-items: center;
         }
 
+        /* 🛡️ 横伸び防止：初期幅に制限をかける */
         .layout-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             gap: 20px;
+            width: 100%;
         }
 
         @media (min-width: 850px) {
             .layout-grid {
-                grid-template-columns: 1fr 2fr;
+                /* minmax(0, ...)にすることで、子要素のnowrapに引っ張られるバグを完全に修正 */
+                grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
             }
         }
 
@@ -90,6 +96,8 @@
             padding: 16px;
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .settings-panel {
@@ -276,7 +284,7 @@
         .flex-group { display: flex; align-items: center; gap: 4px; }
         .flex-group input { width: 65px !important; }
 
-        /* 🛠️ マイルート横伸び対策スタイル */
+        /* 🗺️ マイルート横伸び徹底ガード */
         .route-path-box {
             font-size: 11px;
             color: var(--text-gray);
@@ -285,11 +293,12 @@
             padding: 4px 8px;
             border-radius: 4px;
             
-            /* 横伸びを徹底ガードして3点リーダー表示にする魔法 */
+            /* 完全に横幅を固定して3点ドットにする指定 */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
+            width: 100%;
+            display: block;
             box-sizing: border-box;
         }
         [data-theme="dark"] .route-path-box {
@@ -378,11 +387,18 @@
         /* 📜 フッタースタイル */
         footer {
             text-align: center;
-            padding: 24px 0;
-            margin-top: 30px;
-            font-size: 12px;
+            padding: 24px 16px;
+            margin-top: 40px;
+            font-size: 13px;
             color: var(--text-gray);
             border-top: 1px solid var(--border-color);
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
         }
         footer a {
             color: var(--accent-blue);
@@ -600,13 +616,13 @@
                             <div v-if="subArea.isExpanded" class="spot-list">
                                 <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
                                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
                                             <input type="checkbox" v-model="spot.isSelected" style="width:18px; height:18px;">
                                             <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
                                         </div>
                                         <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray);">
+                                    <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
                                         <div class="flex-group">
                                             <span>火種:</span>
                                             <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
@@ -645,9 +661,9 @@
                     保存されたルートはありません。<br>上のエリア管理でスポットのチェックを入れて、お気に入りルートを保存してみましょう！
                 </div>
                 
-                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style="background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                    <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
-                        <input type="text" v-model="route.name" placeholder="ルート名" style="font-weight: bold; font-size: 15px; flex-grow: 1; border: none; background: transparent; padding: 2px 0; text-align: left;">
+                <div v-for="(route, rIdx) in myRoutes" :key="route.id" style="background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px; width: 100%; box-sizing: border-box;">
+                    <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; width: 100%;">
+                        <input type="text" v-model="route.name" placeholder="ルート名" style="font-weight: bold; font-size: 15px; flex-grow: 1; min-width: 0; border: none; background: transparent; padding: 2px 0; text-align: left;">
                         
                         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                             <button class="btn-outline-blue" @click="moveRouteCard(rIdx, -1)" :disabled="rIdx === 0" style="padding: 4px 6px; font-size: 11px;">↑</button>
@@ -661,7 +677,7 @@
                     </div>
                     
                     <div class="route-path-box" :title="getRouteAreaNames(route)">
-                        🗺️ 経由スポット: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
+                        🗺️ 経由: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
                     </div>
                     
                     <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
@@ -676,7 +692,7 @@
                                 {{ runningRouteId === route.id ? formatSeconds(runningSeconds) : formatSeconds(route.actualSeconds || 0) }}
                             </div>
                             
-                            <div style="display: flex; gap: 8px; justify-content: center;">
+                            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
                                 <button v-if="runningRouteId !== route.id" class="btn-outline-blue" @click="startTimer(route)" style="background: var(--accent-green); color: white; border: none; padding: 5px 12px; font-weight: bold;">
                                     ▶ 計測スタート
                                 </button>
@@ -692,9 +708,9 @@
                         <div style="margin-bottom: 12px;">
                             <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">🗺️ 経由順の入れ替え:</div>
                             <div style="display: flex; flex-direction: column; gap: 4px; background: var(--input-bg); padding: 6px; border-radius: 6px; max-height: 160px; overflow-y: auto;">
-                                <div v-for="(spotId, sIdx) in route.selectedSpotIds" :key="spotId" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+                                <div v-for="(spotId, sIdx) in route.selectedSpotIds" :key="spotId" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); gap: 4px;">
                                     <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">{{ getSpotNameById(spotId) }}</span>
-                                    <div class="btn-action-group" style="gap: 4px;">
+                                    <div class="btn-action-group" style="gap: 4px; flex-shrink: 0;">
                                         <button class="btn-outline-blue" @click="moveRouteSpot(route, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 10px;">↑</button>
                                         <button class="btn-outline-blue" @click="moveRouteSpot(route, sIdx, 1)" :disabled="sIdx === route.selectedSpotIds.length - 1" style="padding: 2px 6px; font-size: 10px;">↓</button>
                                         <button class="btn-outline-red" @click="removeSpotFromRoute(route, sIdx)" style="padding: 2px 5px; font-size: 10px; margin-left: 2px;">×</button>
@@ -708,11 +724,11 @@
                         </div>
                         
                         <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; margin-bottom: 4px;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; margin-bottom: 4px; flex-wrap: wrap; gap: 4px;">
                                 <span>📐 理想値合計:</span>
                                 <span>🔥{{ getRouteStats(route).light }} / ⏱️{{ getRouteStats(route).timeStr }} / 効率: <b style="color:var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</b></span>
                             </div>
-                            <div style="display: flex; justify-content: space-between;">
+                            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
                                 <span>🏃 実測値状況:</span>
                                 <span>
                                     効率: <b :style="{ color: (route.actualSeconds || 0) > 0 ? 'var(--accent-green)' : 'var(--text-gray)' }">
@@ -767,7 +783,14 @@
     </div>
 
     <footer>
-        作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer">@Skyzztai</a>
+        <div class="footer-links">
+            <a href="companion.html">✨ 精霊同行管理</a>
+            <span style="color: var(--border-color);">|</span>
+            <a href="share.html">📍 創作物管理</a>
+        </div>
+        <div>
+            作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer">@Skyzztai</a>
+        </div>
     </footer>
 
 </div>
