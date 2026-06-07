@@ -90,7 +90,7 @@
             align-items: center;
         }
 
-        /* 🌓 モード切替ボタンのスタイル */
+        /* 🌓 モード切替ボタン */
         .theme-toggle-btn {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -317,7 +317,7 @@
         .memo-textarea:focus { background: var(--card-bg); border-color: var(--accent-blue); outline: none; }
 
         /* --------------------------------------------------------------------------------- */
-        /* 🗺️ 精霊ツリーエリア (ライト/ダーク両対応・縦線削除・ゲーム風再現) */
+        /* 🗺️ 精霊ツリーエリア */
         /* --------------------------------------------------------------------------------- */
 
         .tree-card {
@@ -385,10 +385,7 @@
         [data-theme="dark"] .tier-req { background: rgba(255, 149, 0, 0.12); }
         [data-theme="dark"] .tier-unlocked .tier-req { background: rgba(52, 199, 89, 0.18); }
 
-        /* ------------------------------------------------ */
-        /* 🎮 ゲーム風ノード（ボタン）のデザイン切り替え */
-        /* ------------------------------------------------ */
-
+        /* 🎮 ゲーム風ノード */
         .game-node-wrapper {
             display: flex;
             justify-content: center;
@@ -433,7 +430,6 @@
             border-color: rgba(255, 255, 255, 0.5);
         }
 
-        /* 🧡 解放状態 */
         .game-node-btn.node-checked {
             border-color: var(--accent-orange);
             background: rgba(255, 149, 0, 0.08);
@@ -445,18 +441,17 @@
             box-shadow: 0 0 16px rgba(255, 149, 0, 0.5), inset 0 0 8px rgba(255, 149, 0, 0.25);
         }
 
-        /* 🔒 未解放状態（ロック・ライトモード） */
+        /* 🔒 未解放状態（ロック時の濃さ調整版） */
         .game-node-btn.node-disabled {
-            opacity: 0.65; /* 0.4 ➔ 0.65 に変更して視認性をアップ */
+            opacity: 0.65;
             pointer-events: none;
-            filter: grayscale(40%); /* グレースケールを少しマイルドに調整 */
+            filter: grayscale(40%);
             box-shadow: none;
         }
 
-        /* 🌙 ダークモード時の未解放状態 */
         [data-theme="dark"] .game-node-btn.node-disabled {
-            opacity: 0.45; /* 0.22 ➔ 0.45 に変更して文字が読めるように調整 */
-            filter: grayscale(30%); /* グレースケールを少しマイルドに調整 */
+            opacity: 0.45;
+            filter: grayscale(30%);
             box-shadow: none;
         }
 
@@ -659,11 +654,27 @@
 
                 <div>
                     <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
-                        📌 自由メモ欄
+                        📌 この精霊独自のメモ欄
                     </label>
                     <textarea v-model="activeSpirit.notes" class="memo-textarea" placeholder="例: まずはエモート解放優先、残りは連れ歩き。"></textarea>
                 </div>
             </div>
+
+            <div class="section-card" style="border: 1px solid var(--accent-purple); background: rgba(175, 82, 222, 0.01);">
+                <div style="font-weight: bold; font-size: 14px; margin-bottom: 12px; color: var(--accent-purple);">
+                    📌 全精霊共通のメモ・目標
+                </div>
+                <div>
+                    <label style="font-size: 11px; color: var(--text-gray); font-weight: bold; display: block; margin-bottom: 4px;">
+                        📋 シーズン全体のタスクや、現在の総所持キャンドルなどの記録に
+                    </label>
+                    <textarea v-model="sharedNotes" class="memo-textarea" style="height: 100px;" 
+                              placeholder="例: シーズンパス購入済み。毎日18時リセット後にフレンドと連れ歩く！全体の残り必要キャンドル数など自由記入..."
+                              onfocus="this.style.borderColor='var(--accent-purple)'" 
+                              onblur="this.style.borderColor='var(--border-color)'"></textarea>
+                </div>
+            </div>
+
         </div>
 
         <div class="right-column">
@@ -811,6 +822,7 @@
         setup() {
             const activeIndex = ref(0);
             const isDarkMode = ref(false);
+            const sharedNotes = ref(''); // 📌 新規：共通メモの状態管理変数
 
             const spirits = ref([
                 { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s1') },
@@ -927,11 +939,17 @@
 
             watch(isDarkMode, () => { applyThemeToDOM(); });
 
+            // 💾 保存処理（共通メモも一緒に保存オブジェクトに追加）
             const save = () => {
-                const data = { activeIndex: activeIndex.value, spirits: spirits.value };
+                const data = { 
+                    activeIndex: activeIndex.value, 
+                    spirits: spirits.value,
+                    sharedNotes: sharedNotes.value // 保存対象に共通メモを追加
+                };
                 localStorage.setItem('sky_companion_v4_data', JSON.stringify(data));
             };
 
+            // 📂 読み込み処理
             const load = () => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
                 if (savedTheme) {
@@ -946,6 +964,8 @@
                     try {
                         const parsed = JSON.parse(saved);
                         if (parsed.activeIndex !== undefined) activeIndex.value = parsed.activeIndex;
+                        if (parsed.sharedNotes !== undefined) sharedNotes.value = parsed.sharedNotes; // 共通メモの復元
+                        
                         if (parsed.spirits && Array.isArray(parsed.spirits)) {
                             parsed.spirits.forEach((savedSpirit, sIdx) => {
                                 if (spirits.value[sIdx]) {
@@ -971,13 +991,15 @@
             };
 
             onMounted(() => { load(); });
-            watch([activeIndex, spirits], () => { save(); }, { deep: true });
+            // 共通メモ（sharedNotes）の変更も監視して自動保存
+            watch([activeIndex, spirits, sharedNotes], () => { save(); }, { deep: true });
 
             return {
                 activeIndex, spirits, activeSpirit, activePoints, totalHearts, activeCandleTotal,
                 activeStatusText, activeRemainingDays, getSpiritPoints,
                 incrementWalkDays, decrementWalkDays, applyPreset,
-                getIcon, getLevel, cleanName, isDarkMode, toggleTheme
+                getIcon, getLevel, cleanName, isDarkMode, toggleTheme,
+                sharedNotes // HTML側で使えるように追加
             };
         }
     }).mount('#app');
