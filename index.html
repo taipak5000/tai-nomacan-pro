@@ -625,28 +625,15 @@
                                 <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
                             </div>
 
-                           <div v-if="subArea.isExpanded" class="spot-list">
-    
-    <template v-if="subArea.spots && subArea.spots.length > 0">
-        <div v-for="(spot, spIdx) in subArea.spots" :key="spIdx" class="spot-item">
-            <input type="checkbox" v-model="spot.isSelected">
-            <input type="text" v-model="spot.name" placeholder="名称" style="width: 120px;">
-            <input type="number" v-model.number="spot.light" placeholder="火" style="width: 50px;">
-            <input type="number" v-model.number="spot.time" placeholder="秒" style="width: 50px;">
-            <button @click="requestDeleteSpot(mIdx, sIdx, spIdx)">×</button>
-        </div>
-        <button class="btn-add" @click="addSpot(mIdx, sIdx)">➕ スポットを追加</button>
-    </template>
-
-    <div v-else class="direct-input-area" style="padding: 10px; border: 1px dashed var(--border-color); margin-top: 5px; border-radius: 8px;">
-        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 5px;">直接入力モード</div>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" v-model.number="subArea.directLight" placeholder="火種合計" style="width: 80px;">
-            <input type="number" v-model.number="subArea.directTime" placeholder="秒数" style="width: 80px;">
-        </div>
-    </div>
-    
-</div>
+                            <div v-if="subArea.isExpanded" class="spot-list">
+                                <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
+                                            <input type="checkbox" v-model="spot.isSelected" style="width:18px; height:18px;">
+                                            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+                                        </div>
+                                        <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
+                                    </div>
                                     <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
                                         <div class="flex-group">
                                             <span>火種:</span>
