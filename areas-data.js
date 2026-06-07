@@ -220,7 +220,129 @@ const SKY_DEFAULT_AREAS = [
             }
         ]
     },
-    { name: "雨林", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 893, time: 0, isSelected: false }] }] },
+    {
+        name: "雨林",
+        isExpanded: false,
+        subAreas: [
+            {
+                name: "前庭（月・水・金・日）",
+                isExpanded: false,
+                spots: [
+                    { name: "最初の門闇花", light: 10, time: 0, isSelected: false },
+                    { name: "2つ目の門・右壁闇花", light: 6, time: 0, isSelected: false },
+                    { name: "2門・入ってすぐ左闇花", light: 7, time: 0, isSelected: false },
+                    { name: "3つ目の門・右の木内側闇花", light: 6, time: 0, isSelected: false },
+                    { name: "3門・ランプのある左の木根本闇花", light: 6, time: 0, isSelected: false },
+                    { name: "3門・左２番目の木闇花", light: 6, time: 0, isSelected: false },
+                    { name: "小川に続く門付近闇花", light: 5, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "前庭（火・木・土）",
+                isExpanded: false,
+                spots: [
+                    { name: "最初の門闇花", light: 10, time: 0, isSelected: false },
+                    { name: "右の木根本闇花", light: 6, time: 0, isSelected: false },
+                    { name: "2つ目の門・右壁闇花", light: 6, time: 0, isSelected: false },
+                    { name: "2門・凍える精霊横闇花", light: 6, time: 0, isSelected: false },
+                    { name: "3つ目の門・左２番目の木闇花", light: 6, time: 0, isSelected: false },
+                    { name: "3門・右の木々の間闇花", light: 6, time: 0, isSelected: false },
+                    { name: "3門・右側木の根元闇花", light: 5, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "小川",
+                isExpanded: false,
+                spots: [
+                    { name: "すぐ右の木根本闇花", light: 7, time: 0, isSelected: false },
+                    { name: "高台広場バリア前闇花", light: 9, time: 0, isSelected: false },
+                    { name: "メセキャン付近闇花", light: 7, time: 0, isSelected: false },
+                    { name: "恥じらう精霊付近", light: 8, time: 0, isSelected: false },
+                    { name: "光の子がいる洞窟闇花", light: 8, time: 0, isSelected: false },
+                    { name: "恥じらう精霊解放道中トンネル闇花", light: 7, time: 0, isSelected: false },
+                    { name: "廃墟闇花", light: 10, time: 0, isSelected: false },
+                    { name: "小川左幹", light: 7, time: 0, isSelected: false },
+                    { name: "小川右木の根闇花", light: 9, time: 0, isSelected: false },
+                    { name: "表現者精霊近く闇花", light: 8, time: 0, isSelected: false },
+                    { name: "パイプ内DC", light: 50, time: 0, isSelected: false },
+                    { name: "かくれんぼ精霊洞窟合計", light: 17, time: 0, isSelected: false },
+                    { name: "ランタン闇花", light: 3, time: 0, isSelected: false },
+                    { name: "ツリー光の子回り", light: 29, time: 0, isSelected: false },
+                    { name: "怒り精霊付近合計", light: 24, time: 0, isSelected: false },
+                    { name: "墓場出口付近闇花", light: 9, time: 0, isSelected: false },
+                    { name: "橋の右側葉の下闇花", light: 9, time: 0, isSelected: false },
+                    { name: "焚火近くの石闇花", light: 6, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "墓場（神殿前）",
+                isExpanded: false,
+                spots: [
+                    { name: "うろたえる精霊横", light: 6, time: 0, isSelected: false },
+                    { name: "反省する木こり付近", light: 9, time: 0, isSelected: false },
+                    { name: "キノコが生えている木", light: 9, time: 0, isSelected: false },
+                    { name: "闇花マンタ", light: 8, time: 0, isSelected: false },
+                    { name: "ランプ横マンタ闇花", light: 8, time: 0, isSelected: false },
+                    { name: "壊れた橋の入り口前木闇花", light: 9, time: 0, isSelected: false },
+                    { name: "test", light: 126, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "高台広場（晴れ間）",
+                isExpanded: false,
+                spots: [
+                    { name: "手前", light: 28, time: 0, isSelected: false },
+                    { name: "出口", light: 14, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "大空洞",
+                isExpanded: false,
+                spots: [
+                    { name: "落下後蝶の瓶", light: 19, time: 0, isSelected: false },
+                    { name: "ドアスイッチ", light: 14, time: 0, isSelected: false },
+                    { name: "くぼみ蝶々瓶合計", light: 24, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "雨林の神殿",
+                isExpanded: false,
+                spots: [
+                    { name: "左高", light: 8, time: 0, isSelected: false },
+                    { name: "左低", light: 9, time: 0, isSelected: false },
+                    { name: "右低手前", light: 8, time: 0, isSelected: false },
+                    { name: "大闇花", light: 34, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "聖なる池",
+                isExpanded: false,
+                spots: [
+                    { name: "一か所目", light: 12, time: 0, isSelected: false },
+                    { name: "二か所目", light: 12, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "ツリーハウス",
+                isExpanded: false,
+                spots: [
+                    { name: "合計", light: 55, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "風の街道",
+                isExpanded: false,
+                spots: [
+                    { name: "本島合計", light: 58, time: 0, isSelected: false },
+                    { name: "右浮島", light: 20, time: 0, isSelected: false },
+                    { name: "左浮島", light: 10, time: 0, isSelected: false },
+                    { name: "test", light: 10, time: 0, isSelected: false },
+                    { name: "隠者近くDC", light: 50, time: 0, isSelected: false },
+                    { name: "雲のトンネル合計", light: 50, time: 0, isSelected: false }
+                ]
+            }
+        ]
+    },
     { name: "峡谷", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 925, time: 0, isSelected: false }] }] },
     { name: "捨て地", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 682, time: 0, isSelected: false }] }] },
     { name: "書庫", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 796, time: 0, isSelected: false }] }] }
