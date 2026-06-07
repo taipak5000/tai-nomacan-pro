@@ -377,7 +377,6 @@
         .modal-btn-cancel { background: var(--tab-bg); color: var(--text-color); }
         .modal-btn-delete { background: var(--accent-red); color: white; }
 
-        /* 📜 統一されたフッタースタイル */
         footer {
             text-align: center;
             padding: 24px 16px;
@@ -474,7 +473,10 @@
             </div>
 
             <div v-if="visibleSections.candleManage" class="section-card">
-                <div class="section-header">📅 キャンドル管理</div>
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>📅 キャンドル管理</span>
+                    <span style="font-size: 11px; text-transform: none; font-weight: normal; color: var(--text-gray);">※大キャンドル＝DC</span>
+                </div>
                 <div class="row" style="flex-direction: column; align-items: flex-start;">
                     <div style="display: flex; justify-content: space-between; width: 100%;">
                         <div>繰越:</div>
@@ -707,7 +709,7 @@
                         </div>
 
                         <div style="margin-bottom: 8px;">
-                            <textarea v-model="route.memo" placeholder="ルートメモ" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
+                            <textarea v-model="route.memo" placeholder="ルートメモ…" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
                         </div>
                         
                         <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
@@ -780,6 +782,7 @@
 
 </div>
 
+<script src="areas-data.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
@@ -840,70 +843,27 @@
 
             const uuid = () => crypto.randomUUID();
 
-            const getDefaultAreas = () => [
-                {
-                    id: uuid(), name: "ホーム", isExpanded: true,
-                    subAreas: [
-                        {
-                            id: uuid(), name: "花鳥郷", isExpanded: false,
-                            spots: [
-                                { id: uuid(), name: "カフェ入り口", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "シェアメモ付近", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "シアターT字路", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "日々イベ案内人横", light: 4, time: 0, isSelected: false },
-                                { id: uuid(), name: "キャンドル職人", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "美容室入り口", light: 2, time: 0, isSelected: false },
-                                { id: uuid(), name: "魔法ショップT字路", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "希望の番人横", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "着替えの祠付近", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "シナモロール", light: 50, time: 0, isSelected: false }
-                            ]
-                        },
-                        {
-                            id: uuid(), name: "旧ホーム", isExpanded: false,
-                            spots: [
-                                { id: uuid(), name: "池付近", light: 6, time: 0, isSelected: false },
-                                { id: uuid(), name: "祠前・持ち物", light: 4, time: 0, isSelected: false },
-                                { id: uuid(), name: "祠前・ケープ", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "祠前・髪型", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "祠前・マスク", light: 3, time: 0, isSelected: false },
-                                { id: uuid(), name: "祠前・服装", light: 4, time: 0, isSelected: false }
-                            ]
-                        },
-                        {
-                            id: uuid(), name: "アリスカフェ", isExpanded: false,
-                            spots: [
-                                { id: uuid(), name: "暖炉付近・赤キャンドル1本", light: 5, time: 0, isSelected: false },
-                                { id: uuid(), name: "ソファ横・１本", light: 5, time: 0, isSelected: false },
-                                { id: uuid(), name: "メッセージボート付近・３本", light: 15, time: 0, isSelected: false },
-                                { id: uuid(), name: "鉢植え横・３本", light: 15, time: 0, isSelected: false },
-                                { id: uuid(), name: "カウンター内側・３本", light: 15, time: 0, isSelected: false },
-                                { id: uuid(), name: "カウンター外側・３本", light: 15, time: 0, isSelected: false },
-                                { id: uuid(), name: "浮いている火種１２か所合計", light: 120, time: 0, isSelected: false },
-                                { id: uuid(), name: "闇花合計", light: 42, time: 0, isSelected: false },
-                                { id: uuid(), name: "カニうさぎ1回", light: 10, time: 0, isSelected: false },
-                                { id: uuid(), name: "カウンターキノコ７か所合計", light: 35, time: 0, isSelected: false },
-                                { id: uuid(), name: "ミニゲーム（タスク1回）", light: 20, time: 0, isSelected: false }
-                            ]
-                        },
-                        {
-                            id: uuid(), name: "カーニバルエリア", isExpanded: false,
-                            spots: [
-                                { id: uuid(), name: "大キャンドル3つ", light: 150, time: 0, isSelected: false },
-                                { id: uuid(), name: "小型ボートキャンドル１本", light: 1, time: 0, isSelected: false },
-                                { id: uuid(), name: "メリーゴーランド船", light: 30, time: 0, isSelected: false },
-                                { id: uuid(), name: "観覧車船", light: 30, time: 0, isSelected: false }
-                            ]
-                        }
-                    ]
-                },
-                { id: uuid(), name: "孤島", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 905, time: 0, isSelected: false }] }] },
-                { id: uuid(), name: "草原", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 742, time: 0, isSelected: false }] }] },
-                { id: uuid(), name: "雨林", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 893, time: 0, isSelected: false }] }] },
-                { id: uuid(), name: "峡谷", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 925, time: 0, isSelected: false }] }] },
-                { id: uuid(), name: "捨て地", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 682, time: 0, isSelected: false }] }] },
-                { id: uuid(), name: "書庫", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 796, time: 0, isSelected: false }] }] }
-            ];
+            // 外部ファイル（areas-data.js）の配列をコピーしつつ、システム用UUIDを自動付与する関数
+            const getDefaultAreas = () => {
+                if (typeof SKY_DEFAULT_AREAS === 'undefined') return [];
+                return SKY_DEFAULT_AREAS.map(area => ({
+                    id: uuid(),
+                    name: area.name,
+                    isExpanded: area.isExpanded || false,
+                    subAreas: area.subAreas.map(sub => ({
+                        id: uuid(),
+                        name: sub.name,
+                        isExpanded: sub.isExpanded || false,
+                        spots: sub.spots.map(spot => ({
+                            id: uuid(),
+                            name: spot.name,
+                            light: spot.light,
+                            time: spot.time,
+                            isSelected: spot.isSelected || false
+                        }))
+                    }))
+                }));
+            };
 
             const loadInitialData = () => {
                 areas.value = getDefaultAreas();
@@ -947,7 +907,21 @@
                 if (saved) {
                     try {
                         const decoded = JSON.parse(saved);
-                        if (decoded.areas && decoded.areas.length > 0 && decoded.areas[0].subAreas && decoded.areas[0].subAreas[0].spots) {
+                        if (decoded.areas && decoded.areas.length > 0) {
+                            
+                            // 🚀 【引っ越し用自動コンバートロジック】
+                            // 保存されている孤島データが「古い1エリアだけ版（サブエリアが1つ）」の場合、新詳細データへ自動更新
+                            const kotouIdx = decoded.areas.findIndex(a => a.name === "孤島");
+                            if (kotouIdx !== -1) {
+                                const kotou = decoded.areas[kotouIdx];
+                                if (kotou.subAreas && kotou.subAreas.length === 1 && (kotou.subAreas[0].name === "メイン" || kotou.subAreas[0].spots.length === 1)) {
+                                    const freshAreas = getDefaultAreas();
+                                    const freshKotou = freshAreas.find(a => a.name === "孤島");
+                                    if (freshKotou) {
+                                        decoded.areas[kotouIdx] = freshKotou;
+                                    }
+                                }
+                            }
                             areas.value = decoded.areas;
                         } else {
                             areas.value = getDefaultAreas();
