@@ -277,6 +277,7 @@
         }
         .timer-display {
             font-family: 'Courier New', Courier, monospace;
+            font-variant-numeric: tabular-nums; /* 💡 数字の幅を固定してガタつきを防止 */
             font-size: 22px;
             font-weight: bold;
             text-align: center;
@@ -597,7 +598,7 @@
                         
                         <div class="timer-box">
                             <div style="font-size: 12px; font-weight: bold; color: var(--text-gray); display: flex; justify-content: space-between; align-items: center;">
-                                <span>⏱️ 実測タイマー </span>
+                                <span>⏱️ 実測タイマー</span>
                                 <span v-if="runningRouteId === route.id" style="color: var(--accent-green); font-size: 11px; animation: fadeIn 1s infinite alternate;">● 計測中</span>
                             </div>
                             
@@ -747,10 +748,11 @@
             const targetCandlesForOptimization = ref(20);
             const isWideScreen = ref(window.innerWidth >= 850);
 
-            // ⏱️ タイマー計測用ステート (保存対象外、毎秒セーブが走らないように独立して管理)
+            // ⏱️ タイマー計測用ステート (高精度ミリ秒対応)
             const runningRouteId = ref(null);
-            const runningSeconds = ref(0);
+            const runningSeconds = ref(0); // 小数点を含む経過秒数を保持
             let timerId = null;
+            let startTime = 0; // スタートした絶対時刻を記録するローカル変数
 
             const uuid = () => crypto.randomUUID();
 
@@ -794,7 +796,7 @@
                     myRoutes: myRoutes.value.map(r => ({
                         id: r.id, name: r.name, memo: r.memo,
                         selectedSubAreaIds: r.selectedSubAreaIds,
-                        actualSeconds: r.actualSeconds || 0 // 確実に実測秒数をシリアライズ
+                        actualSeconds: r.actualSeconds || 0
                     })),
                     visibleSections: visibleSections.value
                 };
@@ -822,7 +824,7 @@
                             myRoutes.value = decoded.myRoutes.map(r => ({
                                 ...r,
                                 isExpanded: false,
-                                actualSeconds: r.actualSeconds || 0 // 過去のセーブ用フォールバック
+                                actualSeconds: r.actualSeconds || 0 
                             }));
                         }
                         if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
@@ -924,7 +926,7 @@
                     memo: "",
                     selectedSubAreaIds: selectedIds,
                     isExpanded: false,
-                    actualSeconds: 0 // 実測初期値
+                    actualSeconds: 0
                 });
             };
 
@@ -992,29 +994,39 @@
                 route.selectedSubAreaIds.splice(index, 1);
             };
 
-            // ⏱️ タイマー（ストップウォッチ）制御ロジック
+            // ⏱️ タイマー（ストップウォッチ）制御ロジック【小数点以下3桁対応】
             const formatSeconds = (totalSec) => {
                 const hrs = Math.floor(totalSec / 3600);
                 const mins = Math.floor((totalSec % 3600) / 60);
-                const secs = totalSec % 60;
+                const secs = Math.floor(totalSec % 60);
+                const ms = Math.floor((totalSec % 1) * 1000); // 💡 小数部分をミリ秒(3桁)に変換
+                
                 const pad = (n) => String(n).padStart(2, '0');
-                return hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
+                const padMs = (n) => String(n).padStart(3, '0');
+                
+                const timeStr = hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
+                return `${timeStr}.${padMs(ms)}`; // 💡 後ろにミリ秒を結合
             };
 
             const startTimer = (route) => {
-                // 他に動いているものがあれば停止確定させる
                 if (runningRouteId.value && runningRouteId.value !== route.id) {
                     const oldRoute = myRoutes.value.find(r => r.id === runningRouteId.value);
                     if (oldRoute) saveActiveTimerValue(oldRoute);
                 }
                 
                 runningRouteId.value = route.id;
+                
+                // 💡 前回の積算ミリ秒を算出して、今回スタートのベースとする（JavaScriptのタイマー遅延対策）
+                const alreadyElapsedMs = (route.actualSeconds || 0) * 1000;
+                startTime = Date.now() - alreadyElapsedMs;
+                
                 runningSeconds.value = route.actualSeconds || 0;
                 
                 if (!timerId) {
+                    // 💡 小数点第3桁を滑らかに描写するため、10ミリ秒ごとに高精度更新
                     timerId = setInterval(() => {
-                        runningSeconds.value++;
-                    }, 1000);
+                        runningSeconds.value = (Date.now() - startTime) / 1000;
+                    }, 10);
                 }
             };
 
@@ -1023,10 +1035,11 @@
                     clearInterval(timerId);
                     timerId = null;
                 }
-                route.actualSeconds = runningSeconds.value;
+                // 💡 止めた瞬間の正確な差分（ミリ秒含む秒数）を書き込む
+                route.actualSeconds = (Date.now() - startTime) / 1000;
                 runningRouteId.value = null;
                 runningSeconds.value = 0;
-                save(); // ここでデータを確定してローカルストレージへ保存
+                save(); 
             };
 
             const pauseTimer = (route) => {
@@ -1053,7 +1066,6 @@
             };
 
             const toggleRouteExpand = (route) => {
-                // 閉じる時にそのルートが計測中ならタイムを確定セーブ
                 if (route.isExpanded && runningRouteId.value === route.id) {
                     saveActiveTimerValue(route);
                 }
@@ -1181,7 +1193,6 @@
                 addMainArea, addSubArea, requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
                 moveRouteCard, getSubAreaNameById, moveRouteSubArea, removeSubAreaFromRoute,
-                // タイマー用
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand
             };
         }
