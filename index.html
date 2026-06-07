@@ -17,7 +17,7 @@
             --tab-btn-active: #ffffff;
             --stat-box-bg: #fdfdfd;
             
-            /* 既存のアクセントカラーはそのまま */
+            /* アクセントカラー */
             --accent-blue: #007aff;
             --accent-orange: #ff9500;
             --accent-purple: #af52de;
@@ -45,7 +45,7 @@
         }
 
         .container {
-            max-width: 1200px; /* 💻 1:2分割に合わせて全体の最大幅を少し広げました */
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -77,7 +77,7 @@
 
         @media (min-width: 850px) {
             .layout-grid {
-                grid-template-columns: 1fr 2fr; /* 📐 黄金比率の 1:2 レイアウトに変更 */
+                grid-template-columns: 1fr 2fr;
             }
         }
 
@@ -264,6 +264,30 @@
         .flex-group { display: flex; align-items: center; gap: 4px; }
         .flex-group input { width: 65px !important; }
 
+        /* ⏱️ タイマーセクション用スタイル */
+        .timer-box {
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        [data-theme="dark"] .timer-box {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .timer-display {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin: 4px 0 8px 0;
+            letter-spacing: 1px;
+        }
+        .timer-display.running {
+            color: var(--accent-green);
+            text-shadow: 0 0 4px rgba(52,199,89,0.3);
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -428,7 +452,7 @@
                 </div>
                 <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0; margin-top: 10px;">
                     <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">キャンドル管理メモ:</div>
-                    <textarea v-model="candleMemo" placeholder="例: シーズンパス購入済み。毎日デイリー切り替わったら連れ歩き忘れないように！全体の残り必要キャンドル数など自由記入..." style="width: 100%; height: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
+                    <textarea v-model="candleMemo" placeholder="交換・使用予定のアイテム、今後のイベント予定など自由に記載…" style="width: 100%; height: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
                 </div>
             </div>
 
@@ -536,7 +560,7 @@
             </div>
 
             <div v-if="visibleSections.myRoutes" class="section-card" style="margin-top: 20px;">
-                <div class="section-header">📍 マイルート管理（ルート比較・メモ）</div>
+                <div class="section-header">📍 マイルート管理（ルート比較・メモ・タイマー）</div>
                 
                 <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 8px; font-size: 14px; padding: 10px;">
                     💾 現在の選択をルートとして保存
@@ -559,7 +583,7 @@
                             <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">↓</button>
                             
                             <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
-                            <button class="expand-toggle-btn" @click="route.isExpanded = !route.isExpanded" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
+                            <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
                                 {{ route.isExpanded ? '▼' : '▶' }}
                             </button>
                         </div>
@@ -571,6 +595,29 @@
                     
                     <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
                         
+                        <div class="timer-box">
+                            <div style="font-size: 12px; font-weight: bold; color: var(--text-gray); display: flex; justify-content: space-between; align-items: center;">
+                                <span>⏱️ 実測タイマー (RTAモード)</span>
+                                <span v-if="runningRouteId === route.id" style="color: var(--accent-green); font-size: 11px; animation: fadeIn 1s infinite alternate;">● 計測中</span>
+                            </div>
+                            
+                            <div class="timer-display" :class="{ running: runningRouteId === route.id }">
+                                {{ runningRouteId === route.id ? formatSeconds(runningSeconds) : formatSeconds(route.actualSeconds || 0) }}
+                            </div>
+                            
+                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                <button v-if="runningRouteId !== route.id" class="btn-outline-blue" @click="startTimer(route)" style="background: var(--accent-green); color: white; border: none; padding: 5px 12px; font-weight: bold;">
+                                    ▶ 計測スタート
+                                </button>
+                                <button v-else class="btn-outline-blue" @click="pauseTimer(route)" style="background: var(--accent-orange); color: white; border: none; padding: 5px 12px; font-weight: bold;">
+                                    ⏸ 一時停止 (保存)
+                                </button>
+                                <button class="btn-outline-red" @click="resetTimer(route)" style="padding: 5px 10px; font-size:12px;">
+                                    🔄 リセット
+                                </button>
+                            </div>
+                        </div>
+
                         <div style="margin-bottom: 12px;">
                             <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">🗺️ 経由順の入れ替え:</div>
                             <div style="display: flex; flex-direction: column; gap: 4px; background: var(--input-bg); padding: 6px; border-radius: 6px; max-height: 160px; overflow-y: auto;">
@@ -586,13 +633,22 @@
                         </div>
 
                         <div style="margin-bottom: 8px;">
-                            <textarea v-model="route.memo" placeholder="回る順番のメモや、ウニ・カニのメモなど自由にどうぞ..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical Pap;"></textarea>
+                            <textarea v-model="route.memo" placeholder="回る順番のメモや、ウニ・カニのメモなど自由にどうぞ..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
                         </div>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; background: var(--bg-color); padding: 8px; border-radius: 6px; flex-wrap: wrap; gap: 6px;">
-                            <div>🔥 火種: <span style="font-weight: bold;">{{ getRouteStats(route).light }}</span></div>
-                            <div>⏱️ 時間: <span style="font-weight: bold;">{{ getRouteStats(route).timeStr }}</span></div>
-                            <div>効率: <span style="font-weight: bold; color: var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</span></div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; margin-bottom: 4px;">
+                                <span>📐 理想値合計:</span>
+                                <span>🔥{{ getRouteStats(route).light }} / ⏱️{{ getRouteStats(route).timeStr }} / 効率: <b style="color:var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</b></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>🏃 実測値状況:</span>
+                                <span>
+                                    効率: <b :style="{ color: (route.actualSeconds || 0) > 0 ? 'var(--accent-green)' : 'var(--text-gray)' }">
+                                        {{ (route.actualSeconds || 0) > 0 ? (getRouteStats(route).light / route.actualSeconds).toFixed(1) + '/s' : '--' }}
+                                    </b>
+                                </span>
+                            </div>
                         </div>
                         
                         <div style="text-align: right; margin-top: 8px;">
@@ -691,6 +747,11 @@
             const targetCandlesForOptimization = ref(20);
             const isWideScreen = ref(window.innerWidth >= 850);
 
+            // ⏱️ タイマー計測用ステート (保存対象外、毎秒セーブが走らないように独立して管理)
+            const runningRouteId = ref(null);
+            const runningSeconds = ref(0);
+            let timerId = null;
+
             const uuid = () => crypto.randomUUID();
 
             const getDefaultAreas = () => [
@@ -714,6 +775,7 @@
             };
 
             const resetCalculatorData = () => {
+                stopAnyActiveTimer();
                 loadInitialData();
                 save();
                 showResetModal.value = false;
@@ -729,7 +791,11 @@
                     plannedUsage: plannedUsage.value,
                     targetCandlesForOptimization: targetCandlesForOptimization.value,
                     candleMemo: candleMemo.value,
-                    myRoutes: myRoutes.value,
+                    myRoutes: myRoutes.value.map(r => ({
+                        id: r.id, name: r.name, memo: r.memo,
+                        selectedSubAreaIds: r.selectedSubAreaIds,
+                        actualSeconds: r.actualSeconds || 0 // 確実に実測秒数をシリアライズ
+                    })),
                     visibleSections: visibleSections.value
                 };
                 localStorage.setItem('sky_tracker_storage', JSON.stringify(dataToSave));
@@ -755,7 +821,8 @@
                         if (decoded.myRoutes) {
                             myRoutes.value = decoded.myRoutes.map(r => ({
                                 ...r,
-                                isExpanded: r.isExpanded !== undefined ? r.isExpanded : false
+                                isExpanded: false,
+                                actualSeconds: r.actualSeconds || 0 // 過去のセーブ用フォールバック
                             }));
                         }
                         if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
@@ -856,26 +923,26 @@
                     name: `マイルート ${myRoutes.value.length + 1}`,
                     memo: "",
                     selectedSubAreaIds: selectedIds,
-                    isExpanded: false
+                    isExpanded: false,
+                    actualSeconds: 0 // 実測初期値
                 });
             };
 
-            // 🌟 修正：一律のエリア定義順ではなく、保存・カスタムされたID配列の順序通りにテキストを返す方式へ変更
             const getRouteAreaNames = (route) => {
                 const names = [];
                 route.selectedSubAreaIds.forEach(id => {
                     for (const area of areas.value) {
                         const sub = area.subAreas.find(s => s.id === id);
-                        if (sub) {
-                            names.push(sub.name);
-                            break;
-                        }
+                        if (sub) { names.push(sub.name); break; }
                     }
                 });
                 return names.join(' → ');
             };
 
-            const deleteRoute = (index) => { myRoutes.value.splice(index, 1); };
+            const deleteRoute = (index) => { 
+                if (myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
+                myRoutes.value.splice(index, 1); 
+            };
 
             const applyRoute = (route) => {
                 areas.value.forEach(area => {
@@ -897,7 +964,6 @@
                 return { light, timeStr, eff };
             };
 
-            // 🌟 追加：ルート自体の並び替えロジック
             const moveRouteCard = (index, direction) => {
                 const targetIndex = index + direction;
                 if (targetIndex >= 0 && targetIndex < myRoutes.value.length) {
@@ -906,7 +972,6 @@
                 }
             };
 
-            // 🌟 追加：IDからサブエリア名を特定するヘルパー
             const getSubAreaNameById = (id) => {
                 for (const area of areas.value) {
                     const sub = area.subAreas.find(s => s.id === id);
@@ -915,7 +980,6 @@
                 return "不明なエリア";
             };
 
-            // 🌟 追加：ルート内の経由地順序を入れ替えるロジック
             const moveRouteSubArea = (route, index, direction) => {
                 const targetIndex = index + direction;
                 if (targetIndex >= 0 && targetIndex < route.selectedSubAreaIds.length) {
@@ -924,13 +988,81 @@
                 }
             };
 
-            // 🌟 追加：ルート内から特定の経由地をピンポイントで外すロジック
             const removeSubAreaFromRoute = (route, index) => {
                 route.selectedSubAreaIds.splice(index, 1);
             };
 
+            // ⏱️ タイマー（ストップウォッチ）制御ロジック
+            const formatSeconds = (totalSec) => {
+                const hrs = Math.floor(totalSec / 3600);
+                const mins = Math.floor((totalSec % 3600) / 60);
+                const secs = totalSec % 60;
+                const pad = (n) => String(n).padStart(2, '0');
+                return hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
+            };
+
+            const startTimer = (route) => {
+                // 他に動いているものがあれば停止確定させる
+                if (runningRouteId.value && runningRouteId.value !== route.id) {
+                    const oldRoute = myRoutes.value.find(r => r.id === runningRouteId.value);
+                    if (oldRoute) saveActiveTimerValue(oldRoute);
+                }
+                
+                runningRouteId.value = route.id;
+                runningSeconds.value = route.actualSeconds || 0;
+                
+                if (!timerId) {
+                    timerId = setInterval(() => {
+                        runningSeconds.value++;
+                    }, 1000);
+                }
+            };
+
+            const saveActiveTimerValue = (route) => {
+                if (timerId) {
+                    clearInterval(timerId);
+                    timerId = null;
+                }
+                route.actualSeconds = runningSeconds.value;
+                runningRouteId.value = null;
+                runningSeconds.value = 0;
+                save(); // ここでデータを確定してローカルストレージへ保存
+            };
+
+            const pauseTimer = (route) => {
+                if (runningRouteId.value === route.id) {
+                    saveActiveTimerValue(route);
+                }
+            };
+
+            const resetTimer = (route) => {
+                if (runningRouteId.value === route.id) {
+                    if (timerId) { clearInterval(timerId); timerId = null; }
+                    runningRouteId.value = null;
+                    runningSeconds.value = 0;
+                }
+                route.actualSeconds = 0;
+                save();
+            };
+
+            const stopAnyActiveTimer = () => {
+                if (runningRouteId.value) {
+                    const current = myRoutes.value.find(r => r.id === runningRouteId.value);
+                    if (current) saveActiveTimerValue(current);
+                }
+            };
+
+            const toggleRouteExpand = (route) => {
+                // 閉じる時にそのルートが計測中ならタイムを確定セーブ
+                if (route.isExpanded && runningRouteId.value === route.id) {
+                    saveActiveTimerValue(route);
+                }
+                route.isExpanded = !route.isExpanded;
+            };
+
             const generateSpell = () => {
                 try {
+                    stopAnyActiveTimer();
                     const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value };
                     const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
@@ -947,6 +1079,7 @@
             const confirmApplySpell = () => {
                 isConfirming.value = false;
                 try {
+                    stopAnyActiveTimer();
                     const binString = atob(inputSpell.value.trim());
                     const uint8array = new Uint8Array(binString.length);
                     for (let i = 0; i < binString.length; i++) uint8array[i] = binString.charCodeAt(i);
@@ -963,7 +1096,8 @@
                     if (decoded.myRoutes) {
                         myRoutes.value = decoded.myRoutes.map(r => ({
                             ...r,
-                            isExpanded: r.isExpanded !== undefined ? r.isExpanded : false
+                            isExpanded: false,
+                            actualSeconds: r.actualSeconds || 0
                         }));
                     }
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
@@ -1046,7 +1180,9 @@
                 isAllMainSelected, toggleMainArea, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 addMainArea, addSubArea, requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
-                moveRouteCard, getSubAreaNameById, moveRouteSubArea, removeSubAreaFromRoute
+                moveRouteCard, getSubAreaNameById, moveRouteSubArea, removeSubAreaFromRoute,
+                // タイマー用
+                runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand
             };
         }
     }).mount('#app');
