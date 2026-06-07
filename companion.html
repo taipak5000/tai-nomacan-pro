@@ -317,21 +317,19 @@
         .memo-textarea:focus { background: var(--card-bg); border-color: var(--accent-blue); outline: none; }
 
         /* --------------------------------------------------------------------------------- */
-        /* 🗺️ 💻 精霊ツリーエリア (ライト/ダーク両対応・縦線削除・ゲーム風再現) */
+        /* 🗺️ 精霊ツリーエリア (ライト/ダーク両対応・縦線削除・ゲーム風再現) */
         /* --------------------------------------------------------------------------------- */
 
-        /* 🌲 ツリーカード全体のデフォルト（ライトモード・明るい背景） */
         .tree-card {
-            background: var(--card-bg); /* 白になる */
+            background: var(--card-bg);
             border-radius: 14px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); /* ライトモード用の影 */
-            color: var(--text-color); /* 黒文字になる */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            color: var(--text-color);
             border: 1px solid var(--border-color);
             transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* 🌙 ダークモード時のツリーカード（元の幻想的な暗いデザインを適用） */
         [data-theme="dark"] .tree-card {
             background: linear-gradient(180deg, #1b1535 0%, #0c081a 100%);
             box-shadow: 0 6px 24px rgba(0,0,0,0.3);
@@ -350,12 +348,11 @@
         .tree-tier {
             position: relative;
             z-index: 2;
-            border-top: 1px dashed var(--border-color); /* 共通のボーダー色 */
+            border-top: 1px dashed var(--border-color);
             padding-top: 14px;
             transition: border-color 0.3s ease;
         }
 
-        /* ダークモード時の層のボーダー */
         [data-theme="dark"] .tree-tier {
             border-top: 1px dashed rgba(255, 255, 255, 0.12);
         }
@@ -365,30 +362,26 @@
             padding-top: 0;
         }
 
-        /* ヘッダー（第x層、あとxxp） */
         .tier-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 14px;
             font-size: 12px;
-            color: var(--text-gray); /* デフォルトは黒系グレー */
+            color: var(--text-gray);
             padding: 0 4px;
             transition: color 0.3s ease;
         }
 
-        /* ダークモード時のヘッダー色 */
         [data-theme="dark"] .tier-header {
             color: rgba(255, 255, 255, 0.45);
         }
 
         .tier-title { font-weight: bold; letter-spacing: 0.5px; }
         
-        /* 要件バッジ（あとxxp） */
         .tier-req { font-size: 11px; color: #ff9500; background: rgba(255, 149, 0, 0.1); padding: 2px 8px; border-radius: 4px; font-weight: bold; transition: background-color 0.3s ease; }
         .tier-unlocked .tier-req { color: #34c759; background: rgba(52, 199, 89, 0.1); }
 
-        /* ダークモード時の要件バッジ背景 */
         [data-theme="dark"] .tier-req { background: rgba(255, 149, 0, 0.12); }
         [data-theme="dark"] .tier-unlocked .tier-req { background: rgba(52, 199, 89, 0.18); }
 
@@ -404,12 +397,11 @@
             z-index: 2;
         }
 
-        /* ノードボタンのデフォルト（ライトモード・明るいデザイン） */
         .game-node-btn {
             width: 84px;
             height: 84px;
-            background: var(--input-bg); /* 薄いグレー背景 */
-            border: 1px solid var(--border-color); /* 通常のボーダー */
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -421,10 +413,9 @@
             position: relative;
             transition: all 0.2s cubic-bezier(0.1, 0.8, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
             user-select: none;
-            color: var(--text-color); /* 黒文字 */
+            color: var(--text-color);
         }
 
-        /* 🌙 ダークモード時のノードボタン（元の幻想的なデザインを適用） */
         [data-theme="dark"] .game-node-btn {
             background: rgba(25, 22, 38, 0.85);
             border: 2px solid rgba(255, 255, 255, 0.22);
@@ -432,25 +423,22 @@
             color: #fff;
         }
 
-        /* ホバー効果 */
         .game-node-btn:hover {
             background: var(--border-color);
             transform: scale(1.04);
         }
 
-        /* ダークモード時のホバー */
         [data-theme="dark"] .game-node-btn:hover {
             background: rgba(45, 40, 70, 0.9);
             border-color: rgba(255, 255, 255, 0.5);
         }
 
-        /* 🧡 解放状態（チェック済み・ライトモード） */
+        /* 🧡 解放状態 */
         .game-node-btn.node-checked {
             border-color: var(--accent-orange);
             background: rgba(255, 149, 0, 0.08);
         }
 
-        /* 🌙 ダークモード時の解放状態（オレンジに光る） */
         [data-theme="dark"] .game-node-btn.node-checked {
             border-color: #ff9500;
             background: rgba(255, 149, 0, 0.15);
@@ -459,35 +447,33 @@
 
         /* 🔒 未解放状態（ロック・ライトモード） */
         .game-node-btn.node-disabled {
-            opacity: 0.4;
+            opacity: 0.65; /* 0.4 ➔ 0.65 に変更して視認性をアップ */
             pointer-events: none;
-            filter: grayscale(80%);
+            filter: grayscale(40%); /* グレースケールを少しマイルドに調整 */
             box-shadow: none;
         }
 
         /* 🌙 ダークモード時の未解放状態 */
         [data-theme="dark"] .game-node-btn.node-disabled {
-            opacity: 0.22;
-            filter: grayscale(50%);
+            opacity: 0.45; /* 0.22 ➔ 0.45 に変更して文字が読めるように調整 */
+            filter: grayscale(30%); /* グレースケールを少しマイルドに調整 */
             box-shadow: none;
         }
 
-        /* ノード内の要素色調整（ライトモード） */
         .node-level {
             position: absolute;
             top: 4px;
             right: 6px;
             font-size: 9px;
-            color: var(--text-color); /* 黒文字 */
+            color: var(--text-color);
             font-weight: bold;
-            background: var(--border-color); /* グレー背景 */
+            background: var(--border-color);
             padding: 1px 4px;
             border-radius: 3px;
             line-height: 1;
             transition: color 0.3s ease, background-color 0.3s ease;
         }
 
-        /* ダークモード時のエモートLv */
         [data-theme="dark"] .node-level {
             color: rgba(255, 255, 255, 0.85);
             background: rgba(0, 0, 0, 0.4);
@@ -503,18 +489,16 @@
             transition: filter 0.3s ease;
         }
 
-        /* ダークモード時のアイコンの影 */
         [data-theme="dark"] .node-icon {
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
         }
-        /* ダークモード時の解放アイコンの光 */
         [data-theme="dark"] .game-node-btn.node-checked .node-icon {
             filter: drop-shadow(0 0 5px rgba(255, 149, 0, 0.7));
         }
 
         .node-name {
             font-size: 9px;
-            color: var(--text-gray); /* 黒系グレー */
+            color: var(--text-gray);
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
@@ -524,12 +508,10 @@
             transition: color 0.3s ease;
         }
 
-        /* ダークモード時の名前 */
         [data-theme="dark"] .node-name {
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* コスト（キャンドル）の色はアクセントなので共通 */
         .node-cost {
             font-size: 10px;
             color: var(--accent-orange);
@@ -538,13 +520,12 @@
             transition: color 0.3s ease, text-shadow 0.3s ease;
         }
 
-        /* ダークモード時のコストの影 */
         [data-theme="dark"] .node-cost {
             color: #ffcc00;
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
 
-        /* 🧡 最上層シーズンハート（特別配置・ライトモード） */
+        /* 🧡 最上層シーズンハート */
         .heart-goal-container {
             display: flex;
             justify-content: center;
@@ -564,7 +545,6 @@
             background: rgba(255, 45, 85, 0.1);
         }
 
-        /* 🌙 ダークモード時のシーズンハート（元のデザイン） */
         [data-theme="dark"] .heart-node {
             border-color: rgba(255, 45, 85, 0.25);
             background: rgba(25, 22, 38, 0.85);
@@ -582,7 +562,8 @@
 <div id="app" class="container">
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="width: 80px;"></div> <h1>✨ Sky 精霊同行ポイント計算機</h1>
+            <div style="width: 80px;"></div>
+            <h1>✨ Sky 精霊同行ポイント計算機</h1>
             <button class="theme-toggle-btn" @click="toggleTheme">
                 <span v-if="isDarkMode">🌙 ダーク</span>
                 <span v-else>☀️ ライト</span>
@@ -599,7 +580,6 @@
     <div class="main-layout">
         
         <div class="left-column">
-            
             <div class="total-goal-banner">
                 <div style="font-size: 22px; font-weight: bold; margin: 0;">🧡 シーズンハート獲得: {{ totalHearts }} / 4 個</div>
             </div>
@@ -684,11 +664,9 @@
                     <textarea v-model="activeSpirit.notes" class="memo-textarea" placeholder="例: まずはエモート解放優先、残りは連れ歩き。"></textarea>
                 </div>
             </div>
-
         </div>
 
         <div class="right-column">
-            
             <div class="section-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: bold; font-size: 14px;">👣 {{ activeSpirit.name }} との連れ歩き（同行）日数</span>
@@ -788,10 +766,8 @@
                             <div class="node-cost" style="color: #ff5e7e;">{{ activePoints >= 280 ? '🎉 獲得!' : '280p' }}</div>
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -834,7 +810,7 @@
     createApp({
         setup() {
             const activeIndex = ref(0);
-            const isDarkMode = ref(false); // 🌓 ダークモード管理
+            const isDarkMode = ref(false);
 
             const spirits = ref([
                 { id: 1, name: '精霊①', walkDays: 0, currentPreset: 'custom', candleFormula: '', notes: '', treeData: createInitialTree('s1') },
@@ -940,7 +916,6 @@
                 });
             };
 
-            // 🌓 テーマ切り替えロジック
             const toggleTheme = () => {
                 isDarkMode.value = !isDarkMode.value;
                 localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
@@ -958,7 +933,6 @@
             };
 
             const load = () => {
-                // テーマの読み込み
                 const savedTheme = localStorage.getItem('sky_app_theme');
                 if (savedTheme) {
                     isDarkMode.value = (savedTheme === 'dark');
@@ -967,7 +941,6 @@
                 }
                 applyThemeToDOM();
 
-                // データの読み込み
                 const saved = localStorage.getItem('sky_companion_v4_data');
                 if (saved) {
                     try {
