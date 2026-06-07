@@ -201,18 +201,18 @@
         .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
         .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
 
+        /* 🗺️ 階層構造用スタイル */
         .area-accordion {
             border-bottom: 1px solid var(--border-color);
             padding: 14px 0;
         }
-        
-        .area-title-row1 {
+        .area-title-row1, .subarea-title-row1 {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
         }
-        .area-title-row2 {
+        .area-title-row2, .subarea-title-row2 {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -243,22 +243,31 @@
             margin-top: 12px;
         }
 
-        .subarea-item {
-            background: var(--stat-box-bg);
-            padding: 12px;
+        .subarea-accordion-box {
+            background: rgba(0, 0, 0, 0.01);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            margin-bottom: 12px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        [data-theme="dark"] .subarea-accordion-box {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .spot-list {
+            margin-left: 16px;
+            padding-left: 8px;
+            border-left: 2px dotted var(--border-color);
+            margin-top: 10px;
+        }
+
+        .spot-item {
+            background: var(--stat-box-bg);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-        .subarea-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-        .subarea-row2 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-left: 32px; font-size: 13px; color: var(--text-gray); }
-        .subarea-row3 { display: flex; align-items: center; justify-content: space-between; padding-left: 32px; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 8px; }
-        
-        .btn-action-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
         }
         
         .flex-group { display: flex; align-items: center; gap: 4px; }
@@ -277,7 +286,7 @@
         }
         .timer-display {
             font-family: 'Courier New', Courier, monospace;
-            font-variant-numeric: tabular-nums; /* 💡 数字の幅を固定してガタつきを防止 */
+            font-variant-numeric: tabular-nums;
             font-size: 22px;
             font-weight: bold;
             text-align: center;
@@ -525,32 +534,52 @@
                     </div>
 
                     <div v-if="mainArea.isExpanded" class="subarea-list">
-                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-item">
-                            <div class="subarea-row1">
-                                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
-                                    <input type="checkbox" v-model="subArea.isSelected">
-                                    <input type="text" v-model="subArea.name" placeholder="サブエリア名" style="width: 100%;">
+                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
+                            <div class="subarea-title-row1">
+                                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
+                                    <input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)">
+                                    <input type="text" v-model="subArea.name" style="font-weight: bold; font-size:14px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
                                 </div>
-                                <span style="font-size:11px; color:var(--accent-orange); background: rgba(255,149,0,0.12); padding: 3px 6px; border-radius: 4px; font-weight: bold; white-space: nowrap; margin-left: 6px;">
-                                    {{ getEfficiency(subArea).toFixed(1) }}/s
-                                </span>
-                            </div>
-                            <div class="subarea-row2">
-                                <div class="flex-group">
-                                    <span>火種:</span>
-                                    <input type="number" v-model.number="subArea.light">
-                                </div>
-                                <div class="flex-group">
-                                    <span>秒数:</span>
-                                    <input type="number" v-model.number="subArea.time">
+                                <div class="expand-toggle-btn" @click="subArea.isExpanded = !subArea.isExpanded" style="padding: 4px 8px; font-size: 12px;">
+                                    <span v-if="getSubAreaStats(subArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 2px 5px; border-radius: 4px; font-weight: bold; white-space: nowrap;">
+                                        🔥{{ getSubAreaStats(subArea).light }}
+                                    </span>
+                                    <span style="margin-left: 4px; color: var(--text-gray);">{{ subArea.isExpanded ? '▼' : '▶' }}</span>
                                 </div>
                             </div>
-                            <div class="subarea-row3">
+                            
+                            <div class="subarea-title-row2" style="margin-top: 6px;">
                                 <div class="btn-action-group">
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0">↑</button>
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1">↓</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
                                 </div>
-                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)">削除</button>
+                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
+                            </div>
+
+                            <div v-if="subArea.isExpanded" class="spot-list">
+                                <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1;">
+                                            <input type="checkbox" v-model="spot.isSelected" style="width:18px; height:18px;">
+                                            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+                                        </div>
+                                        <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray);">
+                                        <div class="flex-group">
+                                            <span>火種:</span>
+                                            <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                        </div>
+                                        <div class="flex-group">
+                                            <span>秒数:</span>
+                                            <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                        </div>
+                                        <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
+                                            {{ (spot.light / spot.time).toFixed(1) }}/s
+                                        </span>
+                                    </div>
+                                </div>
+                                <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size: 13px; padding: 6px 4px; color: var(--accent-purple);">➕ スポットを追加</button>
                             </div>
                         </div>
                         <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
@@ -572,10 +601,10 @@
                 </div>
                 
                 <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px; line-height: 1.5;">
-                    保存されたルートはありません。<br>上のエリア管理でチェックを入れて、お気に入りルートを保存してみましょう！
+                    保存されたルートはありません。<br>上のエリア管理でスポットのチェックを入れて、お気に入りルートを保存してみましょう！
                 </div>
                 
-                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style="background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px;">
+                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style="background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
                     <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
                         <input type="text" v-model="route.name" placeholder="ルート名" style="font-weight: bold; font-size: 15px; flex-grow: 1; border: none; background: transparent; padding: 2px 0; text-align: left;">
                         
@@ -591,7 +620,7 @@
                     </div>
                     
                     <div style="font-size: 11px; color: var(--text-gray); margin-top: 6px; background: rgba(0,0,0,0.02); padding: 3px 6px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="getRouteAreaNames(route)">
-                        🗺️ 経由: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
+                        🗺️ 経由スポット: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
                     </div>
                     
                     <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
@@ -622,19 +651,19 @@
                         <div style="margin-bottom: 12px;">
                             <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">🗺️ 経由順の入れ替え:</div>
                             <div style="display: flex; flex-direction: column; gap: 4px; background: var(--input-bg); padding: 6px; border-radius: 6px; max-height: 160px; overflow-y: auto;">
-                                <div v-for="(subId, sIdx) in route.selectedSubAreaIds" :key="subId" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
-                                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">{{ getSubAreaNameById(subId) }}</span>
+                                <div v-for="(spotId, sIdx) in route.selectedSpotIds" :key="spotId" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+                                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">{{ getSpotNameById(spotId) }}</span>
                                     <div class="btn-action-group" style="gap: 4px;">
-                                        <button class="btn-outline-blue" @click="moveRouteSubArea(route, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 10px;">↑</button>
-                                        <button class="btn-outline-blue" @click="moveRouteSubArea(route, sIdx, 1)" :disabled="sIdx === route.selectedSubAreaIds.length - 1" style="padding: 2px 6px; font-size: 10px;">↓</button>
-                                        <button class="btn-outline-red" @click="removeSubAreaFromRoute(route, sIdx)" style="padding: 2px 5px; font-size: 10px; margin-left: 2px;">×</button>
+                                        <button class="btn-outline-blue" @click="moveRouteSpot(route, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 10px;">↑</button>
+                                        <button class="btn-outline-blue" @click="moveRouteSpot(route, sIdx, 1)" :disabled="sIdx === route.selectedSpotIds.length - 1" style="padding: 2px 6px; font-size: 10px;">↓</button>
+                                        <button class="btn-outline-red" @click="removeSpotFromRoute(route, sIdx)" style="padding: 2px 5px; font-size: 10px; margin-left: 2px;">×</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 8px;">
-                            <textarea v-model="route.memo" placeholder="回る順番のメモや、ウニ・カニのメモなど自由にどうぞ..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
+                            <textarea v-model="route.memo" placeholder="ルートメモ（ウニの時間、ショートカット、焼き方のコツなど）…" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
                         </div>
                         
                         <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
@@ -667,7 +696,10 @@
             <div class="modal-text">
                 「<strong>{{ deleteModal.name }}</strong>」を削除しますか？<br>
                 <div v-if="deleteModal.type === 'main'" style="font-size:12px; color:var(--text-gray); margin-top: 8px;">
-                    ※中のサブエリアもすべて消去されます
+                    ※中のサブエリア、スポットもすべて消去されます
+                </div>
+                <div v-if="deleteModal.type === 'sub'" style="font-size:12px; color:var(--text-gray); margin-top: 8px;">
+                    ※中のスポットもすべて消去されます
                 </div>
             </div>
             <div class="modal-actions">
@@ -737,7 +769,7 @@
             const spellMessage = ref("");
             const spellMessageType = ref("");
             
-            const deleteModal = ref({ show: false, type: '', mIdx: -1, sIdx: -1, name: '' });
+            const deleteModal = ref({ show: false, type: '', mIdx: -1, sIdx: -1, spIdx: -1, name: '' });
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -748,22 +780,77 @@
             const targetCandlesForOptimization = ref(20);
             const isWideScreen = ref(window.innerWidth >= 850);
 
-            // ⏱️ タイマー計測用ステート (高精度ミリ秒対応)
             const runningRouteId = ref(null);
-            const runningSeconds = ref(0); // 小数点を含む経過秒数を保持
+            const runningSeconds = ref(0); 
             let timerId = null;
-            let startTime = 0; // スタートした絶対時刻を記録するローカル変数
+            let startTime = 0; 
 
             const uuid = () => crypto.randomUUID();
 
+            // 🎁 ご提供いただいた「ホーム」データを初期データとして定義
             const getDefaultAreas = () => [
-                { id: uuid(), name: "ホーム", isExpanded: false, subAreas: [{ id: uuid(), name: "花鳥郷", light: 257, time: 0, isSelected: false }] },
-                { id: uuid(), name: "孤島", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", light: 905, time: 0, isSelected: false }] },
-                { id: uuid(), name: "草原", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", light: 742, time: 0, isSelected: false }] },
-                { id: uuid(), name: "雨林", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", light: 893, time: 0, isSelected: false }] },
-                { id: uuid(), name: "峡谷", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", light: 925, time: 0, isSelected: false }] },
-                { id: uuid(), name: "捨て地", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", light: 682, time: 0, isSelected: false }] },
-                { id: uuid(), name: "書庫", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", light: 796, time: 0, isSelected: false }] }
+                {
+                    id: uuid(), name: "ホーム", isExpanded: true,
+                    subAreas: [
+                        {
+                            id: uuid(), name: "花鳥郷", isExpanded: false,
+                            spots: [
+                                { id: uuid(), name: "カフェ入り口", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "シェアメモ付近", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "シアターT字路", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "日々イベ案内人横", light: 4, time: 0, isSelected: false },
+                                { id: uuid(), name: "キャンドル職人", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "美容室入り口", light: 2, time: 0, isSelected: false },
+                                { id: uuid(), name: "魔法ショップT字路", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "希望の番人横", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "着替えの祠付近", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "シナモロール", light: 50, time: 0, isSelected: false }
+                            ]
+                        },
+                        {
+                            id: uuid(), name: "旧ホーム", isExpanded: false,
+                            spots: [
+                                { id: uuid(), name: "池付近", light: 6, time: 0, isSelected: false },
+                                { id: uuid(), name: "祠前・持ち物", light: 4, time: 0, isSelected: false },
+                                { id: uuid(), name: "祠前・ケープ", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "祠前・髪型", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "祠前・マスク", light: 3, time: 0, isSelected: false },
+                                { id: uuid(), name: "祠前・服装", light: 4, time: 0, isSelected: false }
+                            ]
+                        },
+                        {
+                            id: uuid(), name: "アリスカフェ", isExpanded: false,
+                            spots: [
+                                { id: uuid(), name: "暖炉付近・赤キャンドル1本", light: 5, time: 0, isSelected: false },
+                                { id: uuid(), name: "ソファ横・１本", light: 5, time: 0, isSelected: false },
+                                { id: uuid(), name: "メッセージボート付近・３本", light: 15, time: 0, isSelected: false },
+                                { id: uuid(), name: "鉢植え横・３本", light: 15, time: 0, isSelected: false },
+                                { id: uuid(), name: "カウンター内側・３本", light: 15, time: 0, isSelected: false },
+                                { id: uuid(), name: "カウンター外側・３本", light: 15, time: 0, isSelected: false },
+                                { id: uuid(), name: "浮いている火種１２か所合計", light: 120, time: 0, isSelected: false },
+                                { id: uuid(), name: "闇花合計", light: 42, time: 0, isSelected: false },
+                                { id: uuid(), name: "カニうさぎ1回", light: 10, time: 0, isSelected: false },
+                                { id: uuid(), name: "カウンターキノコ７か所合計", light: 35, time: 0, isSelected: false },
+                                { id: uuid(), name: "ミニゲーム（タスク1回）", light: 20, time: 0, isSelected: false }
+                            ]
+                        },
+                        {
+                            id: uuid(), name: "カーニバルエリア", isExpanded: false,
+                            spots: [
+                                { id: uuid(), name: "大キャンドル3つ", light: 150, time: 0, isSelected: false },
+                                { id: uuid(), name: "小型ボートキャンドル１本", light: 1, time: 0, isSelected: false },
+                                { id: uuid(), name: "メリーゴーランド船", light: 30, time: 0, isSelected: false },
+                                { id: uuid(), name: "観覧車船", light: 30, time: 0, isSelected: false }
+                            ]
+                        }
+                    ]
+                },
+                { id: uuid(), name: "孤島", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 905, time: 0, isSelected: false }] }] },
+                { id: uuid(), name: "草原", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 742, time: 0, isSelected: false }] }] },
+                { id: uuid(), name: "雨林", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 893, time: 0, isSelected: false }] }] },
+                { id: uuid(), name: "峡谷", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 925, time: 0, isSelected: false }] }] },
+                { id: uuid(), name: "捨て地", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 682, time: 0, isSelected: false }] }] },
+                { id: uuid(), name: "書庫", isExpanded: false, subAreas: [{ id: uuid(), name: "メイン", isExpanded: false, spots: [{ id: uuid(), name: "エリア全体", light: 796, time: 0, isSelected: false }] }] }
             ];
 
             const loadInitialData = () => {
@@ -795,23 +882,25 @@
                     candleMemo: candleMemo.value,
                     myRoutes: myRoutes.value.map(r => ({
                         id: r.id, name: r.name, memo: r.memo,
-                        selectedSubAreaIds: r.selectedSubAreaIds,
+                        selectedSpotIds: r.selectedSpotIds || [],
                         actualSeconds: r.actualSeconds || 0
                     })),
                     visibleSections: visibleSections.value
                 };
-                localStorage.setItem('sky_tracker_storage', JSON.stringify(dataToSave));
+                localStorage.setItem('sky_tracker_storage_v3', JSON.stringify(dataToSave));
             };
 
             const load = () => {
-                const saved = localStorage.getItem('sky_tracker_storage');
+                const saved = localStorage.getItem('sky_tracker_storage_v3');
                 if (saved) {
                     try {
                         const decoded = JSON.parse(saved);
-                        if (decoded.areas && decoded.areas.length > 0) areas.value = decoded.areas;
-                        else areas.value = getDefaultAreas();
-                        areas.value.forEach(a => a.isExpanded = false);
-
+                        if (decoded.areas && decoded.areas.length > 0 && decoded.areas[0].subAreas && decoded.areas[0].subAreas[0].spots) {
+                            areas.value = decoded.areas;
+                        } else {
+                            areas.value = getDefaultAreas();
+                        }
+                        
                         if (decoded.placedItems) placedItems.value = decoded.placedItems;
                         carryOverPercent.value = decoded.carryOverPercent || 0;
                         candleMemo.value = decoded.candleMemo || "";
@@ -824,6 +913,7 @@
                             myRoutes.value = decoded.myRoutes.map(r => ({
                                 ...r,
                                 isExpanded: false,
+                                selectedSpotIds: r.selectedSpotIds || [],
                                 actualSeconds: r.actualSeconds || 0 
                             }));
                         }
@@ -839,26 +929,39 @@
                 return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
             });
 
+            // 🧮 3階層の選択スポットを基準に集計
             const selectedLight = computed(() => {
                 let total = 0;
-                areas.value.forEach(area => { area.subAreas.forEach(sub => { if (sub.isSelected) total += sub.light; }); });
+                areas.value.forEach(area => {
+                    area.subAreas.forEach(sub => {
+                        if (sub.spots) {
+                            sub.spots.forEach(spot => { if (spot.isSelected) total += spot.light; });
+                        }
+                    });
+                });
                 return total;
             });
 
             const totalSeconds = computed(() => {
                 let total = 0;
-                areas.value.forEach(area => { area.subAreas.forEach(sub => { if (sub.isSelected) total += sub.time; }); });
+                areas.value.forEach(area => {
+                    area.subAreas.forEach(sub => {
+                        if (sub.spots) {
+                            sub.spots.forEach(spot => { if (spot.isSelected) total += spot.time; });
+                        }
+                    });
+                });
                 return total;
             });
 
             const formattedTotalTime = computed(() => {
                 const sec = totalSeconds.value;
-                return `${Math.floor(sec / 60)}分${sec % 60}秒`;
+                return `${Math.floor(sec / 60)}分${Math.floor(sec % 60)}秒`;
             });
 
             const totalEfficiency = computed(() => {
-                let totalLightSelected = 0; let totalTimeSelected = totalSeconds.value;
-                areas.value.forEach(area => { area.subAreas.forEach(sub => { if (sub.isSelected) totalLightSelected += sub.light; }); });
+                let totalLightSelected = selectedLight.value;
+                let totalTimeSelected = totalSeconds.value;
                 return totalTimeSelected > 0 ? (totalLightSelected / totalTimeSelected) : 0.0;
             });
 
@@ -876,17 +979,36 @@
 
             const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
 
-            const getEfficiency = (subArea) => subArea.time > 0 ? (subArea.light / subArea.time) : 0.0;
-            const isAllMainSelected = (mainArea) => mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => sub.isSelected);
-            
+            // 階層連動ロジック
+            const isAllSubSelected = (subArea) => subArea.spots && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
+            const toggleSubArea = (subArea) => {
+                const targetState = !isAllSubSelected(subArea);
+                if (subArea.spots) subArea.spots.forEach(s => s.isSelected = targetState);
+            };
+
+            const isAllMainSelected = (mainArea) => mainArea.subAreas && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
             const toggleMainArea = (mainArea) => {
                 const targetState = !isAllMainSelected(mainArea);
-                mainArea.subAreas.forEach(sub => { sub.isSelected = targetState; });
+                mainArea.subAreas.forEach(sub => {
+                    if (sub.spots) sub.spots.forEach(s => s.isSelected = targetState);
+                });
+            };
+
+            const getSubAreaStats = (subArea) => {
+                let light = 0; let time = 0;
+                if (subArea.spots) {
+                    subArea.spots.forEach(s => { if (s.isSelected) { light += s.light; time += s.time; } });
+                }
+                return { light, eff: time > 0 ? (light / time) : 0.0 };
             };
 
             const getMainAreaStats = (mainArea) => {
                 let light = 0; let time = 0;
-                mainArea.subAreas.forEach(sub => { if (sub.isSelected) { light += sub.light; time += sub.time; } });
+                mainArea.subAreas.forEach(sub => {
+                    if (sub.spots) {
+                        sub.spots.forEach(s => { if (s.isSelected) { light += s.light; time += s.time; } });
+                    }
+                });
                 return { light, eff: time > 0 ? (light / time) : 0.0 };
             };
 
@@ -907,14 +1029,19 @@
                 }
             };
 
+            // 📍 マイルート（3階層・スポット単位対応）
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => { if (sub.isSelected) selectedIds.push(sub.id); });
+                    area.subAreas.forEach(sub => {
+                        if (sub.spots) {
+                            sub.spots.forEach(s => { if (s.isSelected) selectedIds.push(s.id); });
+                        }
+                    });
                 });
                 
                 if (selectedIds.length === 0) {
-                    routeError.value = "⚠️ エリアが一つも選択されていません。上のエリア管理でチェックを入れてから保存してください。";
+                    routeError.value = "⚠️ スポットが一つも選択されていません。エリア管理内のスポットにチェックを入れてから保存してください。";
                     setTimeout(() => { routeError.value = ""; }, 4000);
                     return;
                 }
@@ -924,7 +1051,7 @@
                     id: uuid(),
                     name: `マイルート ${myRoutes.value.length + 1}`,
                     memo: "",
-                    selectedSubAreaIds: selectedIds,
+                    selectedSpotIds: selectedIds,
                     isExpanded: false,
                     actualSeconds: 0
                 });
@@ -932,10 +1059,15 @@
 
             const getRouteAreaNames = (route) => {
                 const names = [];
-                route.selectedSubAreaIds.forEach(id => {
+                if (!route.selectedSpotIds) return "";
+                route.selectedSpotIds.forEach(id => {
                     for (const area of areas.value) {
-                        const sub = area.subAreas.find(s => s.id === id);
-                        if (sub) { names.push(sub.name); break; }
+                        for (const sub of area.subAreas) {
+                            if (sub.spots) {
+                                const sp = sub.spots.find(s => s.id === id);
+                                if (sp) { names.push(`${sub.name}(${sp.name})`); break; }
+                            }
+                        }
                     }
                 });
                 return names.join(' → ');
@@ -947,21 +1079,32 @@
             };
 
             const applyRoute = (route) => {
+                if (!route.selectedSpotIds) return;
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => {
-                        sub.isSelected = route.selectedSubAreaIds.includes(sub.id);
+                        if (sub.spots) {
+                            sub.spots.forEach(s => {
+                                s.isSelected = route.selectedSpotIds.includes(s.id);
+                            });
+                        }
                     });
                 });
             };
 
             const getRouteStats = (route) => {
                 let light = 0; let time = 0;
-                areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (route.selectedSubAreaIds.includes(sub.id)) { light += sub.light; time += sub.time; }
+                if (route.selectedSpotIds) {
+                    areas.value.forEach(area => {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) {
+                                sub.spots.forEach(s => {
+                                    if (route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
+                                });
+                            }
+                        });
                     });
-                });
-                const timeStr = `${Math.floor(time / 60)}分${time % 60}秒`;
+                }
+                const timeStr = `${Math.floor(time / 60)}分${Math.floor(time % 60)}秒`;
                 const eff = time > 0 ? (light / time) : 0.0;
                 return { light, timeStr, eff };
             };
@@ -974,38 +1117,42 @@
                 }
             };
 
-            const getSubAreaNameById = (id) => {
+            const getSpotNameById = (id) => {
                 for (const area of areas.value) {
-                    const sub = area.subAreas.find(s => s.id === id);
-                    if (sub) return sub.name;
+                    for (const sub of area.subAreas) {
+                        if (sub.spots) {
+                            const sp = sub.spots.find(s => s.id === id);
+                            if (sp) return `${sub.name}・${sp.name}`;
+                        }
+                    }
                 }
-                return "不明なエリア";
+                return "不明なスポット";
             };
 
-            const moveRouteSubArea = (route, index, direction) => {
+            const moveRouteSpot = (route, index, direction) => {
                 const targetIndex = index + direction;
-                if (targetIndex >= 0 && targetIndex < route.selectedSubAreaIds.length) {
-                    const item = route.selectedSubAreaIds.splice(index, 1)[0];
-                    route.selectedSubAreaIds.splice(targetIndex, 0, item);
+                if (targetIndex >= 0 && targetIndex < route.selectedSpotIds.length) {
+                    const item = route.selectedSpotIds.splice(index, 1)[0];
+                    route.selectedSpotIds.splice(targetIndex, 0, item);
                 }
             };
 
-            const removeSubAreaFromRoute = (route, index) => {
-                route.selectedSubAreaIds.splice(index, 1);
+            const removeSpotFromRoute = (route, index) => {
+                route.selectedSpotIds.splice(index, 1);
             };
 
-            // ⏱️ タイマー（ストップウォッチ）制御ロジック【小数点以下3桁対応】
+            // ⏱️ ミリ秒対応高精度タイマー
             const formatSeconds = (totalSec) => {
                 const hrs = Math.floor(totalSec / 3600);
                 const mins = Math.floor((totalSec % 3600) / 60);
                 const secs = Math.floor(totalSec % 60);
-                const ms = Math.floor((totalSec % 1) * 1000); // 💡 小数部分をミリ秒(3桁)に変換
+                const ms = Math.floor((totalSec % 1) * 1000);
                 
                 const pad = (n) => String(n).padStart(2, '0');
                 const padMs = (n) => String(n).padStart(3, '0');
                 
                 const timeStr = hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
-                return `${timeStr}.${padMs(ms)}`; // 💡 後ろにミリ秒を結合
+                return `${timeStr}.${padMs(ms)}`;
             };
 
             const startTimer = (route) => {
@@ -1015,15 +1162,11 @@
                 }
                 
                 runningRouteId.value = route.id;
-                
-                // 💡 前回の積算ミリ秒を算出して、今回スタートのベースとする（JavaScriptのタイマー遅延対策）
                 const alreadyElapsedMs = (route.actualSeconds || 0) * 1000;
                 startTime = Date.now() - alreadyElapsedMs;
-                
                 runningSeconds.value = route.actualSeconds || 0;
                 
                 if (!timerId) {
-                    // 💡 小数点第3桁を滑らかに描写するため、10ミリ秒ごとに高精度更新
                     timerId = setInterval(() => {
                         runningSeconds.value = (Date.now() - startTime) / 1000;
                     }, 10);
@@ -1031,11 +1174,7 @@
             };
 
             const saveActiveTimerValue = (route) => {
-                if (timerId) {
-                    clearInterval(timerId);
-                    timerId = null;
-                }
-                // 💡 止めた瞬間の正確な差分（ミリ秒含む秒数）を書き込む
+                if (timerId) { clearInterval(timerId); timerId = null; }
                 route.actualSeconds = (Date.now() - startTime) / 1000;
                 runningRouteId.value = null;
                 runningSeconds.value = 0;
@@ -1043,9 +1182,7 @@
             };
 
             const pauseTimer = (route) => {
-                if (runningRouteId.value === route.id) {
-                    saveActiveTimerValue(route);
-                }
+                if (runningRouteId.value === route.id) { saveActiveTimerValue(route); }
             };
 
             const resetTimer = (route) => {
@@ -1066,12 +1203,11 @@
             };
 
             const toggleRouteExpand = (route) => {
-                if (route.isExpanded && runningRouteId.value === route.id) {
-                    saveActiveTimerValue(route);
-                }
+                if (route.isExpanded && runningRouteId.value === route.id) { saveActiveTimerValue(route); }
                 route.isExpanded = !route.isExpanded;
             };
 
+            // 🔮 復活の呪文
             const generateSpell = () => {
                 try {
                     stopAnyActiveTimer();
@@ -1109,13 +1245,14 @@
                         myRoutes.value = decoded.myRoutes.map(r => ({
                             ...r,
                             isExpanded: false,
+                            selectedSpotIds: r.selectedSpotIds || [],
                             actualSeconds: r.actualSeconds || 0
                         }));
                     }
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
                     
                     inputSpell.value = ""; showInlineMessage("🌟 データの復元に成功しました！", "success");
-                } catch (e) { showInlineMessage("😢 じゅもんが ちがいます！", "error"); }
+                } catch (e) { showInlineMessage("😢 じじゅもんが ちがいます！", "error"); }
             };
 
             const showInlineMessage = (msg, type) => {
@@ -1132,37 +1269,67 @@
                 }
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
-                areas.value.forEach(area => { area.subAreas.forEach(sub => { sub.isSelected = false; }); });
+                
+                // 全スポットのチェックを外す
+                areas.value.forEach(area => {
+                    area.subAreas.forEach(sub => {
+                        if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
+                    });
+                });
             };
 
+            // 自動最適化ロジック（スポット単位）
             const optimize = () => {
                 const target = Math.max(1, Math.min(targetCandlesForOptimization.value, thresholds.length));
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
-                areas.value.forEach(area => { area.subAreas.forEach(sub => { sub.isSelected = false; }); });
+                
+                areas.value.forEach(area => {
+                    area.subAreas.forEach(sub => {
+                        if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
+                    });
+                });
+                
                 let refs = [];
-                areas.value.forEach((area, mIdx) => { area.subAreas.forEach((sub, sIdx) => { refs.push({ mIdx, sIdx, eff: getEfficiency(sub), light: sub.light }); }); });
+                areas.value.forEach((area, mIdx) => {
+                    area.subAreas.forEach((sub, sIdx) => {
+                        if (sub.spots) {
+                            sub.spots.forEach((spot, spIdx) => {
+                                const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
+                                refs.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
+                            });
+                        }
+                    });
+                });
+                
                 refs.sort((a, b) => b.eff - a.eff);
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
-                    areas.value[ref.mIdx].subAreas[ref.sIdx].isSelected = true; accumulated += ref.light;
+                    areas.value[ref.mIdx].subAreas[ref.sIdx].spots[ref.spIdx].isSelected = true; 
+                    accumulated += ref.light;
                 }
             };
 
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
-            const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", light: 0, time: 0, isSelected: false }); };
+            const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
+            const addSpot = (mIdx, sIdx) => { areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false }); };
 
             const requestDeleteMainArea = (index) => {
-                deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, name: areas.value[index].name || "無題のエリア" };
+                deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, spIdx: -1, name: areas.value[index].name || "無題のエリア" };
             };
 
             const requestDeleteSubArea = (mIdx, sIdx) => {
-                deleteModal.value = { show: true, type: 'sub', mIdx: mIdx, sIdx: sIdx, name: areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア" };
+                deleteModal.value = { show: true, type: 'sub', mIdx: mIdx, sIdx: sIdx, spIdx: -1, name: areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア" };
+            };
+
+            const requestDeleteSpot = (mIdx, sIdx, spIdx) => {
+                deleteModal.value = { show: true, type: 'spot', mIdx: mIdx, sIdx: sIdx, spIdx: spIdx, name: areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || "無題のスポット" };
             };
 
             const confirmDelete = () => {
                 if (deleteModal.value.type === 'main') areas.value.splice(deleteModal.value.mIdx, 1);
                 else if (deleteModal.value.type === 'sub') areas.value[deleteModal.value.mIdx].subAreas.splice(deleteModal.value.sIdx, 1);
+                else if (deleteModal.value.type === 'spot') areas.value[deleteModal.value.mIdx].subAreas[deleteModal.value.sIdx].spots.splice(deleteModal.value.spIdx, 1);
                 deleteModal.value.show = false;
             };
 
@@ -1170,11 +1337,8 @@
 
             onMounted(() => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
-                if (savedTheme) {
-                    isDarkMode.value = (savedTheme === 'dark');
-                } else {
-                    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                }
+                if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); } 
+                else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
                 applyThemeToDOM();
 
                 load();
@@ -1188,11 +1352,11 @@
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
                 showSettings, showResetModal, myRoutes, visibleSections, routeError,
-                totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, getEfficiency, dailyReset, optimize,
-                isAllMainSelected, toggleMainArea, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-                addMainArea, addSubArea, requestDeleteMainArea, requestDeleteSubArea, confirmDelete, cancelDelete,
+                totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
+                isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
+                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
-                moveRouteCard, getSubAreaNameById, moveRouteSubArea, removeSubAreaFromRoute,
+                moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand
             };
         }
