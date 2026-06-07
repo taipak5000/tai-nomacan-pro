@@ -45,7 +45,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 16px;
-            overflow-x: hidden; /* 念のための横スクロール防止 */
+            overflow-x: hidden;
         }
 
         .container {
@@ -75,7 +75,6 @@
             align-items: center;
         }
 
-        /* 🛡️ 横伸び防止：初期幅に制限をかける */
         .layout-grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
@@ -85,7 +84,6 @@
 
         @media (min-width: 850px) {
             .layout-grid {
-                /* minmax(0, ...)にすることで、子要素のnowrapに引っ張られるバグを完全に修正 */
                 grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
             }
         }
@@ -212,7 +210,6 @@
         .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
         .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
 
-        /* 🗺️ 階層構造用スタイル */
         .area-accordion {
             border-bottom: 1px solid var(--border-color);
             padding: 14px 0;
@@ -284,7 +281,6 @@
         .flex-group { display: flex; align-items: center; gap: 4px; }
         .flex-group input { width: 65px !important; }
 
-        /* 🗺️ マイルート横伸び徹底ガード */
         .route-path-box {
             font-size: 11px;
             color: var(--text-gray);
@@ -292,8 +288,6 @@
             background: rgba(0,0,0,0.02);
             padding: 4px 8px;
             border-radius: 4px;
-            
-            /* 完全に横幅を固定して3点ドットにする指定 */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -305,7 +299,6 @@
             background: rgba(255, 255, 255, 0.02);
         }
 
-        /* ⏱️ タイマーセクション用スタイル */
         .timer-box {
             background: rgba(0, 0, 0, 0.04);
             border: 1px dashed var(--border-color);
@@ -384,7 +377,7 @@
         .modal-btn-cancel { background: var(--tab-bg); color: var(--text-color); }
         .modal-btn-delete { background: var(--accent-red); color: white; }
 
-        /* 📜 フッタースタイル */
+        /* 📜 統一されたフッタースタイル */
         footer {
             text-align: center;
             padding: 24px 16px;
@@ -392,13 +385,7 @@
             font-size: 13px;
             color: var(--text-gray);
             border-top: 1px solid var(--border-color);
-        }
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
+            line-height: 1.6;
         }
         footer a {
             color: var(--accent-blue);
@@ -783,10 +770,8 @@
     </div>
 
     <footer>
-        <div class="footer-links">
-            <a href="companion.html">✨ 精霊同行管理</a>
-            <span style="color: var(--border-color);">|</span>
-            <a href="share.html">📍 創作物管理</a>
+        <div>
+            © 2026 Sky キャンドル計算機 | 関連ツール: <a href="companion.html">✨ 精霊同行管理</a> | <a href="share.html">📍 創作物管理</a>
         </div>
         <div>
             作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer">@Skyzztai</a>
