@@ -449,6 +449,29 @@
         <div>
             <div class="section-card">
                 <div class="section-header">🔥 今日の精錬状況</div>
+                
+                <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                        <span style="font-weight: 500;">📅 本日の大キャンドル群:</span>
+                        <select v-model="dailyBonusArea" style="width: 110px; padding: 4px 6px; font-size: 12px;">
+                            <option value="none">なし</option>
+                            <option value="草原">草原 (+200)</option>
+                            <option value="雨林">雨林 (+200)</option>
+                            <option value="峡谷">峡谷 (+200)</option>
+                            <option value="捨て地">捨て地 (+200)</option>
+                            <option value="書庫">書庫 (+200)</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                        <span style="font-weight: 500;">🌋 本日の闇の破片:</span>
+                        <select v-model="dailyShard" style="width: 110px; padding: 4px 6px; font-size: 12px;">
+                            <option value="none">なし</option>
+                            <option value="black">黒い破片 (+200)</option>
+                            <option value="red">赤い破片 (星キャン)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div>精錬予定:</div>
                     <div class="bold-text" style="color: var(--accent-orange);">{{ calculated.candles }} 本</div>
@@ -670,7 +693,6 @@
                     </div>
                     
                     <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
-                        
                         <div class="timer-box">
                             <div style="font-size: 12px; font-weight: bold; color: var(--text-gray); display: flex; justify-content: space-between; align-items: center;">
                                 <span>⏱️ 実測タイマー</span>
@@ -772,6 +794,12 @@
     </div>
 
     <footer>
+        <div style="font-size: 11px; color: var(--text-gray); line-height: 1.6; text-align: left; max-width: 700px; margin: 0 auto 20px auto; background: var(--stat-box-bg); padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
+            💡 <b>計算機を快適に使うためのヒント＆お願い</b><br>
+            ・本アプリ内では大キャンドルを「<b>DC</b>」と省略して表記しています。<br>
+            ・初期登録されている火種数や想定時間はあくまで目安です。公式アップデートによる仕様変更やマップの変動、お使いのデバイス環境によって数値が異なる場合があります。<br>
+            ・ご自身の飛行スピード、羽の枚数、お気に入りの回り方に合わせて、右側の「エリア管理」からスポットの名前・火種・秒数を自由に書き換えて、自分だけの使いやすい計算機にカスタムしてご活用ください！
+        </div>
         <div>
             © 2026 Sky キャンドル計算機 | 関連ツール: <a href="companion.html">✨ 精霊同行管理</a> | <a href="share.html">📍 創作物管理</a>
         </div>
@@ -841,9 +869,12 @@
             let timerId = null;
             let startTime = 0; 
 
+            // 🌋 提案2用：本日のアドオン要素の状態管理
+            const dailyBonusArea = ref("none");
+            const dailyShard = ref("none");
+
             const uuid = () => crypto.randomUUID();
 
-            // 外部ファイル（areas-data.js）の配列をコピーしつつ、システム用UUIDを自動付与する関数
             const getDefaultAreas = () => {
                 if (typeof SKY_DEFAULT_AREAS === 'undefined') return [];
                 return SKY_DEFAULT_AREAS.map(area => ({
@@ -873,6 +904,8 @@
                 currentCandles.value = 0;
                 plannedUsage.value = 0;
                 targetCandlesForOptimization.value = 20;
+                dailyBonusArea.value = "none";
+                dailyShard.value = "none";
             };
 
             const resetCalculatorData = () => {
@@ -892,6 +925,8 @@
                     plannedUsage: plannedUsage.value,
                     targetCandlesForOptimization: targetCandlesForOptimization.value,
                     candleMemo: candleMemo.value,
+                    dailyBonusArea: dailyBonusArea.value, // 保存対象に追加
+                    dailyShard: dailyShard.value,         // 保存対象に追加
                     myRoutes: myRoutes.value.map(r => ({
                         id: r.id, name: r.name, memo: r.memo,
                         selectedSpotIds: r.selectedSpotIds || [],
@@ -908,18 +943,13 @@
                     try {
                         const decoded = JSON.parse(saved);
                         if (decoded.areas && decoded.areas.length > 0) {
-                            
-                            // 🚀 【引っ越し用自動コンバートロジック】
-                            // 保存されている孤島データが「古い1エリアだけ版（サブエリアが1つ）」の場合、新詳細データへ自動更新
                             const kotouIdx = decoded.areas.findIndex(a => a.name === "孤島");
                             if (kotouIdx !== -1) {
                                 const kotou = decoded.areas[kotouIdx];
                                 if (kotou.subAreas && kotou.subAreas.length === 1 && (kotou.subAreas[0].name === "メイン" || kotou.subAreas[0].spots.length === 1)) {
                                     const freshAreas = getDefaultAreas();
                                     const freshKotou = freshAreas.find(a => a.name === "孤島");
-                                    if (freshKotou) {
-                                        decoded.areas[kotouIdx] = freshKotou;
-                                    }
+                                    if (freshKotou) { decoded.areas[kotouIdx] = freshKotou; }
                                 }
                             }
                             areas.value = decoded.areas;
@@ -934,6 +964,8 @@
                         currentCandles.value = decoded.currentCandles || 0;
                         plannedUsage.value = decoded.plannedUsage || 0;
                         targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
+                        dailyBonusArea.value = decoded.dailyBonusArea || "none";
+                        dailyShard.value = decoded.dailyShard || "none";
 
                         if (decoded.myRoutes) {
                             myRoutes.value = decoded.myRoutes.map(r => ({
@@ -991,7 +1023,14 @@
             });
 
             const carryOverLight = computed(() => 94.0 * (carryOverPercent.value / 100.0));
-            const totalLight = computed(() => selectedLight.value + Math.floor(carryOverLight.value));
+            
+            // 🌋 提案2：選択中のイベント要素（大キャン・破片）の火種を動的に計算にマージ
+            const totalLight = computed(() => {
+                let bonus = 0;
+                if (dailyBonusArea.value !== "none") bonus += 200; // 日替わり大キャン4箇所分
+                if (dailyShard.value === "black") bonus += 200;     // 黒い破片の獲得火種目安
+                return selectedLight.value + Math.floor(carryOverLight.value) + bonus;
+            });
 
             const calculated = computed(() => {
                 let total = totalLight.value; let candles = 0;
@@ -1232,7 +1271,7 @@
             const generateSpell = () => {
                 try {
                     stopAnyActiveTimer();
-                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value };
+                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
                     const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
                     for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
@@ -1262,6 +1301,9 @@
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
+                    if (decoded.dailyBonusArea) dailyBonusArea.value = decoded.dailyBonusArea;
+                    if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
+                    
                     if (decoded.myRoutes) {
                         myRoutes.value = decoded.myRoutes.map(r => ({
                             ...r,
@@ -1291,6 +1333,10 @@
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
                 
+                // 🌋 デイリー要素はリセット時に「なし」に戻す
+                dailyBonusArea.value = "none";
+                dailyShard.value = "none";
+
                 areas.value.forEach(area => {
                     area.subAreas.forEach(sub => {
                         if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
@@ -1364,13 +1410,15 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections], () => { save(); }, { deep: true });
+            // watch対象にdailyBonusArea, dailyShardを追加
+            watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections, dailyBonusArea, dailyShard], () => { save(); }, { deep: true });
 
             return {
                 isDarkMode, toggleTheme,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
                 showSettings, showResetModal, myRoutes, visibleSections, routeError,
+                dailyBonusArea, dailyShard, // returnに追加
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
