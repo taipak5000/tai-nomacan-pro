@@ -117,111 +117,115 @@ const SKY_DEFAULT_AREAS = [
             }
         ]
     },
-{
-    name: "草原",
-    isExpanded: false,
-    subAreas: [
-        {
-            name: "ロビー・蝶々の住処",
-            isExpanded: false,
-            spots: [
-                { name: "ロビー・三か所合計", light: 10, time: 0, isSelected: false },
-                { name: "蝶々・道の真ん中", light: 5, time: 0, isSelected: false },
-                { name: "蝶・右洞窟バリア内", light: 20, time: 0, isSelected: false },
-                { name: "蝶・蝶々精霊横", light: 5, time: 0, isSelected: false },
-                { name: "蝶・草原の村行き門前", light: 5, time: 0, isSelected: false },
-                { name: "蝶・鳥の巣バリア前", light: 5, time: 0, isSelected: false },
-                { name: "蝶・洞窟行きバリア前", light: 5, time: 0, isSelected: false }
-            ]
-        },
-        {
-            name: "草原の村",
-            isExpanded: false,
-            spots: [
-                { name: "左の島・拍手精霊二人扉前", light: 5, time: 0, isSelected: false },
-                { name: "左・鐘楼に続く小道", light: 5, time: 0, isSelected: false },
-                { name: "左・鐘楼の闇花合計", light: 20, time: 0, isSelected: false },
-                { name: "真ん中の島・埋まった船", light: 6, time: 0, isSelected: false },
-                { name: "真・鐘楼の闇花合計", light: 23, time: 0, isSelected: false },
-                { name: "真・桟橋付近", light: 5, time: 0, isSelected: false },
-                { name: "真・二人扉前", light: 5, time: 0, isSelected: false },
-                { name: "真・二人扉内", light: 10, time: 0, isSelected: false },
-                { name: "右の島・鐘楼近く段差", light: 5, time: 0, isSelected: false },
-                { name: "右・鐘楼の闇花合計", light: 15, time: 0, isSelected: false },
-                { name: "右・洞窟内笑い精霊付近", light: 5, time: 0, isSelected: false }
-            ]
-        },
-        {
-            name: "草原高地（オレオ）",
-            isExpanded: false,
-            spots: [
-                { name: "入口付近四か所合計", light: 12, time: 0, isSelected: false },
-                { name: "エレベーター起動後上合計", light: 80, time: 0, isSelected: false },
-                { name: "オレオ召喚の場", light: 7, time: 0, isSelected: false }
-            ]
-        },
-        {
-            name: "草原の神殿",
-            isExpanded: false,
-            spots: [
-                { name: "神殿前・橋の下", light: 5, time: 0, isSelected: false },
-                { name: "前・入り口前", light: 5, time: 0, isSelected: false },
-                { name: "神殿内・三か所合計", light: 15, time: 0, isSelected: false },
-                { name: "内・笑顔のキャンドル", light: 9, time: 0, isSelected: false },
-                { name: "神殿上・左側", light: 28, time: 0, isSelected: false },
-                { name: "上・右側L字", light: 23, time: 0, isSelected: false }
-            ]
-        },
-        {
-            name: "草原の洞窟",
-            isExpanded: false,
-            spots: [
-                { name: "入口瓶", light: 5, time: 0, isSelected: false },
-                { name: "階段上右側", light: 5, time: 0, isSelected: false },
-                { name: "焚火道中", light: 5, time: 0, isSelected: false },
-                { name: "埋まったボート", light: 5, time: 0, isSelected: false },
-                { name: "荷積み人近く", light: 5, time: 0, isSelected: false },
-                { name: "階段の下のボート", light: 5, time: 0, isSelected: false },
-                { name: "瓶の部屋入口横", light: 5, time: 0, isSelected: false },
-                { name: "瓶の部屋内", light: 5, time: 0, isSelected: false },
-                { name: "草原の村にいく出口付近", light: 5, time: 0, isSelected: false }
-            ]
-        },
-        {
-            name: "鳥の巣",
-            isExpanded: false,
-            spots: [
-                { name: "桟橋", light: 5, time: 0, isSelected: false },
-                { name: "桟橋下", light: 5, time: 0, isSelected: false },
-                { name: "中央浮島", light: 5, time: 0, isSelected: false },
-                { name: "大きな浮島合計", light: 20, time: 0, isSelected: false },
-                { name: "小さな浮島合計", light: 15, time: 0, isSelected: false }
-            ]
-        },
-        {
-            name: "楽園",
-            isExpanded: false,
-            spots: [
-                { name: "浮島DC", light: 50, time: 0, isSelected: false },
-                { name: "浮島闇花", light: 6, time: 0, isSelected: false },
-                { name: "本島洞窟入り口", light: 6, time: 0, isSelected: false },
-                { name: "カニ洞窟大闇花", light: 48, time: 0, isSelected: false },
-                { name: "カ・大闇のよこ闇花", light: 6, time: 0, isSelected: false },
-                { name: "カ・螺旋途中", light: 6, time: 0, isSelected: false },
-                { name: "カ・螺旋頂上", light: 6, time: 0, isSelected: false },
-                { name: "滝底梯子の下", light: 6, time: 0, isSelected: false },
-                { name: "滝DC", light: 50, time: 0, isSelected: false },
-                { name: "滝DC近く闇花", light: 6, time: 0, isSelected: false },
-                { name: "クラゲ洞窟トンネル入り口", light: 12, time: 0, isSelected: false },
-                { name: "クラゲ洞窟内", light: 6, time: 0, isSelected: false },
-                { name: "鐘DC", light: 50, time: 0, isSelected: false },
-                { name: "間欠泉よこ合計", light: 41, time: 0, isSelected: false }
-            ]
-        }
-    ]
-},
+    {
+        name: "草原",
+        isExpanded: false,
+        subAreas: [
+            {
+                name: "ロビー・蝶々の住処",
+                isExpanded: false,
+                spots: [
+                    { name: "ロビー・三か所合計", light: 10, time: 0, isSelected: false },
+                    { name: "蝶々・道の真ん中", light: 5, time: 0, isSelected: false },
+                    { name: "蝶・右洞窟バリア内", light: 20, time: 0, isSelected: false },
+                    { name: "蝶・蝶々精霊横", light: 5, time: 0, isSelected: false },
+                    { name: "蝶・草原の村行き門前", light: 5, time: 0, isSelected: false },
+                    { name: "蝶・鳥の巣バリア前", light: 5, time: 0, isSelected: false },
+                    { name: "蝶・洞窟行きバリア前", light: 5, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原の村",
+                isExpanded: false,
+                spots: [
+                    { name: "左の島・拍手精霊二人扉前", light: 5, time: 0, isSelected: false },
+                    { name: "左・鐘楼に続く小道", light: 5, time: 0, isSelected: false },
+                    { name: "左・鐘楼の闇花合計", light: 20, time: 0, isSelected: false },
+                    { name: "真ん中の島・埋まった船", light: 6, time: 0, isSelected: false },
+                    { name: "真・鐘楼の闇花合計", light: 23, time: 0, isSelected: false },
+                    { name: "真・桟橋付近", light: 5, time: 0, isSelected: false },
+                    { name: "真・二人扉前", light: 5, time: 0, isSelected: false },
+                    { name: "真・二人扉内", light: 10, time: 0, isSelected: false },
+                    { name: "右の島・鐘楼近く段差", light: 5, time: 0, isSelected: false },
+                    { name: "右・鐘楼の闇花合計", light: 15, time: 0, isSelected: false },
+                    { name: "右・洞窟内笑い精霊付近", light: 5, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原高地（オレオ）",
+                isExpanded: false,
+                spots: [
+                    { name: "入口付近四か所合計", light: 12, time: 0, isSelected: false },
+                    { name: "エレベーター起動後上合計", light: 80, time: 0, isSelected: false },
+                    { name: "オレオ召喚の場", light: 7, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原の神殿",
+                isExpanded: false,
+                spots: [
+                    { name: "神殿前・橋の下", light: 5, time: 0, isSelected: false },
+                    { name: "前・入り口前", light: 5, time: 0, isSelected: false },
+                    { name: "神殿内・三か所合計", light: 15, time: 0, isSelected: false },
+                    { name: "内・笑顔のキャンドル", light: 9, time: 0, isSelected: false },
+                    { name: "神殿上・left側", light: 28, time: 0, isSelected: false },
+                    { name: "上・右側L字", light: 23, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原の洞窟",
+                isExpanded: false,
+                spots: [
+                    { name: "入口瓶", light: 5, time: 0, isSelected: false },
+                    { name: "階段上右側", light: 5, time: 0, isSelected: false },
+                    { name: "焚火道中", light: 5, time: 0, isSelected: false },
+                    { name: "埋まったボート", light: 5, time: 0, isSelected: false },
+                    { name: "荷積み人近く", light: 5, time: 0, isSelected: false },
+                    { name: "階段の下のボート", light: 5, time: 0, isSelected: false },
+                    { name: "瓶の部屋入口横", light: 5, time: 0, isSelected: false },
+                    { name: "瓶の部屋内", light: 5, time: 0, isSelected: false },
+                    { name: "草原の村にいく出口付近", light: 5, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "鳥の巣",
+                isExpanded: false,
+                spots: [
+                    { name: "桟橋", light: 5, time: 0, isSelected: false },
+                    { name: "桟橋下", light: 5, time: 0, isSelected: false },
+                    { name: "中央浮島", light: 5, time: 0, isSelected: false },
+                    { name: "大きな浮島合計", light: 20, time: 0, isSelected: false },
+                    { name: "小さな浮島合計", light: 15, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "楽園",
+                isExpanded: false,
+                spots: [
+                    { name: "浮島DC", light: 50, time: 0, isSelected: false },
+                    { name: "浮島闇花", light: 6, time: 0, isSelected: false },
+                    { name: "本島洞窟入り口", light: 6, time: 0, isSelected: false },
+                    { name: "カニ洞窟大闇花", light: 48, time: 0, isSelected: false },
+                    { name: "カ・大闇のよこ闇花", light: 6, time: 0, isSelected: false },
+                    { name: "カ・螺旋途中", light: 6, time: 0, isSelected: false },
+                    { name: "カ・螺旋頂上", light: 6, time: 0, isSelected: false },
+                    { name: "滝底梯子の下", light: 6, time: 0, isSelected: false },
+                    { name: "滝DC", light: 50, time: 0, isSelected: false },
+                    { name: "滝DC近く闇花", light: 6, time: 0, isSelected: false },
+                    { name: "クラゲ洞窟トンネル入り口", light: 12, time: 0, isSelected: false },
+                    { name: "クラゲ洞窟内", light: 6, time: 0, isSelected: false },
+                    { name: "鐘DC", light: 50, time: 0, isSelected: false },
+                    { name: "間欠泉よこ合計", light: 41, time: 0, isSelected: false }
+                ]
+            }
+        ]
+    },
     { name: "雨林", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 893, time: 0, isSelected: false }] }] },
     { name: "峡谷", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 925, time: 0, isSelected: false }] }] },
     { name: "捨て地", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 682, time: 0, isSelected: false }] }] },
     { name: "書庫", isExpanded: false, subAreas: [{ name: "メイン", isExpanded: false, spots: [{ name: "エリア全体", light: 796, time: 0, isSelected: false }] }] }
 ];
+
+// もし他のファイル（index.html等）で「SKY_DEFAULT_AREASが見つからない」というエラーが出る場合は、
+// 以下のコードのコメントアウト（//）を解除してみてください。
+// window.SKY_DEFAULT_AREAS = SKY_DEFAULT_AREAS;
