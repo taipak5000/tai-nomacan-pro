@@ -316,11 +316,24 @@
         }
         .memo-textarea:focus { background: var(--card-bg); border-color: var(--accent-blue); outline: none; }
 
-        /* 🌌 ゲーム画面風ツリーエリア（縦線削除・常にゲーム風の暗闇） */
+        /* --------------------------------------------------------------------------------- */
+        /* 🗺️ 💻 精霊ツリーエリア (ライト/ダーク両対応・縦線削除・ゲーム風再現) */
+        /* --------------------------------------------------------------------------------- */
+
+        /* 🌲 ツリーカード全体のデフォルト（ライトモード・明るい背景） */
         .tree-card {
-            background: linear-gradient(180deg, #1b1535 0%, #0c081a 100%);
+            background: var(--card-bg); /* 白になる */
             border-radius: 14px;
             padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); /* ライトモード用の影 */
+            color: var(--text-color); /* 黒文字になる */
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* 🌙 ダークモード時のツリーカード（元の幻想的な暗いデザインを適用） */
+        [data-theme="dark"] .tree-card {
+            background: linear-gradient(180deg, #1b1535 0%, #0c081a 100%);
             box-shadow: 0 6px 24px rgba(0,0,0,0.3);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -333,33 +346,55 @@
             position: relative;
             padding: 15px 0;
         }
-
-        /* ⚠️ 縦線（.tree-line）はご要望通り綺麗に削除しました */
         
         .tree-tier {
             position: relative;
             z-index: 2;
-            border-top: 1px dashed rgba(255, 255, 255, 0.12);
+            border-top: 1px dashed var(--border-color); /* 共通のボーダー色 */
             padding-top: 14px;
+            transition: border-color 0.3s ease;
         }
+
+        /* ダークモード時の層のボーダー */
+        [data-theme="dark"] .tree-tier {
+            border-top: 1px dashed rgba(255, 255, 255, 0.12);
+        }
+
         .tree-container .tree-tier:first-child {
             border-top: none;
             padding-top: 0;
         }
 
+        /* ヘッダー（第x層、あとxxp） */
         .tier-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 14px;
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.45);
+            color: var(--text-gray); /* デフォルトは黒系グレー */
             padding: 0 4px;
+            transition: color 0.3s ease;
         }
+
+        /* ダークモード時のヘッダー色 */
+        [data-theme="dark"] .tier-header {
+            color: rgba(255, 255, 255, 0.45);
+        }
+
         .tier-title { font-weight: bold; letter-spacing: 0.5px; }
         
-        .tier-req { font-size: 11px; color: #ff9500; background: rgba(255, 149, 0, 0.12); padding: 2px 8px; border-radius: 4px; font-weight: bold; }
-        .tier-unlocked .tier-req { color: #34c759; background: rgba(52, 199, 89, 0.18); }
+        /* 要件バッジ（あとxxp） */
+        .tier-req { font-size: 11px; color: #ff9500; background: rgba(255, 149, 0, 0.1); padding: 2px 8px; border-radius: 4px; font-weight: bold; transition: background-color 0.3s ease; }
+        .tier-unlocked .tier-req { color: #34c759; background: rgba(52, 199, 89, 0.1); }
+
+        /* ダークモード時の要件バッジ背景 */
+        [data-theme="dark"] .tier-req { background: rgba(255, 149, 0, 0.12); }
+        [data-theme="dark"] .tier-unlocked .tier-req { background: rgba(52, 199, 89, 0.18); }
+
+        /* ------------------------------------------------ */
+        /* 🎮 ゲーム風ノード（ボタン）のデザイン切り替え */
+        /* ------------------------------------------------ */
 
         .game-node-wrapper {
             display: flex;
@@ -369,11 +404,12 @@
             z-index: 2;
         }
 
+        /* ノードボタンのデフォルト（ライトモード・明るいデザイン） */
         .game-node-btn {
             width: 84px;
             height: 84px;
-            background: rgba(25, 22, 38, 0.85);
-            border: 2px solid rgba(255, 255, 255, 0.22);
+            background: var(--input-bg); /* 薄いグレー背景 */
+            border: 1px solid var(--border-color); /* 通常のボーダー */
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -383,44 +419,78 @@
             box-sizing: border-box;
             cursor: pointer;
             position: relative;
-            transition: all 0.2s cubic-bezier(0.1, 0.8, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.1, 0.8, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
             user-select: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            color: var(--text-color); /* 黒文字 */
         }
 
+        /* 🌙 ダークモード時のノードボタン（元の幻想的なデザインを適用） */
+        [data-theme="dark"] .game-node-btn {
+            background: rgba(25, 22, 38, 0.85);
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            color: #fff;
+        }
+
+        /* ホバー効果 */
         .game-node-btn:hover {
-            background: rgba(45, 40, 70, 0.9);
-            border-color: rgba(255, 255, 255, 0.5);
+            background: var(--border-color);
             transform: scale(1.04);
         }
 
+        /* ダークモード時のホバー */
+        [data-theme="dark"] .game-node-btn:hover {
+            background: rgba(45, 40, 70, 0.9);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 🧡 解放状態（チェック済み・ライトモード） */
         .game-node-btn.node-checked {
+            border-color: var(--accent-orange);
+            background: rgba(255, 149, 0, 0.08);
+        }
+
+        /* 🌙 ダークモード時の解放状態（オレンジに光る） */
+        [data-theme="dark"] .game-node-btn.node-checked {
             border-color: #ff9500;
             background: rgba(255, 149, 0, 0.15);
             box-shadow: 0 0 16px rgba(255, 149, 0, 0.5), inset 0 0 8px rgba(255, 149, 0, 0.25);
         }
-        .game-node-btn.node-checked .node-icon {
-            filter: drop-shadow(0 0 5px rgba(255, 149, 0, 0.7));
+
+        /* 🔒 未解放状態（ロック・ライトモード） */
+        .game-node-btn.node-disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            filter: grayscale(80%);
+            box-shadow: none;
         }
 
-        .game-node-btn.node-disabled {
+        /* 🌙 ダークモード時の未解放状態 */
+        [data-theme="dark"] .game-node-btn.node-disabled {
             opacity: 0.22;
-            pointer-events: none;
             filter: grayscale(50%);
             box-shadow: none;
         }
 
+        /* ノード内の要素色調整（ライトモード） */
         .node-level {
             position: absolute;
             top: 4px;
             right: 6px;
             font-size: 9px;
-            color: rgba(255, 255, 255, 0.85);
+            color: var(--text-color); /* 黒文字 */
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.4);
+            background: var(--border-color); /* グレー背景 */
             padding: 1px 4px;
             border-radius: 3px;
             line-height: 1;
+            transition: color 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* ダークモード時のエモートLv */
+        [data-theme="dark"] .node-level {
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(0, 0, 0, 0.4);
         }
 
         .node-icon {
@@ -430,28 +500,51 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: filter 0.3s ease;
+        }
+
+        /* ダークモード時のアイコンの影 */
+        [data-theme="dark"] .node-icon {
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+        }
+        /* ダークモード時の解放アイコンの光 */
+        [data-theme="dark"] .game-node-btn.node-checked .node-icon {
+            filter: drop-shadow(0 0 5px rgba(255, 149, 0, 0.7));
         }
 
         .node-name {
             font-size: 9px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-gray); /* 黒系グレー */
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             width: 100%;
             margin-bottom: 1px;
+            transition: color 0.3s ease;
         }
 
+        /* ダークモード時の名前 */
+        [data-theme="dark"] .node-name {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* コスト（キャンドル）の色はアクセントなので共通 */
         .node-cost {
             font-size: 10px;
-            color: #ffcc00;
+            color: var(--accent-orange);
             font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
             line-height: 1;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
         }
 
+        /* ダークモード時のコストの影 */
+        [data-theme="dark"] .node-cost {
+            color: #ffcc00;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* 🧡 最上層シーズンハート（特別配置・ライトモード） */
         .heart-goal-container {
             display: flex;
             justify-content: center;
@@ -462,9 +555,22 @@
         .heart-node {
             width: 96px;
             height: 96px;
-            border-color: rgba(255, 45, 85, 0.25);
+            border-color: rgba(255, 45, 85, 0.3);
+            background: rgba(255, 45, 85, 0.03);
+            color: #ff2d55;
         }
         .heart-node.node-checked {
+            border-color: #ff2d55;
+            background: rgba(255, 45, 85, 0.1);
+        }
+
+        /* 🌙 ダークモード時のシーズンハート（元のデザイン） */
+        [data-theme="dark"] .heart-node {
+            border-color: rgba(255, 45, 85, 0.25);
+            background: rgba(25, 22, 38, 0.85);
+            color: #fff;
+        }
+        [data-theme="dark"] .heart-node.node-checked {
             border-color: #ff2d55;
             background: rgba(255, 45, 85, 0.15);
             box-shadow: 0 0 18px rgba(255, 45, 85, 0.6), inset 0 0 8px rgba(255, 45, 85, 0.2);
@@ -600,7 +706,7 @@
             </div>
 
             <div class="tree-card" style="padding-bottom: 30px;">
-                <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 16px; font-weight: bold; text-transform: uppercase;">🌳 {{ activeSpirit.name }} のツリー</div>
                 
                 <div class="tree-container">
                     <div class="tree-tier" :class="{'tier-unlocked': activePoints >= 40}">
@@ -678,7 +784,7 @@
                         <div class="game-node-btn heart-node" :class="{'node-checked': activePoints >= 280}">
                             <div class="node-level" style="color: #ff2d55;">MAX</div>
                             <div class="node-icon">🧡</div>
-                            <div class="node-name" style="font-size: 10px; color: rgba(255,255,255,0.8);">最上層ハート</div>
+                            <div class="node-name" style="font-size: 10px; color: inherit; opacity: 0.8;">最上層ハート</div>
                             <div class="node-cost" style="color: #ff5e7e;">{{ activePoints >= 280 ? '🎉 獲得!' : '280p' }}</div>
                         </div>
                     </div>
