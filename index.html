@@ -557,7 +557,7 @@
                     保存されたルートはありません。<br>上のエリア管理でチェックを入れて、お気に入りルートを保存してみましょう！
                 </div>
                 
-                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style="background: #ffffff; border: 1px solid var(--border-color); padding: 12px;">
+                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-item" style=background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px;">
                     <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
                         <input type="text" v-model="route.name" placeholder="ルート名" style="font-weight: bold; font-size: 15px; flex-grow: 1; border: none; background: transparent; padding: 2px 0; text-align: left;">
                         
