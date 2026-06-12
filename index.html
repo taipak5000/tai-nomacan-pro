@@ -866,7 +866,6 @@
             const uuid = () => crypto.randomUUID();
 
             const getDefaultAreas = () => {
-                // 【超強化】データが未定義、または配列でない場合は絶対にエラーにせず空配列を返す
                 if (typeof SKY_DEFAULT_AREAS === 'undefined' || !Array.isArray(SKY_DEFAULT_AREAS)) return [];
                 return SKY_DEFAULT_AREAS.map(area => {
                     const subAreas = Array.isArray(area.subAreas) ? area.subAreas : [];
@@ -955,7 +954,6 @@
                     const saved = localStorage.getItem('sky_tracker_storage_v3');
                     if (saved) {
                         const decoded = JSON.parse(saved);
-                        // 【超強化】保存データの構造チェックを厳格化し、おかしければ即座に安全な初期データに切り替える
                         if (decoded && Array.isArray(decoded.areas)) {
                             areas.value = decoded.areas;
                             placedItems.value = Array.isArray(decoded.placedItems) ? decoded.placedItems : [];
@@ -1397,7 +1395,8 @@
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
-                    if (areas.value[ref.mIdx]?.subAreas[ref.sIdx]?.spots[ref.ref.spIdx]) {
+                    // 【修正箇所】タイポを修正しました
+                    if (areas.value[ref.mIdx]?.subAreas[ref.sIdx]?.spots[ref.spIdx]) {
                         areas.value[ref.mIdx].subAreas[ref.sIdx].spots[ref.spIdx].isSelected = true;
                         accumulated += ref.light;
                     }
