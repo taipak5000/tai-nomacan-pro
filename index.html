@@ -626,12 +626,12 @@
                             </div>
 
                             <div v-if="subArea.isExpanded" class="spot-list">
-                                <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
-                                            <input type="checkbox" v-model="spot.isSelected" style="width:18px; height:18px;">
-                                            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
-                                        </div>
+                              <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
+            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
+            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+        </div>
                                         <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
@@ -1379,6 +1379,20 @@
             const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
             const addSpot = (mIdx, sIdx) => { areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false }); };
 
+// 🌟ここに新しく排他制御の関数を追加！
+const handleSpotChange = (mIdx, sIdx, spIdx) => {
+    const currentSpot = areas.value[mIdx].subAreas[sIdx].spots[spIdx];
+    // チェックが入った、かつ「group」がデータ側に設定されている場合のみ実行
+    if (currentSpot.isSelected && currentSpot.group) {
+        areas.value[mIdx].subAreas[sIdx].spots.forEach((spot, idx) => {
+            // 自分自身以外で、同じグループ名のスポットがあればチェックを外す
+            if (idx !== spIdx && spot.group === currentSpot.group) {
+                spot.isSelected = false;
+            }
+        });
+    }
+};
+            
             const requestDeleteMainArea = (index) => {
                 deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, spIdx: -1, name: areas.value[index].name || "無題のエリア" };
             };
@@ -1413,16 +1427,17 @@
             // watch対象にdailyBonusArea, dailyShardを追加
             watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections, dailyBonusArea, dailyShard], () => { save(); }, { deep: true });
 
-            return {
-                isDarkMode, toggleTheme,
-                areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
-                showSettings, showResetModal, myRoutes, visibleSections, routeError,
-                dailyBonusArea, dailyShard, // returnに追加
-                totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
-                isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
-                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
+           return {
+    isDarkMode, toggleTheme,
+    areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+    generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
+    showSettings, showResetModal, myRoutes, visibleSections, routeError,
+    dailyBonusArea, dailyShard, // returnに追加
+    totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
+    isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
+    addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
+    handleSpotChange, // 🌟ここに追記してHTML側に公開します！
+    saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand
             };
