@@ -881,45 +881,49 @@
             const uuid = () => crypto.randomUUID();
 
             const getDefaultAreas = () => {
-                if (typeof SKY_DEFAULT_AREAS === 'undefined') return [];
-                return SKY_DEFAULT_AREAS.map(area => ({
-                    id: uuid(),
-                    name: area.name,
-                    isExpanded: area.isExpanded || false,
-                    subAreas: area.subAreas.map(sub => ({
+                // 【超強化】データが未定義、または配列でない場合は絶対にエラーにせず空配列を返す
+                if (typeof SKY_DEFAULT_AREAS === 'undefined' || !Array.isArray(SKY_DEFAULT_AREAS)) return [];
+                return SKY_DEFAULT_AREAS.map(area => {
+                    const subAreas = Array.isArray(area.subAreas) ? area.subAreas : [];
+                    return {
                         id: uuid(),
-                        name: sub.name,
-                        isExpanded: sub.isExpanded || false,
-                        spots: sub.spots.map(spot => ({
-                            id: uuid(),
-                            name: spot.name,
-                            light: spot.light,
-                            time: spot.time,
-                            isSelected: spot.isSelected || false,
-                            group: ""
-                        }))
-                    }))
-                }));
+                        name: area.name || "無題のエリア",
+                        isExpanded: !!area.isExpanded,
+                        subAreas: subAreas.map(sub => {
+                            const spots = Array.isArray(sub.spots) ? sub.spots : [];
+                            return {
+                                id: uuid(),
+                                name: sub.name || "無題のサブエリア",
+                                isExpanded: !!sub.isExpanded,
+                                spots: spots.map(spot => ({
+                                    id: uuid(),
+                                    name: spot.name || "無題のスポット",
+                                    light: Number(spot.light) || 0,
+                                    time: Number(spot.time) || 0,
+                                    isSelected: !!spot.isSelected,
+                                    group: spot.group || ""
+                                }))
+                            };
+                        })
+                    };
+                });
             };
 
             const loadInitialData = () => {
                 areas.value = getDefaultAreas();
-                
-                // 【対策】もし初期データファイルが読み込めていなかったら、空にせず警告を出し、ポップアップを強制突破する
                 if (areas.value.length === 0) {
                     areas.value = [{
                         id: uuid(),
-                        name: "⚠️エラー：areas-data.jsが読み込めていません",
+                        name: "⚠️データ読み込みエラー",
                         isExpanded: true,
                         subAreas: [{ 
                             id: uuid(), 
-                            name: "ファイル名や配置場所（HTMLと同じフォルダにあるか）を確認してください", 
+                            name: "areas-data.js が同じフォルダにあるか確認してください", 
                             isExpanded: true, 
                             spots: [] 
                         }]
                     }];
                 }
-                
                 myRoutes.value = [];
                 carryOverPercent.value = 0;
                 candleMemo.value = "";
@@ -938,68 +942,65 @@
             };
 
             const save = () => {
-                const dataToSave = {
-                    areas: areas.value,
-                    placedItems: placedItems.value, 
-                    carryOverPercent: carryOverPercent.value,
-                    targetDate: targetDate.value,
-                    currentCandles: currentCandles.value,
-                    plannedUsage: plannedUsage.value,
-                    targetCandlesForOptimization: targetCandlesForOptimization.value,
-                    candleMemo: candleMemo.value,
-                    dailyBonusArea: dailyBonusArea.value, 
-                    dailyShard: dailyShard.value,         
-                    myRoutes: myRoutes.value.map(r => ({
-                        id: r.id, name: r.name, memo: r.memo,
-                        selectedSpotIds: r.selectedSpotIds || [],
-                        actualSeconds: r.actualSeconds || 0
-                    })),
-                    visibleSections: visibleSections.value
-                };
-                localStorage.setItem('sky_tracker_storage_v3', JSON.stringify(dataToSave));
+                try {
+                    const dataToSave = {
+                        areas: areas.value,
+                        placedItems: placedItems.value, 
+                        carryOverPercent: carryOverPercent.value,
+                        targetDate: targetDate.value,
+                        currentCandles: currentCandles.value,
+                        plannedUsage: plannedUsage.value,
+                        targetCandlesForOptimization: targetCandlesForOptimization.value,
+                        candleMemo: candleMemo.value,
+                        dailyBonusArea: dailyBonusArea.value, 
+                        dailyShard: dailyShard.value,         
+                        myRoutes: myRoutes.value.map(r => ({
+                            id: r.id, name: r.name, memo: r.memo,
+                            selectedSpotIds: r.selectedSpotIds || [],
+                            actualSeconds: r.actualSeconds || 0
+                        })),
+                        visibleSections: visibleSections.value
+                    };
+                    localStorage.setItem('sky_tracker_storage_v3', JSON.stringify(dataToSave));
+                } catch (e) { console.error(e); }
             };
 
             const load = () => {
-                const saved = localStorage.getItem('sky_tracker_storage_v3');
-                if (saved) {
-                    try {
+                try {
+                    const saved = localStorage.getItem('sky_tracker_storage_v3');
+                    if (saved) {
                         const decoded = JSON.parse(saved);
-                        
-                        // 【対策】過去の壊れたデータ（構造がおかしいデータ）を検知した場合、自動で破棄して初期化する
-                        if (decoded.areas && decoded.areas.length > 0 && decoded.areas[0].subAreas) {
+                        // 【超強化】保存データの構造チェックを厳格化し、おかしければ即座に安全な初期データに切り替える
+                        if (decoded && Array.isArray(decoded.areas)) {
                             areas.value = decoded.areas;
-                            if (decoded.placedItems) placedItems.value = decoded.placedItems;
+                            placedItems.value = Array.isArray(decoded.placedItems) ? decoded.placedItems : [];
                             carryOverPercent.value = decoded.carryOverPercent || 0;
                             candleMemo.value = decoded.candleMemo || "";
                             if (decoded.targetDate) targetDate.value = decoded.targetDate;
-                            currentCandles.value = decoded.currentCandles || 0;
-                            plannedUsage.value = decoded.plannedUsage || 0;
-                            targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
+                            currentCandles.value = Number(decoded.currentCandles) || 0;
+                            plannedUsage.value = Number(decoded.plannedUsage) || 0;
+                            targetCandlesForOptimization.value = Number(decoded.targetCandlesForOptimization) || 20;
                             dailyBonusArea.value = decoded.dailyBonusArea || "none";
                             dailyShard.value = decoded.dailyShard || "none";
 
-                            if (decoded.myRoutes) {
+                            if (Array.isArray(decoded.myRoutes)) {
                                 myRoutes.value = decoded.myRoutes.map(r => ({
-                                    ...r,
+                                    id: r.id || uuid(),
+                                    name: r.name || "マイルート",
+                                    memo: r.memo || "",
                                     isExpanded: false,
-                                    selectedSpotIds: r.selectedSpotIds || [],
-                                    actualSeconds: r.actualSeconds || 0 
+                                    selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [],
+                                    actualSeconds: Number(r.actualSeconds) || 0
                                 }));
-                            }
+                            } else { myRoutes.value = []; }
                             if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
-                        } else {
-                            // 構造が不正ならストレージをクリア
-                            localStorage.removeItem('sky_tracker_storage_v3');
-                            loadInitialData();
+                            return;
                         }
-                    } catch (e) { 
-                        // パースエラーが起きたらストレージをクリア
-                        localStorage.removeItem('sky_tracker_storage_v3');
-                        loadInitialData(); 
                     }
-                } else { 
-                    loadInitialData(); 
-                }
+                } catch (e) { console.error("Storage load error:", e); }
+                
+                localStorage.removeItem('sky_tracker_storage_v3');
+                loadInitialData();
             };
 
             const eventDays = computed(() => {
@@ -1011,11 +1012,12 @@
 
             const selectedLight = computed(() => {
                 let total = 0;
+                if (!Array.isArray(areas.value)) return 0;
                 areas.value.forEach(area => {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub.spots) {
-                                sub.spots.forEach(spot => { if (spot.isSelected) total += spot.light; });
+                            if (sub && Array.isArray(sub.spots)) {
+                                sub.spots.forEach(spot => { if (spot && spot.isSelected) total += spot.light; });
                             }
                         });
                     }
@@ -1025,11 +1027,12 @@
 
             const totalSeconds = computed(() => {
                 let total = 0;
+                if (!Array.isArray(areas.value)) return 0;
                 areas.value.forEach(area => {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub.spots) {
-                                sub.spots.forEach(spot => { if (spot.isSelected) total += spot.time; });
+                            if (sub && Array.isArray(sub.spots)) {
+                                sub.spots.forEach(spot => { if (spot && spot.isSelected) total += spot.time; });
                             }
                         });
                     }
@@ -1068,34 +1071,36 @@
 
             const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
 
-            const isAllSubSelected = (subArea) => subArea.spots && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
+            const isAllSubSelected = (subArea) => subArea && Array.isArray(subArea.spots) && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
             const toggleSubArea = (subArea) => {
+                if (!subArea || !Array.isArray(subArea.spots)) return;
                 const targetState = !isAllSubSelected(subArea);
-                if (subArea.spots) subArea.spots.forEach(s => s.isSelected = targetState);
+                subArea.spots.forEach(s => s.isSelected = targetState);
             };
 
-            const isAllMainSelected = (mainArea) => mainArea.subAreas && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
+            const isAllMainSelected = (mainArea) => mainArea && Array.isArray(mainArea.subAreas) && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
             const toggleMainArea = (mainArea) => {
+                if (!mainArea || !Array.isArray(mainArea.subAreas)) return;
                 const targetState = !isAllMainSelected(mainArea);
                 mainArea.subAreas.forEach(sub => {
-                    if (sub.spots) sub.spots.forEach(s => s.isSelected = targetState);
+                    if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => s.isSelected = targetState);
                 });
             };
 
             const getSubAreaStats = (subArea) => {
                 let light = 0; let time = 0;
-                if (subArea.spots) {
-                    subArea.spots.forEach(s => { if (s.isSelected) { light += s.light; time += s.time; } });
+                if (subArea && Array.isArray(subArea.spots)) {
+                    subArea.spots.forEach(s => { if (s && s.isSelected) { light += s.light; time += s.time; } });
                 }
                 return { light, eff: time > 0 ? (light / time) : 0.0 };
             };
 
             const getMainAreaStats = (mainArea) => {
                 let light = 0; let time = 0;
-                if (mainArea.subAreas) {
+                if (mainArea && Array.isArray(mainArea.subAreas)) {
                     mainArea.subAreas.forEach(sub => {
-                        if (sub.spots) {
-                            sub.spots.forEach(s => { if (s.isSelected) { light += s.light; time += s.time; } });
+                        if (sub && Array.isArray(sub.spots)) {
+                            sub.spots.forEach(s => { if (s && s.isSelected) { light += s.light; time += s.time; } });
                         }
                     });
                 }
@@ -1122,17 +1127,17 @@
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub.spots) {
-                                sub.spots.forEach(s => { if (s.isSelected) selectedIds.push(s.id); });
+                            if (sub && Array.isArray(sub.spots)) {
+                                sub.spots.forEach(s => { if (s && s.isSelected) selectedIds.push(s.id); });
                             }
                         });
                     }
                 });
                 
                 if (selectedIds.length === 0) {
-                    routeError.value = "⚠️ スポットが一つも選択されていません。エリア管理内のスポットにチェックを入れてから保存してください。";
+                    routeError.value = "⚠️ スポットが一つも選択されていません。";
                     setTimeout(() => { routeError.value = ""; }, 4000);
                     return;
                 }
@@ -1150,12 +1155,12 @@
 
             const getRouteAreaNames = (route) => {
                 const names = [];
-                if (!route.selectedSpotIds) return "";
+                if (!route || !Array.isArray(route.selectedSpotIds)) return "";
                 route.selectedSpotIds.forEach(id => {
                     for (const area of areas.value) {
-                        if (area.subAreas) {
+                        if (area && Array.isArray(area.subAreas)) {
                             for (const sub of area.subAreas) {
-                                if (sub.spots) {
+                                if (sub && Array.isArray(sub.spots)) {
                                     const sp = sub.spots.find(s => s.id === id);
                                     if (sp) { names.push(`${sub.name}(${sp.name})`); break; }
                                 }
@@ -1167,18 +1172,18 @@
             };
 
             const deleteRoute = (index) => { 
-                if (myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
+                if (myRoutes.value[index] && myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
                 myRoutes.value.splice(index, 1); 
             };
 
             const applyRoute = (route) => {
-                if (!route.selectedSpotIds) return;
+                if (!route || !Array.isArray(route.selectedSpotIds)) return;
                 areas.value.forEach(area => {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub.spots) {
+                            if (sub && Array.isArray(sub.spots)) {
                                 sub.spots.forEach(s => {
-                                    s.isSelected = route.selectedSpotIds.includes(s.id);
+                                    if (s) s.isSelected = route.selectedSpotIds.includes(s.id);
                                 });
                             }
                         });
@@ -1188,13 +1193,13 @@
 
             const getRouteStats = (route) => {
                 let light = 0; let time = 0;
-                if (route.selectedSpotIds) {
+                if (route && Array.isArray(route.selectedSpotIds)) {
                     areas.value.forEach(area => {
-                        if (area.subAreas) {
+                        if (area && Array.isArray(area.subAreas)) {
                             area.subAreas.forEach(sub => {
-                                if (sub.spots) {
+                                if (sub && Array.isArray(sub.spots)) {
                                     sub.spots.forEach(s => {
-                                        if (route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
+                                        if (s && route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
                                     });
                                 }
                             });
@@ -1216,9 +1221,9 @@
 
             const getSpotNameById = (id) => {
                 for (const area of areas.value) {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         for (const sub of area.subAreas) {
-                            if (sub.spots) {
+                            if (sub && Array.isArray(sub.spots)) {
                                 const sp = sub.spots.find(s => s.id === id);
                                 if (sp) return `${sub.name}・${sp.name}`;
                             }
@@ -1229,6 +1234,7 @@
             };
 
             const moveRouteSpot = (route, index, direction) => {
+                if (!route || !Array.isArray(route.selectedSpotIds)) return;
                 const targetIndex = index + direction;
                 if (targetIndex >= 0 && targetIndex < route.selectedSpotIds.length) {
                     const item = route.selectedSpotIds.splice(index, 1)[0];
@@ -1237,7 +1243,7 @@
             };
 
             const removeSpotFromRoute = (route, index) => {
-                route.selectedSpotIds.splice(index, 1);
+                if (route && Array.isArray(route.selectedSpotIds)) route.selectedSpotIds.splice(index, 1);
             };
 
             const formatSeconds = (totalSec) => {
@@ -1245,45 +1251,37 @@
                 const mins = Math.floor((totalSec % 3600) / 60);
                 const secs = Math.floor(totalSec % 60);
                 const ms = Math.floor((totalSec % 1) * 1000);
-                
                 const pad = (n) => String(n).padStart(2, '0');
-                const padMs = (n) => String(n).padStart(3, '0');
-                
                 const timeStr = hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
-                return `${timeStr}.${padMs(ms)}`;
+                return `${timeStr}.${String(ms).padStart(3, '0')}`;
             };
 
             const startTimer = (route) => {
+                if (!route) return;
                 if (runningRouteId.value && runningRouteId.value !== route.id) {
                     const oldRoute = myRoutes.value.find(r => r.id === runningRouteId.value);
                     if (oldRoute) saveActiveTimerValue(oldRoute);
                 }
-                
                 runningRouteId.value = route.id;
                 const alreadyElapsedMs = (route.actualSeconds || 0) * 1000;
                 startTime = Date.now() - alreadyElapsedMs;
                 runningSeconds.value = route.actualSeconds || 0;
-                
                 if (!timerId) {
-                    timerId = setInterval(() => {
-                        runningSeconds.value = (Date.now() - startTime) / 1000;
-                    }, 10);
+                    timerId = setInterval(() => { runningSeconds.value = (Date.now() - startTime) / 1000; }, 10);
                 }
             };
 
             const saveActiveTimerValue = (route) => {
                 if (timerId) { clearInterval(timerId); timerId = null; }
-                route.actualSeconds = (Date.now() - startTime) / 1000;
+                if (route) route.actualSeconds = (Date.now() - startTime) / 1000;
                 runningRouteId.value = null;
                 runningSeconds.value = 0;
                 save(); 
             };
 
-            const pauseTimer = (route) => {
-                if (runningRouteId.value === route.id) { saveActiveTimerValue(route); }
-            };
-
+            const pauseTimer = (route) => { if (route && runningRouteId.value === route.id) saveActiveTimerValue(route); };
             const resetTimer = (route) => {
+                if (!route) return;
                 if (runningRouteId.value === route.id) {
                     if (timerId) { clearInterval(timerId); timerId = null; }
                     runningRouteId.value = null;
@@ -1301,7 +1299,8 @@
             };
 
             const toggleRouteExpand = (route) => {
-                if (route.isExpanded && runningRouteId.value === route.id) { saveActiveTimerValue(route); }
+                if (!route) return;
+                if (route.isExpanded && runningRouteId.value === route.id) saveActiveTimerValue(route);
                 route.isExpanded = !route.isExpanded;
             };
 
@@ -1341,16 +1340,14 @@
                     if (decoded.dailyBonusArea) dailyBonusArea.value = decoded.dailyBonusArea;
                     if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
                     
-                    if (decoded.myRoutes) {
+                    if (Array.isArray(decoded.myRoutes)) {
                         myRoutes.value = decoded.myRoutes.map(r => ({
-                            ...r,
-                            isExpanded: false,
-                            selectedSpotIds: r.selectedSpotIds || [],
-                            actualSeconds: r.actualSeconds || 0
+                            ...r, isExpanded: false,
+                            selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [],
+                            actualSeconds: Number(r.actualSeconds) || 0
                         }));
                     }
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
-                    
                     inputSpell.value = ""; showInlineMessage("🌟 データの復元に成功しました！", "success");
                 } catch (e) { showInlineMessage("😢 じじゅもんが ちがいます！", "error"); }
             };
@@ -1369,39 +1366,42 @@
                 }
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
-                
-                dailyBonusArea.value = "none";
-                dailyShard.value = "none";
+                dailyBonusArea.value = "none"; dailyShard.value = "none";
 
-                areas.value.forEach(area => {
-                    if (area.subAreas) {
-                        area.subAreas.forEach(sub => {
-                            if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
-                        });
-                    }
-                });
+                if (Array.isArray(areas.value)) {
+                    areas.value.forEach(area => {
+                        if (area && Array.isArray(area.subAreas)) {
+                            area.subAreas.forEach(sub => {
+                                if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => { if (s) s.isSelected = false; });
+                            });
+                        }
+                    });
+                }
             };
 
             const optimize = () => {
                 const target = Math.max(1, Math.min(targetCandlesForOptimization.value, thresholds.length));
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
                 
+                if (!Array.isArray(areas.value)) return;
                 areas.value.forEach(area => {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
+                            if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => { if (s) s.isSelected = false; });
                         });
                     }
                 });
                 
                 let refs = [];
                 areas.value.forEach((area, mIdx) => {
-                    if (area.subAreas) {
+                    if (area && Array.isArray(area.subAreas)) {
                         area.subAreas.forEach((sub, sIdx) => {
-                            if (sub.spots) {
+                            if (sub && Array.isArray(sub.spots)) {
                                 sub.spots.forEach((spot, spIdx) => {
-                                    const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
-                                    refs.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
+                                    if (spot) {
+                                        const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
+                                        refs.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
+                                    }
                                 });
                             }
                         });
@@ -1412,45 +1412,37 @@
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
-                    areas.value[ref.mIdx].subAreas[ref.sIdx].spots[ref.spIdx].isSelected = true; 
-                    accumulated += ref.light;
+                    if (areas.value[ref.mIdx]?.subAreas[ref.sIdx]?.spots[ref.ref.spIdx]) {
+                        areas.value[ref.mIdx].subAreas[ref.sIdx].spots[ref.spIdx].isSelected = true;
+                        accumulated += ref.light;
+                    }
                 }
             };
 
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
-            const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
-            const addSpot = (mIdx, sIdx) => { areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false, group: "" }); };
+            const addSubArea = (mIdx) => { if (areas.value[mIdx]) areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
+            const addSpot = (mIdx, sIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]) areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false, group: "" }); };
 
             const handleSpotChange = (mIdx, sIdx, spIdx) => {
-                const currentSpot = areas.value[mIdx].subAreas[sIdx].spots[spIdx];
-                
-                if (currentSpot.isSelected && currentSpot.group && currentSpot.group.trim() !== "") {
+                const currentSpot = areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx];
+                if (currentSpot && currentSpot.isSelected && currentSpot.group && currentSpot.group.trim() !== "") {
                     const currentGroupName = currentSpot.group.trim();
-                    
                     areas.value[mIdx].subAreas[sIdx].spots.forEach((spot, idx) => {
-                        if (idx !== spIdx && spot.group && spot.group.trim() === currentGroupName) {
+                        if (spot && idx !== spIdx && spot.group && spot.group.trim() === currentGroupName) {
                             spot.isSelected = false;
                         }
                     });
                 }
             };
 
-            const requestDeleteMainArea = (index) => {
-                deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, spIdx: -1, name: areas.value[index].name || "無題のエリア" };
-            };
-
-            const requestDeleteSubArea = (mIdx, sIdx) => {
-                deleteModal.value = { show: true, type: 'sub', mIdx: mIdx, sIdx: sIdx, spIdx: -1, name: areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア" };
-            };
-
-            const requestDeleteSpot = (mIdx, sIdx, spIdx) => {
-                deleteModal.value = { show: true, type: 'spot', mIdx: mIdx, sIdx: sIdx, spIdx: spIdx, name: areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || "無題のスポット" };
-            };
+            const requestDeleteMainArea = (index) => { if (areas.value[index]) deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, spIdx: -1, name: areas.value[index].name || "無題のエリア" }; };
+            const requestDeleteSubArea = (mIdx, sIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]) deleteModal.value = { show: true, type: 'sub', mIdx: mIdx, sIdx: sIdx, spIdx: -1, name: areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア" }; };
+            const requestDeleteSpot = (mIdx, sIdx, spIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx]) deleteModal.value = { show: true, type: 'spot', mIdx: mIdx, sIdx: sIdx, spIdx: spIdx, name: areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || "無題のスポット" }; };
 
             const confirmDelete = () => {
                 if (deleteModal.value.type === 'main') areas.value.splice(deleteModal.value.mIdx, 1);
-                else if (deleteModal.value.type === 'sub') areas.value[deleteModal.value.mIdx].subAreas.splice(deleteModal.value.sIdx, 1);
-                else if (deleteModal.value.type === 'spot') areas.value[deleteModal.value.mIdx].subAreas[deleteModal.value.sIdx].spots.splice(deleteModal.value.spIdx, 1);
+                else if (deleteModal.value.type === 'sub') areas.value[deleteModal.value.mIdx]?.subAreas.splice(deleteModal.value.sIdx, 1);
+                else if (deleteModal.value.type === 'spot') areas.value[deleteModal.value.mIdx]?.subAreas[deleteModal.value.sIdx]?.spots.splice(deleteModal.value.spIdx, 1);
                 deleteModal.value.show = false;
             };
 
@@ -1461,7 +1453,6 @@
                 if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); } 
                 else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
                 applyThemeToDOM();
-
                 load();
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
