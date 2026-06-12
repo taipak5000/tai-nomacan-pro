@@ -137,18 +137,18 @@ const SKY_DEFAULT_AREAS = [
                 name: "外郭（倒壊した祠）",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 64, time: 0, isSelected: false, group: "曜日" },
-                    { name: "火木土エリア合計", light: 65, time: 0, isSelected: false, group: "曜日" },
-                    { name: "日曜日エリア合計", light: 86, time: 0, isSelected: false, group: "曜日" }
+                    { name: "月水金エリア合計", light: 64, time: 0, isSelected: false, group: "月水金曜日" },
+                    { name: "火木土エリア合計", light: 65, time: 0, isSelected: false, group: "火木土曜日" },
+                    { name: "日曜日エリア合計", light: 86, time: 0, isSelected: false, group: "日曜日" }
                 ]
             },
             {
                 name: "墓所の入り口",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 42, time: 0, isSelected: false, group: "曜日" },
-                    { name: "火木土エリア合計", light: 30, time: 0, isSelected: false, group: "曜日" },
-                    { name: "日曜日エリア合計", light: 45, time: 0, isSelected: false, group: "曜日" }
+                    { name: "月水金エリア合計", light: 42, time: 0, isSelected: false, group: "月水金曜日" },
+                    { name: "火木土エリア合計", light: 30, time: 0, isSelected: false, group: "火木土曜日" },
+                    { name: "日曜日エリア合計", light: 45, time: 0, isSelected: false, group: "日曜日" }
                 ]
             },
             {
@@ -164,18 +164,18 @@ const SKY_DEFAULT_AREAS = [
                 name: "戦場",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 111, time: 0, isSelected: false, group: "曜日" },
-                    { name: "火木土エリア合計", light: 111, time: 0, isSelected: false, group: "曜日" },
-                    { name: "日曜日エリア合計", light: 139, time: 0, isSelected: false, group: "曜日" }
+                    { name: "月水金エリア合計", light: 111, time: 0, isSelected: false, group: "月水金曜日" },
+                    { name: "火木土エリア合計", light: 111, time: 0, isSelected: false, group: "火木土曜日" },
+                    { name: "日曜日エリア合計", light: 139, time: 0, isSelected: false, group: "日曜日" }
                 ]
             },
             {
                 name: "蟹の沼地（座礁船）",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 63, time: 0, isSelected: false, group: "曜日" },
-                    { name: "火木土エリア合計", light: 63, time: 0, isSelected: false, group: "曜日" },
-                    { name: "日曜日エリア合計", light: 101, time: 0, isSelected: false, group: "曜日" }
+                    { name: "月水金エリア合計", light: 63, time: 0, isSelected: false, group: "月水金曜日" },
+                    { name: "火木土エリア合計", light: 63, time: 0, isSelected: false, group: "火木土曜日" },
+                    { name: "日曜日エリア合計", light: 101, time: 0, isSelected: false, group: "日曜日" }
                 ]
             },
             { name: "捨て地神殿", isExpanded: false, spots: [{ name: "エリア合計", light: 40, time: 0, isSelected: false }] },
@@ -247,25 +247,25 @@ const SKY_DEFAULT_AREAS = [
                 name: "岩礁貝殻",
                 isExpanded: false,
                 spots: [
-                    { name: "平均値", light: 207, time: 0, isSelected: false, group: "ランダム" },
-                    { name: "最低値", light: 159, time: 0, isSelected: false, group: "ランダム" },
-                    { name: "最高値", light: 245, time: 0, isSelected: false, group: "ランダム" }
+                    { name: "平均値", light: 207, time: 0, isSelected: false, group: "平均" },
+                    { name: "最低値", light: 159, time: 0, isSelected: false, group: "最低" },
+                    { name: "最高値", light: 245, time: 0, isSelected: false, group: "最高" }
                 ]
             },
             {
                 name: "隠者レース",
                 isExpanded: false,
                 spots: [
-                    { name: "最低値", light: 150, time: 0, isSelected: false, group: "ランダム" },
-                    { name: "最高値", light: 300, time: 0, isSelected: false, group: "ランダム" }
+                    { name: "最低値", light: 150, time: 0, isSelected: false, group: "最低" },
+                    { name: "最高値", light: 300, time: 0, isSelected: false, group: "最高" }
                 ]
             },
             {
                 name: "夢見の劇場花束",
                 isExpanded: false,
                 spots: [
-                    { name: "最低値", light: 21, time: 0, isSelected: false, group: "ランダム" },
-                    { name: "最高値", light: 44, time: 0, isSelected: false, group: "ランダム" }
+                    { name: "最低値", light: 21, time: 0, isSelected: false, group: "最低" },
+                    { name: "最高値", light: 44, time: 0, isSelected: false, group: "最高" }
                 ]
             }
         ]
