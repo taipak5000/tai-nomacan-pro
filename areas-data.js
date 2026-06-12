@@ -1,5 +1,4 @@
 // areas-data.js
-// Sky キャンドル計算機 - 各エリアの初期データ専用マスターファイル
 const SKY_DEFAULT_AREAS = [
     {
         name: "ホーム",
@@ -89,8 +88,14 @@ const SKY_DEFAULT_AREAS = [
         name: "雨林",
         isExpanded: false,
         subAreas: [
-            { name: "前庭（月・水・金・日）", isExpanded: false, spots: [{ name: "エリア全体", light: 46, time: 0, isSelected: false }] },
-            { name: "前庭（火・木・土）", isExpanded: false, spots: [{ name: "エリア全体", light: 45, time: 0, isSelected: false }] },
+            {
+                name: "前庭",
+                isExpanded: false,
+                spots: [
+                    { name: "月・水・金・日 エリア全体", light: 46, time: 0, isSelected: false, group: "曜日" },
+                    { name: "火・木・土 エリア全体", light: 45, time: 0, isSelected: false, group: "曜日" }
+                ]
+            },
             { name: "小川", isExpanded: false, spots: [{ name: "エリア全体", light: 227, time: 0, isSelected: false }] },
             { name: "墓場（神殿前）", isExpanded: false, spots: [{ name: "エリア全体", light: 175, time: 0, isSelected: false }] },
             { name: "高台広場（晴れ間）", isExpanded: false, spots: [{ name: "エリア全体", light: 42, time: 0, isSelected: false }] },
@@ -132,45 +137,45 @@ const SKY_DEFAULT_AREAS = [
                 name: "外郭（倒壊した祠）",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 64, time: 0, isSelected: false },
-                    { name: "火木土エリア合計", light: 65, time: 0, isSelected: false },
-                    { name: "日曜日エリア合計", light: 86, time: 0, isSelected: false }
+                    { name: "月水金エリア合計", light: 64, time: 0, isSelected: false, group: "曜日" },
+                    { name: "火木土エリア合計", light: 65, time: 0, isSelected: false, group: "曜日" },
+                    { name: "日曜日エリア合計", light: 86, time: 0, isSelected: false, group: "曜日" }
                 ]
             },
             {
                 name: "墓所の入り口",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 42, time: 0, isSelected: false },
-                    { name: "火木土エリア合計", light: 30, time: 0, isSelected: false },
-                    { name: "日曜日エリア合計", light: 45, time: 0, isSelected: false }
+                    { name: "月水金エリア合計", light: 42, time: 0, isSelected: false, group: "曜日" },
+                    { name: "火木土エリア合計", light: 30, time: 0, isSelected: false, group: "曜日" },
+                    { name: "日曜日エリア合計", light: 45, time: 0, isSelected: false, group: "曜日" }
                 ]
             },
             {
                 name: "墓所",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 88, time: 0, isSelected: false },
-                    { name: "火木土エリア合計", light: 100, time: 0, isSelected: false },
-                    { name: "日曜日エリア合計", light: 112, time: 0, isSelected: false }
+                    { name: "月水金エリア合計", light: 88, time: 0, isSelected: false, group: "曜日" },
+                    { name: "火木土エリア合計", light: 100, time: 0, isSelected: false, group: "曜日" },
+                    { name: "日曜日エリア合計", light: 112, time: 0, isSelected: false, group: "曜日" }
                 ]
             },
             {
                 name: "戦場",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 111, time: 0, isSelected: false },
-                    { name: "火木土エリア合計", light: 111, time: 0, isSelected: false },
-                    { name: "日曜日エリア合計", light: 139, time: 0, isSelected: false }
+                    { name: "月水金エリア合計", light: 111, time: 0, isSelected: false, group: "曜日" },
+                    { name: "火木土エリア合計", light: 111, time: 0, isSelected: false, group: "曜日" },
+                    { name: "日曜日エリア合計", light: 139, time: 0, isSelected: false, group: "曜日" }
                 ]
             },
             {
                 name: "蟹の沼地（座礁船）",
                 isExpanded: false,
                 spots: [
-                    { name: "月水金エリア合計", light: 63, time: 0, isSelected: false },
-                    { name: "火木土エリア合計", light: 63, time: 0, isSelected: false },
-                    { name: "日曜日エリア合計", light: 101, time: 0, isSelected: false }
+                    { name: "月水金エリア合計", light: 63, time: 0, isSelected: false, group: "曜日" },
+                    { name: "火木土エリア合計", light: 63, time: 0, isSelected: false, group: "曜日" },
+                    { name: "日曜日エリア合計", light: 101, time: 0, isSelected: false, group: "曜日" }
                 ]
             },
             { name: "捨て地神殿", isExpanded: false, spots: [{ name: "エリア合計", light: 40, time: 0, isSelected: false }] },
@@ -207,7 +212,7 @@ const SKY_DEFAULT_AREAS = [
         name: "ソーシャルライト",
         isExpanded: false,
         subAreas: [
-            { name: "先祖の食卓（パン）", isExpanded: false, spots: [{ name: "1日上限", light: 1000, time: 0, isSelected: false }] },
+            { name: "先祖の食楽（パン）", isExpanded: false, spots: [{ name: "1日上限", light: 1000, time: 0, isSelected: false }] },
             { name: "ウミガメの軌跡（パンと上限共有）", isExpanded: false, spots: [{ name: "1日上限", light: 1000, time: 0, isSelected: false }] },
             { name: "間欠泉（ウニ）", isExpanded: false, spots: [{ name: "1日上限", light: 1000, time: 0, isSelected: false }] },
             { name: "岩礁うなぎ軌跡", isExpanded: false, spots: [{ name: "上限", light: 500, time: 0, isSelected: false }] },
@@ -242,25 +247,25 @@ const SKY_DEFAULT_AREAS = [
                 name: "岩礁貝殻",
                 isExpanded: false,
                 spots: [
-                    { name: "平均値", light: 207, time: 0, isSelected: false },
-                    { name: "最低値", light: 159, time: 0, isSelected: false },
-                    { name: "最高値", light: 245, time: 0, isSelected: false }
+                    { name: "平均値", light: 207, time: 0, isSelected: false, group: "ランダム" },
+                    { name: "最低値", light: 159, time: 0, isSelected: false, group: "ランダム" },
+                    { name: "最高値", light: 245, time: 0, isSelected: false, group: "ランダム" }
                 ]
             },
             {
                 name: "隠者レース",
                 isExpanded: false,
                 spots: [
-                    { name: "最低値", light: 150, time: 0, isSelected: false },
-                    { name: "最高値", light: 300, time: 0, isSelected: false }
+                    { name: "最低値", light: 150, time: 0, isSelected: false, group: "ランダム" },
+                    { name: "最高値", light: 300, time: 0, isSelected: false, group: "ランダム" }
                 ]
             },
             {
                 name: "夢見の劇場花束",
                 isExpanded: false,
                 spots: [
-                    { name: "最低値", light: 21, time: 0, isSelected: false },
-                    { name: "最高値", light: 44, time: 0, isSelected: false }
+                    { name: "最低値", light: 21, time: 0, isSelected: false, group: "ランダム" },
+                    { name: "最高値", light: 44, time: 0, isSelected: false, group: "ランダム" }
                 ]
             }
         ]
