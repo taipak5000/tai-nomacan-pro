@@ -1383,16 +1383,19 @@
 
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
             const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
-            const addSpot = (mIdx, sIdx) => { areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false }); };
+            const addSpot = (mIdx, sIdx) => { areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false, group: "" }); };
 
 // 🌟ここに新しく排他制御の関数を追加！
 const handleSpotChange = (mIdx, sIdx, spIdx) => {
     const currentSpot = areas.value[mIdx].subAreas[sIdx].spots[spIdx];
-    // チェックが入った、かつ「group」がデータ側に設定されている場合のみ実行
-    if (currentSpot.isSelected && currentSpot.group) {
+    
+    // チェックが入った、かつグループ名が空欄（スペースのみ含む）でない場合のみ実行
+    if (currentSpot.isSelected && currentSpot.group && currentSpot.group.trim() !== "") {
+        const currentGroupName = currentSpot.group.trim();
+        
         areas.value[mIdx].subAreas[sIdx].spots.forEach((spot, idx) => {
-            // 自分自身以外で、同じグループ名のスポットがあればチェックを外す
-            if (idx !== spIdx && spot.group === currentSpot.group) {
+            // 自分自身以外で、同じグループ名が入力されているスポットがあればチェックを外す
+            if (idx !== spIdx && spot.group && spot.group.trim() === currentGroupName) {
                 spot.isSelected = false;
             }
         });
