@@ -49,7 +49,6 @@
             overflow-x: hidden;
         }
 
-        .modal-overlay { display: none !important; }
 
         .container {
             max-width: 1200px;
@@ -767,17 +766,13 @@
         </div>
     </div>
 
-    <div v-if="deleteModal.show" class="modal-overlay" @click.self="cancelDelete">
+    <div v-if="deleteModal.show" class="modal-overlay" style="display: none;" :style="{ display: deleteModal.show ? 'flex' : 'none' }" @click.self="cancelDelete">
         <div class="modal-container">
             <div class="modal-title">⚠️ 削除の確認</div>
             <div class="modal-text">
-                「<strong>{{ deleteModal.name }}</strong>」を削除しますか？<br>
-                <div v-if="deleteModal.type === 'main'" style="font-size:12px; color:var(--text-gray); margin-top: 8px;">
-                    ※中のサブエリア、スポットもすべて消去されます
-                </div>
-                <div v-if="deleteModal.type === 'sub'" style="font-size:12px; color:var(--text-gray); margin-top: 8px;">
-                    ※中のスポットもすべて消去されます
-                </div>
+                「{{ deleteModal.name }}」を削除しますか？<br>
+                <span v-if="deleteModal.type === 'main'">※中のサブエリア、スポットもすべて消去されます</span>
+                <span v-if="deleteModal.type === 'sub'">※中のスポットもすべて消去されます</span>
             </div>
             <div class="modal-actions">
                 <button class="modal-btn modal-btn-cancel" @click="cancelDelete">キャンセル</button>
@@ -786,25 +781,23 @@
         </div>
     </div>
 
- 
-    <footer>
-        <div style="font-size: 11px; color: var(--text-gray); line-height: 1.6; text-align: left; max-width: 700px; margin: 0 auto 20px auto; background: var(--stat-box-bg); padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
-            💡 <b>計算機を快適に使うためのヒント＆お願い</b><br>
-            ・本アプリ内では大キャンドルを「<b>DC</b>」と省略して表記しています。<br>
-            ・初期登録されている火種数や想定時間はあくまで目安です。公式アップデートによる仕様変更やマップの変動、お使いのデバイス環境によって数値が異なる場合があります。<br>
-            ・ご自身の飛行スピード、羽の枚数、お気に入りの回り方に合わせて、右側の「エリア管理」からスポットの名前・火種・秒数を自由に書き換えて、自分だけの使いやすい計算機にカスタムしてご活用ください！
+    <div v-if="showResetModal" class="modal-overlay" style="display: none;" :style="{ display: showResetModal ? 'flex' : 'none' }" @click.self="showResetModal = false">
+        <div class="modal-container">
+            <div class="modal-title">⚠️ 計算機データの初期化</div>
+            <div class="modal-text">
+                キャンドル計算機の全設定、カスタムエリア、マイルートをすべて消去し、初期状態に戻します。よろしいですか？<br>
+                <div style="font-size:12px; color:var(--text-gray); margin-top: 8px; font-weight: bold;">
+                    ※「創作物管理」側のデータは消えずに残ります。
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" @click="showResetModal = false">キャンセル</button>
+                <button class="modal-btn modal-btn-delete" @click="resetCalculatorData">初期化する</button>
+            </div>
         </div>
-        <div>
-            © 2026 Sky キャンドル計算機 | 関連ツール: <a href="companion.html">✨ 精霊同行管理</a> | <a href="share.html">📍 創作物管理</a>
-        </div>
-        <div>
-            作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer">@Skyzztai</a>
-        </div>
-    </footer>
+    </div>
 
-</div>
-    
-<script src="areas-data.js"></script>
+</div> <script src="areas-data.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
@@ -1398,7 +1391,6 @@
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
-                    // 【修正箇所】タイポを修正しました
                     if (areas.value[ref.mIdx]?.subAreas[ref.sIdx]?.spots[ref.spIdx]) {
                         areas.value[ref.mIdx].subAreas[ref.sIdx].spots[ref.spIdx].isSelected = true;
                         accumulated += ref.light;
