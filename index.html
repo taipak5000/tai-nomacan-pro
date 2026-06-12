@@ -904,6 +904,22 @@
 
             const loadInitialData = () => {
                 areas.value = getDefaultAreas();
+                
+                // 【対策】もし初期データファイルが読み込めていなかったら、空にせず警告を出し、ポップアップを強制突破する
+                if (areas.value.length === 0) {
+                    areas.value = [{
+                        id: uuid(),
+                        name: "⚠️エラー：areas-data.jsが読み込めていません",
+                        isExpanded: true,
+                        subAreas: [{ 
+                            id: uuid(), 
+                            name: "ファイル名や配置場所（HTMLと同じフォルダにあるか）を確認してください", 
+                            isExpanded: true, 
+                            spots: [] 
+                        }]
+                    }];
+                }
+                
                 myRoutes.value = [];
                 carryOverPercent.value = 0;
                 candleMemo.value = "";
@@ -948,42 +964,42 @@
                 if (saved) {
                     try {
                         const decoded = JSON.parse(saved);
-                        if (decoded.areas && decoded.areas.length > 0) {
-                            const kotouIdx = decoded.areas.findIndex(a => a.name === "孤島");
-                            if (kotouIdx !== -1) {
-                                const kotou = decoded.areas[kotouIdx];
-                                if (kotou.subAreas && kotou.subAreas.length === 1 && (kotou.subAreas[0].name === "メイン" || kotou.subAreas[0].spots.length === 1)) {
-                                    const freshAreas = getDefaultAreas();
-                                    const freshKotou = freshAreas.find(a => a.name === "孤島");
-                                    if (freshKotou) { decoded.areas[kotouIdx] = freshKotou; }
-                                }
-                            }
-                            areas.value = decoded.areas;
-                        } else {
-                            areas.value = getDefaultAreas();
-                        }
                         
-                        if (decoded.placedItems) placedItems.value = decoded.placedItems;
-                        carryOverPercent.value = decoded.carryOverPercent || 0;
-                        candleMemo.value = decoded.candleMemo || "";
-                        if (decoded.targetDate) targetDate.value = decoded.targetDate;
-                        currentCandles.value = decoded.currentCandles || 0;
-                        plannedUsage.value = decoded.plannedUsage || 0;
-                        targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
-                        dailyBonusArea.value = decoded.dailyBonusArea || "none";
-                        dailyShard.value = decoded.dailyShard || "none";
+                        // 【対策】過去の壊れたデータ（構造がおかしいデータ）を検知した場合、自動で破棄して初期化する
+                        if (decoded.areas && decoded.areas.length > 0 && decoded.areas[0].subAreas) {
+                            areas.value = decoded.areas;
+                            if (decoded.placedItems) placedItems.value = decoded.placedItems;
+                            carryOverPercent.value = decoded.carryOverPercent || 0;
+                            candleMemo.value = decoded.candleMemo || "";
+                            if (decoded.targetDate) targetDate.value = decoded.targetDate;
+                            currentCandles.value = decoded.currentCandles || 0;
+                            plannedUsage.value = decoded.plannedUsage || 0;
+                            targetCandlesForOptimization.value = decoded.targetCandlesForOptimization || 20;
+                            dailyBonusArea.value = decoded.dailyBonusArea || "none";
+                            dailyShard.value = decoded.dailyShard || "none";
 
-                        if (decoded.myRoutes) {
-                            myRoutes.value = decoded.myRoutes.map(r => ({
-                                ...r,
-                                isExpanded: false,
-                                selectedSpotIds: r.selectedSpotIds || [],
-                                actualSeconds: r.actualSeconds || 0 
-                            }));
+                            if (decoded.myRoutes) {
+                                myRoutes.value = decoded.myRoutes.map(r => ({
+                                    ...r,
+                                    isExpanded: false,
+                                    selectedSpotIds: r.selectedSpotIds || [],
+                                    actualSeconds: r.actualSeconds || 0 
+                                }));
+                            }
+                            if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
+                        } else {
+                            // 構造が不正ならストレージをクリア
+                            localStorage.removeItem('sky_tracker_storage_v3');
+                            loadInitialData();
                         }
-                        if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
-                    } catch (e) { loadInitialData(); }
-                } else { loadInitialData(); }
+                    } catch (e) { 
+                        // パースエラーが起きたらストレージをクリア
+                        localStorage.removeItem('sky_tracker_storage_v3');
+                        loadInitialData(); 
+                    }
+                } else { 
+                    loadInitialData(); 
+                }
             };
 
             const eventDays = computed(() => {
@@ -996,11 +1012,13 @@
             const selectedLight = computed(() => {
                 let total = 0;
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (sub.spots) {
-                            sub.spots.forEach(spot => { if (spot.isSelected) total += spot.light; });
-                        }
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) {
+                                sub.spots.forEach(spot => { if (spot.isSelected) total += spot.light; });
+                            }
+                        });
+                    }
                 });
                 return total;
             });
@@ -1008,11 +1026,13 @@
             const totalSeconds = computed(() => {
                 let total = 0;
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (sub.spots) {
-                            sub.spots.forEach(spot => { if (spot.isSelected) total += spot.time; });
-                        }
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) {
+                                sub.spots.forEach(spot => { if (spot.isSelected) total += spot.time; });
+                            }
+                        });
+                    }
                 });
                 return total;
             });
@@ -1072,11 +1092,13 @@
 
             const getMainAreaStats = (mainArea) => {
                 let light = 0; let time = 0;
-                mainArea.subAreas.forEach(sub => {
-                    if (sub.spots) {
-                        sub.spots.forEach(s => { if (s.isSelected) { light += s.light; time += s.time; } });
-                    }
-                });
+                if (mainArea.subAreas) {
+                    mainArea.subAreas.forEach(sub => {
+                        if (sub.spots) {
+                            sub.spots.forEach(s => { if (s.isSelected) { light += s.light; time += s.time; } });
+                        }
+                    });
+                }
                 return { light, eff: time > 0 ? (light / time) : 0.0 };
             };
 
@@ -1100,11 +1122,13 @@
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (sub.spots) {
-                            sub.spots.forEach(s => { if (s.isSelected) selectedIds.push(s.id); });
-                        }
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) {
+                                sub.spots.forEach(s => { if (s.isSelected) selectedIds.push(s.id); });
+                            }
+                        });
+                    }
                 });
                 
                 if (selectedIds.length === 0) {
@@ -1129,10 +1153,12 @@
                 if (!route.selectedSpotIds) return "";
                 route.selectedSpotIds.forEach(id => {
                     for (const area of areas.value) {
-                        for (const sub of area.subAreas) {
-                            if (sub.spots) {
-                                const sp = sub.spots.find(s => s.id === id);
-                                if (sp) { names.push(`${sub.name}(${sp.name})`); break; }
+                        if (area.subAreas) {
+                            for (const sub of area.subAreas) {
+                                if (sub.spots) {
+                                    const sp = sub.spots.find(s => s.id === id);
+                                    if (sp) { names.push(`${sub.name}(${sp.name})`); break; }
+                                }
                             }
                         }
                     }
@@ -1148,13 +1174,15 @@
             const applyRoute = (route) => {
                 if (!route.selectedSpotIds) return;
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (sub.spots) {
-                            sub.spots.forEach(s => {
-                                s.isSelected = route.selectedSpotIds.includes(s.id);
-                            });
-                        }
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) {
+                                sub.spots.forEach(s => {
+                                    s.isSelected = route.selectedSpotIds.includes(s.id);
+                                });
+                            }
+                        });
+                    }
                 });
             };
 
@@ -1162,13 +1190,15 @@
                 let light = 0; let time = 0;
                 if (route.selectedSpotIds) {
                     areas.value.forEach(area => {
-                        area.subAreas.forEach(sub => {
-                            if (sub.spots) {
-                                sub.spots.forEach(s => {
-                                    if (route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
-                                });
-                            }
-                        });
+                        if (area.subAreas) {
+                            area.subAreas.forEach(sub => {
+                                if (sub.spots) {
+                                    sub.spots.forEach(s => {
+                                        if (route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
+                                    });
+                                }
+                            });
+                        }
                     });
                 }
                 const timeStr = `${Math.floor(time / 60)}分${Math.floor(time % 60)}秒`;
@@ -1186,10 +1216,12 @@
 
             const getSpotNameById = (id) => {
                 for (const area of areas.value) {
-                    for (const sub of area.subAreas) {
-                        if (sub.spots) {
-                            const sp = sub.spots.find(s => s.id === id);
-                            if (sp) return `${sub.name}・${sp.name}`;
+                    if (area.subAreas) {
+                        for (const sub of area.subAreas) {
+                            if (sub.spots) {
+                                const sp = sub.spots.find(s => s.id === id);
+                                if (sp) return `${sub.name}・${sp.name}`;
+                            }
                         }
                     }
                 }
@@ -1342,9 +1374,11 @@
                 dailyShard.value = "none";
 
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
+                        });
+                    }
                 });
             };
 
@@ -1353,21 +1387,25 @@
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
                 
                 areas.value.forEach(area => {
-                    area.subAreas.forEach(sub => {
-                        if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach(sub => {
+                            if (sub.spots) sub.spots.forEach(s => s.isSelected = false);
+                        });
+                    }
                 });
                 
                 let refs = [];
                 areas.value.forEach((area, mIdx) => {
-                    area.subAreas.forEach((sub, sIdx) => {
-                        if (sub.spots) {
-                            sub.spots.forEach((spot, spIdx) => {
-                                const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
-                                refs.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
-                            });
-                        }
-                    });
+                    if (area.subAreas) {
+                        area.subAreas.forEach((sub, sIdx) => {
+                            if (sub.spots) {
+                                sub.spots.forEach((spot, spIdx) => {
+                                    const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
+                                    refs.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
+                                });
+                            }
+                        });
+                    }
                 });
                 
                 refs.sort((a, b) => b.eff - a.eff);
