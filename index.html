@@ -875,7 +875,6 @@
             let timerId = null;
             let startTime = 0; 
 
-            // 🌋 提案2用：本日のアドオン要素の状態管理
             const dailyBonusArea = ref("none");
             const dailyShard = ref("none");
 
@@ -896,7 +895,8 @@
                             name: spot.name,
                             light: spot.light,
                             time: spot.time,
-                            isSelected: spot.isSelected || false
+                            isSelected: spot.isSelected || false,
+                            group: ""
                         }))
                     }))
                 }));
@@ -931,8 +931,8 @@
                     plannedUsage: plannedUsage.value,
                     targetCandlesForOptimization: targetCandlesForOptimization.value,
                     candleMemo: candleMemo.value,
-                    dailyBonusArea: dailyBonusArea.value, // 保存対象に追加
-                    dailyShard: dailyShard.value,         // 保存対象に追加
+                    dailyBonusArea: dailyBonusArea.value, 
+                    dailyShard: dailyShard.value,         
                     myRoutes: myRoutes.value.map(r => ({
                         id: r.id, name: r.name, memo: r.memo,
                         selectedSpotIds: r.selectedSpotIds || [],
@@ -1030,11 +1030,10 @@
 
             const carryOverLight = computed(() => 94.0 * (carryOverPercent.value / 100.0));
             
-            // 🌋 提案2：選択中のイベント要素（大キャン・破片）の火種を動的に計算にマージ
             const totalLight = computed(() => {
                 let bonus = 0;
-                if (dailyBonusArea.value !== "none") bonus += 200; // 日替わり大キャン4箇所分
-                if (dailyShard.value === "black") bonus += 200;     // 黒い破片の獲得火種目安
+                if (dailyBonusArea.value !== "none") bonus += 200; 
+                if (dailyShard.value === "black") bonus += 200;     
                 return selectedLight.value + Math.floor(carryOverLight.value) + bonus;
             });
 
@@ -1339,7 +1338,6 @@
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
                 
-                // 🌋 デイリー要素はリセット時に「なし」に戻す
                 dailyBonusArea.value = "none";
                 dailyShard.value = "none";
 
@@ -1381,7 +1379,7 @@
                 }
             };
 
-const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
+            const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
             const addSubArea = (mIdx) => { areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
             const addSpot = (mIdx, sIdx) => { areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false, group: "" }); };
 
@@ -1399,8 +1397,6 @@ const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メイ�
                 }
             };
 
-            const requestDeleteMainArea = (index) => {
-            
             const requestDeleteMainArea = (index) => {
                 deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, spIdx: -1, name: areas.value[index].name || "無題のエリア" };
             };
@@ -1432,20 +1428,19 @@ const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メイ�
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            // watch対象にdailyBonusArea, dailyShardを追加
             watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections, dailyBonusArea, dailyShard], () => { save(); }, { deep: true });
 
-           return {
-    isDarkMode, toggleTheme,
-    areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-    generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
-    showSettings, showResetModal, myRoutes, visibleSections, routeError,
-    dailyBonusArea, dailyShard, // returnに追加
-    totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
-    isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-    addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
-    handleSpotChange, // 🌟ここに追記してHTML側に公開します！
-    saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
+            return {
+                isDarkMode, toggleTheme,
+                areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
+                showSettings, showResetModal, myRoutes, visibleSections, routeError,
+                dailyBonusArea, dailyShard, 
+                totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
+                isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
+                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
+                handleSpotChange,
+                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand
             };
@@ -1454,4 +1449,3 @@ const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メイ�
 </script>
 </body>
 </html>
-
