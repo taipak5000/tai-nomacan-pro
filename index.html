@@ -6,8 +6,7 @@
     <title>Sky キャンドル計算機 (Web版)</title>
     <style>
         /* 🎨 ライトモード標準の共通色 */
-       
-    :root {
+        :root {
             --bg-color: #f2f2f7;
             --card-bg: #ffffff;
             --text-color: #000000;
@@ -48,7 +47,6 @@
             padding: 16px;
             overflow-x: hidden;
         }
-
 
         .container {
             max-width: 1200px;
@@ -325,60 +323,6 @@
             text-shadow: 0 0 4px rgba(52,199,89,0.3);
         }
 
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            animation: fadeIn 0.2s ease-out;
-        }
-        
-        .modal-container {
-            background: var(--card-bg);
-            width: 90%;
-            max-width: 320px;
-            border-radius: 14px;
-            padding: 24px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: slideUp 0.2s ease-out;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--accent-red);
-            margin-bottom: 12px;
-        }
-
-        .modal-text {
-            font-size: 14px;
-            color: var(--text-color);
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-
-        .modal-btn-cancel { background: var(--tab-bg); color: var(--text-color); }
-        .modal-btn-delete { background: var(--accent-red); color: white; }
-
         footer {
             text-align: center;
             padding: 24px 16px;
@@ -398,7 +342,6 @@
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -425,7 +368,6 @@
         </div>
     </header>
 
-
     <div v-if="showSettings" class="section-card settings-panel">
         <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">⚙️ 各窓の表示・非表示設定</div>
         <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0; align-items: center; width:100%;">
@@ -442,8 +384,8 @@
                 <input type="checkbox" v-model="visibleSections.spellShare" style="width:18px; height:18px;"> データの共有
             </label>
             
-            <button class="btn-outline-red" @click="showResetModal = true" style="padding: 4px 10px; font-size: 12px; margin-left: auto; font-weight: bold; border-radius: 6px;">
-                💥 計算機初期化
+            <button class="btn-outline-red" @click="resetCalculatorData" style="padding: 4px 10px; font-size: 12px; margin-left: auto; font-weight: bold; border-radius: 6px;">
+                🧹 入力数値をリセット
             </button>
         </div>
     </div>
@@ -727,31 +669,30 @@
                             </div>
 
                             <div v-if="subArea.isExpanded" class="spot-list">
-                              <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
-            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
-            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
-        </div>
+                                <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
+                                            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
+                                            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+                                        </div>
                                         <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
-    <div class="flex-group">
-        <span>火種:</span>
-        <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
-    </div>
-    <div class="flex-group">
-        <span>秒数:</span>
-        <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
-    </div>
-    <div class="flex-group">
-        <span>グループ:</span>
-        <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
-    </div>
-    <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
-        {{ (spot.light / spot.time).toFixed(1) }}/s
-    </span>
-</div>
+                                        <div class="flex-group">
+                                            <span>火種:</span>
+                                            <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                        </div>
+                                        <div class="flex-group">
+                                            <span>秒数:</span>
+                                            <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                        </div>
+                                        <div class="flex-group">
+                                            <span>グループ:</span>
+                                            <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
+                                        </div>
+                                        <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
+                                            {{ (spot.light / spot.time).toFixed(1) }}/s
+                                        </span>
                                     </div>
                                 </div>
                                 <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size: 13px; padding: 6px 4px; color: var(--accent-purple);">➕ スポットを追加</button>
@@ -766,38 +707,9 @@
         </div>
     </div>
 
-<div v-if="deleteModal.show" class="modal-overlay" @click.self="cancelDelete">
-        <div class="modal-container">
-            <div class="modal-title">⚠️ 削除の確認</div>
-            <div class="modal-text">
-                「{{ deleteModal.name }}」を削除しますか？<br>
-                <span v-if="deleteModal.type === 'main'">※中のサブエリア、スポットもすべて消去されます</span>
-                <span v-if="deleteModal.type === 'sub'">※中のスポットもすべて消去されます</span>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" @click="cancelDelete">キャンセル</button>
-                <button class="modal-btn modal-btn-delete" @click="confirmDelete">削除する</button>
-            </div>
-        </div>
-    </div>
+</div>
 
-<div v-if="showResetModal" class="modal-overlay" @click.self="showResetModal = false">
-        <div class="modal-container">
-            <div class="modal-title">⚠️ 計算機データの初期化</div>
-            <div class="modal-text">
-                キャンドル計算機の全設定、カスタムエリア、マイルートをすべて消去し、初期状態に戻します。よろしいですか？<br>
-                <div style="font-size:12px; color:var(--text-gray); margin-top: 8px; font-weight: bold;">
-                    ※「創作物管理」側のデータは消えずに残ります。
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" @click="showResetModal = false">キャンセル</button>
-                <button class="modal-btn modal-btn-delete" @click="resetCalculatorData">初期化する</button>
-            </div>
-        </div>
-    </div>
-
-</div> <script src="areas-data.js"></script>
+<script src="areas-data.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
@@ -824,7 +736,6 @@
             const candleMemo = ref("");
 
             const showSettings = ref(false);
-            const showResetModal = ref(false); 
             const myRoutes = ref([]);
             const routeError = ref(""); 
             const visibleSections = ref({
@@ -839,8 +750,6 @@
             const isConfirming = ref(false);
             const spellMessage = ref("");
             const spellMessageType = ref("");
-            
-            const deleteModal = ref({ show: false, type: '', mIdx: -1, sIdx: -1, spIdx: -1, name: '' });
             
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
@@ -914,10 +823,31 @@
                 dailyShard.value = "none";
             };
 
+            // 🌟 ポップアップ無しの安全な「数値リセット」処理
             const resetCalculatorData = () => {
-                stopAnyActiveTimer();
-                localStorage.removeItem('sky_tracker_storage_v3');
-                location.reload();
+                if (confirm("キャンドル数、メモ、エリアの選択状態などの入力数値をリセットしますか？\n（※保存したマイルートや自分で追加したエリアは消えずに残ります）")) {
+                    stopAnyActiveTimer();
+                    currentCandles.value = 0;
+                    plannedUsage.value = 0;
+                    carryOverPercent.value = 0;
+                    dailyBonusArea.value = "none";
+                    dailyShard.value = "none";
+                    candleMemo.value = "";
+                    
+                    if (Array.isArray(areas.value)) {
+                        areas.value.forEach(area => {
+                            if (area && Array.isArray(area.subAreas)) {
+                                area.subAreas.forEach(sub => {
+                                    if (sub && Array.isArray(sub.spots)) {
+                                        sub.spots.forEach(s => { if (s) s.isSelected = false; });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    save();
+                    showInlineMessage("🧹 入力数値をリセットしました", "success");
+                }
             };
 
             const save = () => {
@@ -1152,9 +1082,13 @@
                 return names.join(' → ');
             };
 
+            // 🌟 安全なブラウザ確認を直接使う形に修正
             const deleteRoute = (index) => { 
-                if (myRoutes.value[index] && myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
-                myRoutes.value.splice(index, 1); 
+                if (confirm(`ルート「${myRoutes.value[index]?.name}」を削除しますか？`)) {
+                    if (myRoutes.value[index] && myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
+                    myRoutes.value.splice(index, 1); 
+                    save();
+                }
             };
 
             const applyRoute = (route) => {
@@ -1419,18 +1353,31 @@
                 }
             };
 
-            const requestDeleteMainArea = (index) => { if (areas.value[index]) deleteModal.value = { show: true, type: 'main', mIdx: index, sIdx: -1, spIdx: -1, name: areas.value[index].name || "無題のエリア" }; };
-            const requestDeleteSubArea = (mIdx, sIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]) deleteModal.value = { show: true, type: 'sub', mIdx: mIdx, sIdx: sIdx, spIdx: -1, name: areas.value[mIdx].subAreas[sIdx].name || "無題のサブエリア" }; };
-            const requestDeleteSpot = (mIdx, sIdx, spIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx]) deleteModal.value = { show: true, type: 'spot', mIdx: mIdx, sIdx: sIdx, spIdx: spIdx, name: areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || "無題のスポット" }; };
-
-            const confirmDelete = () => {
-                if (deleteModal.value.type === 'main') areas.value.splice(deleteModal.value.mIdx, 1);
-                else if (deleteModal.value.type === 'sub') areas.value[deleteModal.value.mIdx]?.subAreas.splice(deleteModal.value.sIdx, 1);
-                else if (deleteModal.value.type === 'spot') areas.value[deleteModal.value.mIdx]?.subAreas[deleteModal.value.sIdx]?.spots.splice(deleteModal.value.spIdx, 1);
-                deleteModal.value.show = false;
+            // 🌟 エリア削除やスポット削除も、安全なブラウザ標準の確認ダイアログに変更
+            const requestDeleteMainArea = (index) => { 
+                if (areas.value[index]) {
+                    if (confirm(`「${areas.value[index].name || '無題のエリア'}」を削除しますか？\n※中のサブエリアやスポットもすべて消去されます`)) {
+                        areas.value.splice(index, 1);
+                        save();
+                    }
+                }
             };
-
-            const cancelDelete = () => { deleteModal.value.show = false; };
+            const requestDeleteSubArea = (mIdx, sIdx) => { 
+                if (areas.value[mIdx]?.subAreas[sIdx]) {
+                    if (confirm(`「${areas.value[mIdx].subAreas[sIdx].name || '無題のサブエリア'}」を削除しますか？\n※中のスポットもすべて消去されます`)) {
+                        areas.value[mIdx].subAreas.splice(sIdx, 1);
+                        save();
+                    }
+                }
+            };
+            const requestDeleteSpot = (mIdx, sIdx, spIdx) => { 
+                if (areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx]) {
+                    if (confirm(`「${areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || '無題のスポット'}」を削除しますか？`)) {
+                        areas.value[mIdx].subAreas[sIdx].spots.splice(spIdx, 1);
+                        save();
+                    }
+                }
+            };
 
             onMounted(() => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
@@ -1441,24 +1388,28 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            // 🌟 データの深い変更（チェックの有無など）を100%確実に感知して自動保存する形式に最適化
+            // 🌟 100%確実に感知して自動保存する高安定性の個別watch形式に整理
             watch(areas, () => { save(); }, { deep: true });
             watch(myRoutes, () => { save(); }, { deep: true });
             watch(visibleSections, () => { save(); }, { deep: true });
-            watch(
-                [carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, dailyBonusArea, dailyShard],
-                () => { save(); }
-            );
+            watch(carryOverPercent, () => { save(); });
+            watch(targetDate, () => { save(); });
+            watch(currentCandles, () => { save(); });
+            watch(plannedUsage, () => { save(); });
+            watch(targetCandlesForOptimization, () => { save(); });
+            watch(candleMemo, () => { save(); });
+            watch(dailyBonusArea, () => { save(); });
+            watch(dailyShard, () => { save(); });
 
             return {
                 isDarkMode, toggleTheme,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
-                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType, deleteModal,
-                showSettings, showResetModal, myRoutes, visibleSections, routeError,
+                generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
+                showSettings, myRoutes, visibleSections, routeError,
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
-                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, confirmDelete, cancelDelete,
+                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot,
                 handleSpotChange,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
