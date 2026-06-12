@@ -323,6 +323,31 @@
             text-shadow: 0 0 4px rgba(52,199,89,0.3);
         }
 
+        /* 🔔 アプリ内カスタムダイアログのスタイル */
+        .app-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.15s ease-out;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .app-modal-content {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 22px;
+            border-radius: 14px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            animation: scaleUp 0.15s ease-out;
+        }
+        @keyframes scaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         footer {
             text-align: center;
             padding: 24px 16px;
@@ -707,6 +732,23 @@
         </div>
     </div>
 
+    <div v-if="confirmModal.show" class="app-modal-overlay" @click.self="confirmModal.show = false">
+        <div class="app-modal-content">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                ⚠️ 確認
+            </div>
+            <p style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; margin: 0 0 22px 0;">{{ confirmModal.message }}</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-outline-blue" @click="confirmModal.show = false" style="background: var(--input-bg); color: var(--text-color); border-color: var(--border-color); padding: 8px 16px; font-weight: normal;">
+                    キャンセル
+                </button>
+                <button class="btn-outline-blue" @click="executeConfirm" style="background: var(--accent-red); color: white; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px;">
+                    実行する
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="areas-data.js"></script>
@@ -751,6 +793,26 @@
             const spellMessage = ref("");
             const spellMessageType = ref("");
             
+            // 🛡️ アプリ内カスタム確認ダイアログ用のデータ管理
+            const confirmModal = ref({
+                show: false,
+                message: "",
+                onConfirm: null
+            });
+
+            const openCustomConfirm = (message, action) => {
+                confirmModal.value.message = message;
+                confirmModal.value.onConfirm = action;
+                confirmModal.value.show = true;
+            };
+
+            const executeConfirm = () => {
+                if (typeof confirmModal.value.onConfirm === 'function') {
+                    confirmModal.value.onConfirm();
+                }
+                confirmModal.value.show = false;
+            };
+
             const defaultTarget = new Date();
             defaultTarget.setDate(defaultTarget.getDate() + 14);
             const targetDate = ref(defaultTarget.toISOString().split('T')[0]);
@@ -823,30 +885,80 @@
                 dailyShard.value = "none";
             };
 
-            // 🌟 ポップアップ無しの安全な「数値リセット」処理
+            // 各種削除・リセット処理を安全なアプリ内カスタム確認ダイアログへ移行
             const resetCalculatorData = () => {
-                if (confirm("キャンドル数、メモ、エリアの選択状態などの入力数値をリセットしますか？\n（※保存したマイルートや自分で追加したエリアは消えずに残ります）")) {
-                    stopAnyActiveTimer();
-                    currentCandles.value = 0;
-                    plannedUsage.value = 0;
-                    carryOverPercent.value = 0;
-                    dailyBonusArea.value = "none";
-                    dailyShard.value = "none";
-                    candleMemo.value = "";
-                    
-                    if (Array.isArray(areas.value)) {
-                        areas.value.forEach(area => {
-                            if (area && Array.isArray(area.subAreas)) {
-                                area.subAreas.forEach(sub => {
-                                    if (sub && Array.isArray(sub.spots)) {
-                                        sub.spots.forEach(s => { if (s) s.isSelected = false; });
-                                    }
-                                });
-                            }
-                        });
+                openCustomConfirm(
+                    "キャンドル数、メモ、エリアの選択状態などの入力数値をリセットしますか？\n（※保存したマイルートや自分で追加したエリアは消えずに残ります）",
+                    () => {
+                        stopAnyActiveTimer();
+                        currentCandles.value = 0;
+                        plannedUsage.value = 0;
+                        carryOverPercent.value = 0;
+                        dailyBonusArea.value = "none";
+                        dailyShard.value = "none";
+                        candleMemo.value = "";
+                        
+                        if (Array.isArray(areas.value)) {
+                            areas.value.forEach(area => {
+                                if (area && Array.isArray(area.subAreas)) {
+                                    area.subAreas.forEach(sub => {
+                                        if (sub && Array.isArray(sub.spots)) {
+                                            sub.spots.forEach(s => { if (s) s.isSelected = false; });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        save();
+                        showInlineMessage("🧹 入力数値をリセットしました", "success");
                     }
-                    save();
-                    showInlineMessage("🧹 入力数値をリセットしました", "success");
+                );
+            };
+
+            const deleteRoute = (index) => { 
+                openCustomConfirm(
+                    `ルート「${myRoutes.value[index]?.name}」を削除しますか？`,
+                    () => {
+                        if (myRoutes.value[index] && myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
+                        myRoutes.value.splice(index, 1); 
+                        save();
+                    }
+                );
+            };
+
+            const requestDeleteMainArea = (index) => { 
+                if (areas.value[index]) {
+                    openCustomConfirm(
+                        `「${areas.value[index].name || '無題のエリア'}」を削除しますか？\n※中のサブエリアやスポットもすべて消去されます`,
+                        () => {
+                            areas.value.splice(index, 1);
+                            save();
+                        }
+                    );
+                }
+            };
+
+            const requestDeleteSubArea = (mIdx, sIdx) => { 
+                if (areas.value[mIdx]?.subAreas[sIdx]) {
+                    openCustomConfirm(
+                        `「${areas.value[mIdx].subAreas[sIdx].name || '無題のサブエリア'}」を削除しますか？\n※中のスポットもすべて消去されます`,
+                        () => {
+                            areas.value[mIdx].subAreas.splice(sIdx, 1);
+                            save();
+                        }
+                    );
+                }
+            };
+
+            const requestDeleteSpot = (mIdx, sIdx, spIdx) => { 
+                if (areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx]) {
+                    openCustomConfirm(
+                        `「${areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || '無題のスポット'}」を削除しますか？`,
+                        () => {
+                            areas.value[mIdx].subAreas[sIdx].spots.splice(spIdx, 1);
+                            save();
+                        }
+                    );
                 }
             };
 
@@ -1080,15 +1192,6 @@
                     }
                 });
                 return names.join(' → ');
-            };
-
-            // 🌟 安全なブラウザ確認を直接使う形に修正
-            const deleteRoute = (index) => { 
-                if (confirm(`ルート「${myRoutes.value[index]?.name}」を削除しますか？`)) {
-                    if (myRoutes.value[index] && myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
-                    myRoutes.value.splice(index, 1); 
-                    save();
-                }
             };
 
             const applyRoute = (route) => {
@@ -1353,32 +1456,6 @@
                 }
             };
 
-            // 🌟 エリア削除やスポット削除も、安全なブラウザ標準の確認ダイアログに変更
-            const requestDeleteMainArea = (index) => { 
-                if (areas.value[index]) {
-                    if (confirm(`「${areas.value[index].name || '無題のエリア'}」を削除しますか？\n※中のサブエリアやスポットもすべて消去されます`)) {
-                        areas.value.splice(index, 1);
-                        save();
-                    }
-                }
-            };
-            const requestDeleteSubArea = (mIdx, sIdx) => { 
-                if (areas.value[mIdx]?.subAreas[sIdx]) {
-                    if (confirm(`「${areas.value[mIdx].subAreas[sIdx].name || '無題のサブエリア'}」を削除しますか？\n※中のスポットもすべて消去されます`)) {
-                        areas.value[mIdx].subAreas.splice(sIdx, 1);
-                        save();
-                    }
-                }
-            };
-            const requestDeleteSpot = (mIdx, sIdx, spIdx) => { 
-                if (areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx]) {
-                    if (confirm(`「${areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || '無題のスポット'}」を削除しますか？`)) {
-                        areas.value[mIdx].subAreas[sIdx].spots.splice(spIdx, 1);
-                        save();
-                    }
-                }
-            };
-
             onMounted(() => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
                 if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); } 
@@ -1388,7 +1465,6 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            // 🌟 100%確実に感知して自動保存する高安定性の個別watch形式に整理
             watch(areas, () => { save(); }, { deep: true });
             watch(myRoutes, () => { save(); }, { deep: true });
             watch(visibleSections, () => { save(); }, { deep: true });
@@ -1405,6 +1481,7 @@
                 isDarkMode, toggleTheme,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
+                confirmModal, executeConfirm,
                 showSettings, myRoutes, visibleSections, routeError,
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
