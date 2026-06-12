@@ -800,21 +800,6 @@
     </footer>
 
 </div>
-<div v-if="showResetModal" class="modal-overlay" @click.self="showResetModal = false">
-        <div class="modal-container">
-            <div class="modal-title">⚠️ 計算機データの初期化</div>
-            <div class="modal-text">
-                キャンドル計算機の全設定、カスタムエリア、マイルートをすべて消去し、初期状態に戻します。よろしいですか？<br>
-                <div style="font-size:12px; color:var(--text-gray); margin-top: 8px; font-weight: bold;">
-                    ※「創作物管理」側のデータは消えずに残ります。
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" @click="showResetModal = false">キャンセル</button>
-                <button class="modal-btn modal-btn-delete" @click="resetCalculatorData">初期化する</button>
-            </div>
-        </div>
-    </div>
     
 <script src="areas-data.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
