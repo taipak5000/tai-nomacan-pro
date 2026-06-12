@@ -451,7 +451,7 @@
     <div class="layout-grid">
         <div>
             <div class="section-card">
-                <div class="section-header">🔥 今日の精錬状況</div>
+                <div class="section-header">幕 今日の精錬状況</div>
                 
                 <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
@@ -579,94 +579,7 @@
         </div>
           
         <div>
-            <div class="section-card">
-                <div class="section-header">🗺️ エリア管理</div>
-                
-                <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
-                    <div class="area-title-row1">
-                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
-                            <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)">
-                            <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size:16px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
-                        </div>
-                        
-                        <div class="expand-toggle-btn" @click="mainArea.isExpanded = !mainArea.isExpanded">
-                            <span v-if="getMainAreaStats(mainArea).light > 0" style="font-size: 12px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 3px 8px; border-radius: 6px; white-space: nowrap; font-weight: bold;">
-                                🔥{{ getMainAreaStats(mainArea).light }} ({{ getMainAreaStats(mainArea).eff.toFixed(1) }}/s)
-                            </span>
-                            <span style="margin-left: 4px; color: var(--text-gray);">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
-                        </div>
-                    </div>
-
-                    <div class="area-title-row2">
-                        <div class="btn-action-group">
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0">↑ 上へ</button>
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1">↓ 下へ</button>
-                        </div>
-                        <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)">🗑️ エリア削除</button>
-                    </div>
-
-                    <div v-if="mainArea.isExpanded" class="subarea-list">
-                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
-                            <div class="subarea-title-row1">
-                                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
-                                    <input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)">
-                                    <input type="text" v-model="subArea.name" style="font-weight: bold; font-size:14px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
-                                </div>
-                                <div class="expand-toggle-btn" @click="subArea.isExpanded = !subArea.isExpanded" style="padding: 4px 8px; font-size: 12px;">
-                                    <span v-if="getSubAreaStats(subArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 2px 5px; border-radius: 4px; font-weight: bold; white-space: nowrap;">
-                                        🔥{{ getSubAreaStats(subArea).light }}
-                                    </span>
-                                    <span style="margin-left: 4px; color: var(--text-gray);">{{ subArea.isExpanded ? '▼' : '▶' }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="subarea-title-row2" style="margin-top: 6px;">
-                                <div class="btn-action-group">
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
-                                </div>
-                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
-                            </div>
-
-                            <div v-if="subArea.isExpanded" class="spot-list">
-                              <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
-            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
-            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
-        </div>
-                                        <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
-    <div class="flex-group">
-        <span>火種:</span>
-        <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
-    </div>
-    <div class="flex-group">
-        <span>秒数:</span>
-        <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
-    </div>
-    <div class="flex-group">
-        <span>グループ:</span>
-        <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
-    </div>
-    <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
-        {{ (spot.light / spot.time).toFixed(1) }}/s
-    </span>
-</div>
-                                    </div>
-                                </div>
-                                <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size: 13px; padding: 6px 4px; color: var(--accent-purple);">➕ スポットを追加</button>
-                            </div>
-                        </div>
-                        <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
-                    </div>
-                </div>
-
-                <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">➕ 新規メインエリアを追加</button>
-            </div>
-
-            <div v-if="visibleSections.myRoutes" class="section-card" style="margin-top: 20px;">
+            <div v-if="visibleSections.myRoutes" class="section-card" style="margin-bottom: 20px;">
                 <div class="section-header">📍 マイルート管理（ルート比較・メモ・タイマー）</div>
                 
                 <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 8px; font-size: 14px; padding: 10px;">
@@ -763,10 +676,97 @@
                     </div>
                 </div>
             </div>
+
+            <div class="section-card">
+                <div class="section-header">🗺️ エリア管理</div>
+                
+                <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
+                    <div class="area-title-row1">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
+                            <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)">
+                            <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size:16px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
+                        </div>
+                        
+                        <div class="expand-toggle-btn" @click="mainArea.isExpanded = !mainArea.isExpanded">
+                            <span v-if="getMainAreaStats(mainArea).light > 0" style="font-size: 12px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 3px 8px; border-radius: 6px; white-space: nowrap; font-weight: bold;">
+                                🔥{{ getMainAreaStats(mainArea).light }} ({{ getMainAreaStats(mainArea).eff.toFixed(1) }}/s)
+                            </span>
+                            <span style="margin-left: 4px; color: var(--text-gray);">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="area-title-row2">
+                        <div class="btn-action-group">
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0">↑ 上へ</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1">↓ 下へ</button>
+                        </div>
+                        <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)">🗑️ エリア削除</button>
+                    </div>
+
+                    <div v-if="mainArea.isExpanded" class="subarea-list">
+                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
+                            <div class="subarea-title-row1">
+                                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
+                                    <input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)">
+                                    <input type="text" v-model="subArea.name" style="font-weight: bold; font-size:14px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div class="expand-toggle-btn" @click="subArea.isExpanded = !subArea.isExpanded" style="padding: 4px 8px; font-size: 12px;">
+                                    <span v-if="getSubAreaStats(subArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 2px 5px; border-radius: 4px; font-weight: bold; white-space: nowrap;">
+                                        🔥{{ getSubAreaStats(subArea).light }}
+                                    </span>
+                                    <span style="margin-left: 4px; color: var(--text-gray);">{{ subArea.isExpanded ? '▼' : '▶' }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="subarea-title-row2" style="margin-top: 6px;">
+                                <div class="btn-action-group">
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
+                                </div>
+                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
+                            </div>
+
+                            <div v-if="subArea.isExpanded" class="spot-list">
+                              <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
+            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
+            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+        </div>
+                                        <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
+    <div class="flex-group">
+        <span>火種:</span>
+        <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+    </div>
+    <div class="flex-group">
+        <span>秒数:</span>
+        <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+    </div>
+    <div class="flex-group">
+        <span>グループ:</span>
+        <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
+    </div>
+    <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
+        {{ (spot.light / spot.time).toFixed(1) }}/s
+    </span>
+</div>
+                                    </div>
+                                </div>
+                                <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size: 13px; padding: 6px 4px; color: var(--accent-purple);">➕ スポットを追加</button>
+                            </div>
+                        </div>
+                        <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
+                    </div>
+                </div>
+
+                <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">➕ 新規メインエリアを追加</button>
+            </div>
         </div>
     </div>
 
-    <div v-if="deleteModal.show" class="modal-overlay" style="display: none;" :style="{ display: deleteModal.show ? 'flex' : 'none' }" @click.self="cancelDelete">
+    <div v-if="deleteModal.show" class="modal-overlay" @click.self="cancelDelete">
         <div class="modal-container">
             <div class="modal-title">⚠️ 削除の確認</div>
             <div class="modal-text">
@@ -781,7 +781,7 @@
         </div>
     </div>
 
-    <div v-if="showResetModal" class="modal-overlay" style="display: none;" :style="{ display: showResetModal ? 'flex' : 'none' }" @click.self="showResetModal = false">
+    <div v-if="showResetModal" class="modal-overlay" @click.self="showResetModal = false">
         <div class="modal-container">
             <div class="modal-title">⚠️ 計算機データの初期化</div>
             <div class="modal-text">
@@ -915,15 +915,10 @@
             };
 
             const resetCalculatorData = () => {
-    // 動作中のタイマーがあれば停止
-    stopAnyActiveTimer();
-    
-    // ローカルストレージから計算機の保存データを削除
-    localStorage.removeItem('sky_tracker_storage_v3');
-    
-    // ページを再読み込みして、一番初めて開いた状態に戻す
-    location.reload();
-};
+                stopAnyActiveTimer();
+                localStorage.removeItem('sky_tracker_storage_v3');
+                location.reload();
+            };
 
             const save = () => {
                 try {
@@ -1067,7 +1062,7 @@
                 if (!mainArea || !Array.isArray(mainArea.subAreas)) return;
                 const targetState = !isAllMainSelected(mainArea);
                 mainArea.subAreas.forEach(sub => {
-                    if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => s.isSelected = targetState);
+                    if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => { s.isSelected = targetState; });
                 });
                 save();
             };
@@ -1136,7 +1131,7 @@
                     isExpanded: false,
                     actualSeconds: 0
                 });
-                save(); // ✅ 追加：ルート保存時に即時セーブ
+                save(); 
             };
 
             const getRouteAreaNames = (route) => {
@@ -1175,7 +1170,7 @@
                         });
                     }
                 });
-                save(); // ✅ 追加：ルート適用時に即時セーブ
+                save(); 
             };
 
             const getRouteStats = (route) => {
@@ -1364,7 +1359,7 @@
                         }
                     });
                 }
-                save(); // ✅ 追加：デイリーリセット時に即時セーブ
+                save(); 
             };
 
             const optimize = () => {
@@ -1405,7 +1400,7 @@
                         accumulated += ref.light;
                     }
                 }
-                save(); // ✅ 追加：自動最適化時に即時セーブ
+                save(); 
             };
 
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
@@ -1446,15 +1441,13 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            // 🌟 【最重要修正！】Refの配列を「関数形式」に変更。これでネストされたチェックボックス等の深い変更を漏らさず自動保存します
+            // 🌟 データの深い変更（チェックの有無など）を100%確実に感知して自動保存する形式に最適化
+            watch(areas, () => { save(); }, { deep: true });
+            watch(myRoutes, () => { save(); }, { deep: true });
+            watch(visibleSections, () => { save(); }, { deep: true });
             watch(
-                () => [
-                    areas.value, carryOverPercent.value, targetDate.value, currentCandles.value, 
-                    plannedUsage.value, targetCandlesForOptimization.value, candleMemo.value, 
-                    myRoutes.value, visibleSections.value, dailyBonusArea.value, dailyShard.value
-                ], 
-                () => { save(); }, 
-                { deep: true }
+                [carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, dailyBonusArea, dailyShard],
+                () => { save(); }
             );
 
             return {
