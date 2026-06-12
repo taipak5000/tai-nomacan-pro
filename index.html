@@ -915,11 +915,15 @@
             };
 
             const resetCalculatorData = () => {
-                stopAnyActiveTimer();
-                loadInitialData();
-                save();
-                showResetModal.value = false;
-            };
+    // 動作中のタイマーがあれば停止
+    stopAnyActiveTimer();
+    
+    // ローカルストレージから計算機の保存データを削除
+    localStorage.removeItem('sky_tracker_storage_v3');
+    
+    // ページを再読み込みして、一番初めて開いた状態に戻す
+    location.reload();
+};
 
             const save = () => {
                 try {
