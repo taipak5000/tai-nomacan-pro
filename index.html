@@ -1055,6 +1055,7 @@
                 if (!subArea || !Array.isArray(subArea.spots)) return;
                 const targetState = !isAllSubSelected(subArea);
                 subArea.spots.forEach(s => s.isSelected = targetState);
+                save();
             };
 
             const isAllMainSelected = (mainArea) => mainArea && Array.isArray(mainArea.subAreas) && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
@@ -1064,6 +1065,7 @@
                 mainArea.subAreas.forEach(sub => {
                     if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => s.isSelected = targetState);
                 });
+                save();
             };
 
             const getSubAreaStats = (subArea) => {
@@ -1130,6 +1132,7 @@
                     isExpanded: false,
                     actualSeconds: 0
                 });
+                save(); // ✅ 追加：ルート保存時に即時セーブ
             };
 
             const getRouteAreaNames = (route) => {
@@ -1168,6 +1171,7 @@
                         });
                     }
                 });
+                save(); // ✅ 追加：ルート適用時に即時セーブ
             };
 
             const getRouteStats = (route) => {
@@ -1356,6 +1360,7 @@
                         }
                     });
                 }
+                save(); // ✅ 追加：デイリーリセット時に即時セーブ
             };
 
             const optimize = () => {
@@ -1396,6 +1401,7 @@
                         accumulated += ref.light;
                     }
                 }
+                save(); // ✅ 追加：自動最適化時に即時セーブ
             };
 
             const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
@@ -1436,7 +1442,16 @@
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
-            watch([areas, carryOverPercent, targetDate, currentCandles, plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, visibleSections, dailyBonusArea, dailyShard], () => { save(); }, { deep: true });
+            // 🌟 【最重要修正！】Refの配列を「関数形式」に変更。これでネストされたチェックボックス等の深い変更を漏らさず自動保存します
+            watch(
+                () => [
+                    areas.value, carryOverPercent.value, targetDate.value, currentCandles.value, 
+                    plannedUsage.value, targetCandlesForOptimization.value, candleMemo.value, 
+                    myRoutes.value, visibleSections.value, dailyBonusArea.value, dailyShard.value
+                ], 
+                () => { save(); }, 
+                { deep: true }
+            );
 
             return {
                 isDarkMode, toggleTheme,
