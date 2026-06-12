@@ -49,6 +49,8 @@
             overflow-x: hidden;
         }
 
+        .modal-overlay { display: none !important; }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -424,21 +426,6 @@
         </div>
     </header>
 
-    <div v-if="showResetModal" class="modal-overlay" :style="{ display: showResetModal ? 'flex' : 'none' }" style="display: none;" @click.self="showResetModal = false">
-        <div class="modal-container">
-            <div class="modal-title">⚠️ 計算機データの初期化</div>
-            <div class="modal-text">
-                キャンドル計算機の全設定、カスタムエリア、マイルートをすべて消去し、初期状態に戻します。よろしいですか？<br>
-                <div style="font-size:12px; color:var(--text-gray); margin-top: 8px; font-weight: bold;">
-                    ※「創作物管理」側のデータは消えずに残ります。
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" @click="showResetModal = false">キャンセル</button>
-                <button class="modal-btn modal-btn-delete" @click="resetCalculatorData">初期化する</button>
-            </div>
-        </div>
-    </div>
 
     <div v-if="showSettings" class="section-card settings-panel">
         <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">⚙️ 各窓の表示・非表示設定</div>
