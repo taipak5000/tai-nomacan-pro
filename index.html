@@ -477,14 +477,22 @@
                     </div>
                     <input type="range" v-model.number="carryOverPercent" min="0" max="99" step="1">
                 </div>
-                <div class="row">
-                    <div>現所持キャンドル数:</div>
-                    <input type="number" v-model.number="currentCandles">
-                </div>
-                <div class="row">
-                    <div>使用予定数:</div>
-                    <input type="number" v-model.number="plannedUsage">
-                </div>
+               <div class="row">
+    <div>現所持キャンドル数:</div>
+    <input type="number" v-model.number="currentCandles">
+</div>
+<div class="row">
+    <div>現所持星キャンドル数:</div>
+    <input type="number" v-model.number="currentAscendedCandles">
+</div>
+<div class="row">
+    <div>現所持ハート数:</div>
+    <input type="number" v-model.number="currentHearts">
+</div>
+<div class="row">
+    <div>使用予定数:</div>
+    <input type="number" v-model.number="plannedUsage">
+</div>
                 <div class="row">
                     <div>イベント終了日:</div>
                     <input type="date" v-model="targetDate" style="width: 130px; text-align: left;">
@@ -855,7 +863,9 @@
             const targetDate = ref(defaultTarget.toISOString().split('T')[0]);
 
             const currentCandles = ref(0);
-            const plannedUsage = ref(0);
+const currentAscendedCandles = ref(0); // 💡 追加
+const currentHearts = ref(0);         // 💡 追加
+const plannedUsage = ref(0);
             const targetCandlesForOptimization = ref(20);
             const isWideScreen = ref(window.innerWidth >= 850);
 
@@ -915,8 +925,10 @@
                 myRoutes.value = [];
                 carryOverPercent.value = 0;
                 candleMemo.value = "";
-                currentCandles.value = 0;
-                plannedUsage.value = 0;
+currentCandles.value = 0;
+currentAscendedCandles.value = 0; // 💡 追加
+currentHearts.value = 0;         // 💡 追加
+plannedUsage.value = 0;
                 targetCandlesForOptimization.value = 20;
                 dailyBonusArea.value = "none";
                 dailyShard.value = "none";
@@ -1005,8 +1017,11 @@
                         placedItems: placedItems.value, 
                         carryOverPercent: carryOverPercent.value,
                         targetDate: targetDate.value,
-                        currentCandles: currentCandles.value,
-                        plannedUsage: plannedUsage.value,
+                        // 💡 save関数のデータオブジェクト内に以下を追加
+currentCandles: currentCandles.value,
+currentAscendedCandles: currentAscendedCandles.value, // 💡 追加
+currentHearts: currentHearts.value,                 // 💡 追加
+plannedUsage: plannedUsage.value,
                         targetCandlesForOptimization: targetCandlesForOptimization.value,
                         candleMemo: candleMemo.value,
                         dailyBonusArea: dailyBonusArea.value, 
@@ -1365,7 +1380,11 @@
             const generateSpell = () => {
                 try {
                     stopAnyActiveTimer();
-                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
+                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value,
+currentCandles: currentCandles.value,
+currentAscendedCandles: currentAscendedCandles.value, // 💡 追加
+currentHearts: currentHearts.value,                 // 💡 追加
+plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
                     const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
                     for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
@@ -1392,8 +1411,10 @@
                     if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
                     if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
                     if (decoded.targetDate) targetDate.value = decoded.targetDate;
-                    if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
-                    if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
+                   if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
+if (decoded.currentAscendedCandles !== undefined) currentAscendedCandles.value = decoded.currentAscendedCandles; // 💡 追加
+if (decoded.currentHearts !== undefined) currentHearts.value = decoded.currentHearts;                         // 💡 追加
+if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
                     if (decoded.dailyBonusArea) dailyBonusArea.value = decoded.dailyBonusArea;
                     if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
@@ -1638,6 +1659,8 @@
             watch(carryOverPercent, () => { save(); });
             watch(targetDate, () => { save(); });
             watch(currentCandles, () => { save(); });
+            watch(currentAscendedCandles, () => { save(); });
+            watch(currentHearts, () => { save(); });
             watch(plannedUsage, () => { save(); });
             watch(targetCandlesForOptimization, () => { save(); });
             watch(candleMemo, () => { save(); });
@@ -1646,7 +1669,7 @@
 
             return {
                 isDarkMode, toggleTheme,
-                areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                areas, carryOverPercent, targetDate, eventDays, currentCandles, currentAscendedCandles, currentHearts, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 routeInputSpell, routeSpellMessage, routeSpellMessageType,
                 confirmModal, executeConfirm,
