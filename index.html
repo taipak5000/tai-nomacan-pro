@@ -30,1628 +30,1086 @@
             --bg-color: #0c081a;
             --card-bg: #1b1535;
             --text-color: #ffffff;
-            --text-gray: #aaa4c4;
-            --border-color: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(0, 0, 0, 0.25);
-            --tab-bg: rgba(255, 255, 255, 0.1);
-            --tab-btn-active: rgba(255, 255, 255, 0.15);
-            --stat-box-bg: rgba(255, 255, 255, 0.04);
+            --text-gray: #a19dae;
+            --border-color: #2c254e;
+            --input-bg: #120d24;
+            --tab-bg: #2c254e;
+            --tab-btn-active: #1b1535;
+            --stat-box-bg: #221b40;
         }
 
         body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 16px;
-            overflow-x: hidden;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        .container {
+        #app {
             max-width: 1200px;
             margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
+            padding: 16px;
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
+            padding: 12px 16px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
         }
 
-        h1 {
-            font-size: 24px;
-            margin: 0;
+        h1 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+        h2, h3 { margin-top: 0; font-size: 1.1rem; color: var(--text-color); }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
         }
 
-        .header-actions {
+        @media (min-width: 768px) {
+            .app-layout {
+                grid-template-columns: 1.1fr 0.9fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .sticky-box {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flex-gap {
             display: flex;
             gap: 8px;
             align-items: center;
         }
 
-        .theme-toggle-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 20px;
+        .btn {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            color: var(--text-color);
             font-weight: bold;
-            font-size: 13px;
-        }
-
-        .layout-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            gap: 20px;
-            width: 100%;
-        }
-
-        @media (min-width: 850px) {
-            .layout-grid {
-                grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-            }
-        }
-
-        .section-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .settings-panel {
-            border: 1px solid var(--accent-blue);
-            background: rgba(0, 122, 255, 0.02);
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        .section-header {
-            font-size: 13px;
-            color: var(--text-gray);
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        
-        .row {
-            display: flex;
-            justify-content: space-between;
+            font-size: 0.9rem;
+            display: inline-flex;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
+            justify-content: center;
+            gap: 4px;
+            transition: opacity 0.2s;
         }
 
-        .row:last-child {
-            border-bottom: none;
+        .btn:hover { opacity: 0.85; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-secondary { background-color: var(--text-gray); }
+        .btn-danger { background-color: var(--accent-red); }
+        .btn-success { background-color: var(--accent-green); }
+        .btn-warning { background-color: var(--accent-orange); }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; }
+
+        /* エリア編集UI */
+        .area-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background-color: var(--stat-box-bg);
         }
 
-        .bold-text {
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        input[type="number"], input[type="text"], input[type="date"], select, textarea {
-            background-color: var(--input-bg);
-            color: var(--text-color);
+        .subarea-item {
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            font-size: 14px;
-            padding: 8px;
-            font-family: inherit;
-        }
-
-        input[type="number"], input[type="date"], select {
-            text-align: right;
-            width: 80px;
-        }
-
-        input[type="text"] {
-            text-align: left;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        input[type="checkbox"] {
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            margin-top: 12px;
-            box-sizing: border-box;
-        }
-
-        .btn-blue { background-color: var(--accent-blue); color: white; }
-        .btn-orange { background-color: var(--accent-orange); color: white; }
-        
-        .btn-outline-blue { background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; }
-        .btn-outline-blue:disabled { border-color: var(--border-color); color: var(--text-gray); cursor: not-allowed; }
-        .btn-outline-red { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 12px; font-size: 13px; width: auto; margin: 0; border-radius: 6px; cursor: pointer; font-weight: 500; }
-        
-        .btn-add { 
-            background: transparent; 
-            border: none; 
-            color: var(--accent-blue); 
-            text-align: left; 
-            padding: 12px 4px; 
-            font-size: 14px; 
-            font-weight: bold;
-            width: auto; 
-            margin: 4px 0; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .inline-alert {
             padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
             margin-top: 8px;
-            line-height: 1.4;
-        }
-        .inline-alert-success { background: rgba(52,199,89,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
-        .inline-alert-error { background: rgba(255,59,48,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
-        .inline-alert-confirm { background: rgba(255,149,0,0.1); color: #c67a00; border: 1px solid var(--accent-orange); }
-
-        .area-accordion {
-            border-bottom: 1px solid var(--border-color);
-            padding: 14px 0;
-        }
-        .area-title-row1, .subarea-title-row1 {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        .area-title-row2, .subarea-title-row2 {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 8px;
-            padding-left: 32px; 
-        }
-        
-        .expand-toggle-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            background: var(--stat-box-bg);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            user-select: none;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-
-        .subarea-list {
-            margin-left: 12px;
-            padding-left: 8px;
-            border-left: 2px solid var(--border-color);
-            margin-top: 12px;
-        }
-
-        .subarea-accordion-box {
-            background: rgba(0, 0, 0, 0.01);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        [data-theme="dark"] .subarea-accordion-box {
-            background: rgba(255, 255, 255, 0.01);
-        }
-
-        .spot-list {
-            margin-left: 16px;
-            padding-left: 8px;
-            border-left: 2px dotted var(--border-color);
-            margin-top: 10px;
         }
 
         .spot-item {
-            background: var(--stat-box-bg);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            background: var(--input-bg);
             border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-        
-        .flex-group { display: flex; align-items: center; gap: 4px; }
-        .flex-group input { width: 65px !important; }
-
-        .route-path-box {
-            font-size: 11px;
-            color: var(--text-gray);
-            margin-top: 6px;
-            background: rgba(0,0,0,0.02);
-            padding: 4px 8px;
             border-radius: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            display: block;
-            box-sizing: border-box;
-        }
-        [data-theme="dark"] .route-path-box {
-            background: rgba(255, 255, 255, 0.02);
+            padding: 6px;
+            margin-top: 4px;
         }
 
-        .timer-box {
-            background: rgba(0, 0, 0, 0.04);
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 12px;
-        }
-        [data-theme="dark"] .timer-box {
-            background: rgba(255, 255, 255, 0.03);
-        }
+        /* タイマー表示 */
         .timer-display {
-            font-family: 'Courier New', Courier, monospace;
-            font-variant-numeric: tabular-nums;
-            font-size: 22px;
+            font-family: monospace;
+            font-size: 1.3rem;
             font-weight: bold;
-            text-align: center;
-            margin: 4px 0 8px 0;
-            letter-spacing: 1px;
-        }
-        .timer-display.running {
-            color: var(--accent-green);
-            text-shadow: 0 0 4px rgba(52,199,89,0.3);
-        }
-
-        /* 🔔 アプリ内カスタムダイアログのスタイル */
-        .app-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-            animation: fadeIn 0.15s ease-out;
-            padding: 16px;
-            box-sizing: border-box;
-        }
-        .app-modal-content {
-            background: var(--card-bg);
-            color: var(--text-color);
-            padding: 22px;
-            border-radius: 14px;
-            max-width: 440px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            box-sizing: border-box;
+            color: var(--accent-orange);
+            background: var(--input-bg);
+            padding: 4px 10px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
-            animation: scaleUp 0.15s ease-out;
         }
-        @keyframes scaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        footer {
-            text-align: center;
-            padding: 24px 16px;
-            margin-top: 40px;
-            font-size: 13px;
-            color: var(--text-gray);
-            border-top: 1px solid var(--border-color);
-            line-height: 1.6;
+        .route-card {
+            background: var(--stat-box-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
         }
-        footer a {
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-weight: 500;
+
+        .route-card.running {
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 8px rgba(255,149,0,0.2);
         }
-        footer a:hover {
-            text-decoration: underline;
+
+        /* モーダル */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+        }
+
+        [v-cloak] { display: none; }
     </style>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
 
-<div class="container" id="app">
+<div id="app" v-cloak>
     <header>
-        <h1 v-if="isWideScreen">Sky キャンドル計算機 (Web版)</h1>
-        <h1 v-else>キャンドル計算機</h1>
-        <button class="theme-toggle-btn" @click="toggleTheme">
-            <span v-if="isDarkMode">🌙 ダーク</span>
-            <span v-else>☀️ ライト</span>
-        </button>
-
-        <div class="header-actions">
-            <a href="companion.html" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color); margin-right: 4px;">
-                ✨ 精霊同行 ↗
-            </a>
-            <a href="share.html" target="_blank" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color);">
-                📍 創作物管理 ↗
-            </a>
-            <button class="btn-outline-blue" @click="showSettings = !showSettings">
-                ⚙️ 表示設定
+        <h1>✨ Sky キャンドル計算機</h1>
+        <div class="flex-gap">
+            <button @click="toggleTheme" class="btn btn-secondary btn-sm">
+                {{ isDarkMode ? '☀️ ライト' : '🌙 ダーク' }}
             </button>
+            <button @click="showSettings = !showSettings" class="btn btn-secondary btn-sm">⚙️ 構成呪文</button>
         </div>
     </header>
 
-    <div v-if="showSettings" class="section-card settings-panel">
-        <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">⚙️ 各窓の表示・非表示設定</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0; align-items: center; width:100%;">
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.candleManage" style="width:18px; height:18px;"> キャンドル管理
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.optimization" style="width:18px; height:18px;"> 効率自動最適化
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.myRoutes" style="width:18px; height:18px;"> マイルート管理
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.spellShare" style="width:18px; height:18px;"> データの共有
-            </label>
+    <div class="app-layout">
+        
+        <div class="column-left">
             
-            <button class="btn-outline-red" @click="resetCalculatorData" style="padding: 4px 10px; font-size: 12px; margin-left: auto; font-weight: bold; border-radius: 6px;">
-                🧹 入力数値をリセット
-            </button>
-        </div>
-    </div>
+            <div class="card">
+                <h3>📊 現在の所持数と目標設定</h3>
+                <div class="grid-3" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label>🕯️ 所持キャンドル</label>
+                        <input type="number" v-model.number="currentCandles" class="form-control" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>🔺 所持星キャン</label>
+                        <input type="number" v-model.number="currentAscendedCandles" class="form-control" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>❤️ 所持ハート</label>
+                        <input type="number" v-model.number="currentHearts" class="form-control" min="0">
+                    </div>
+                </div>
+                <div class="grid-3" style="grid-template-columns: 1.2fr 1fr 0.8fr; gap: 8px;">
+                    <div class="form-group">
+                        <label>📅 目標日</label>
+                        <input type="date" v-model="targetDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>⏳ 残り日数</label>
+                        <input type="number" v-model.number="eventDays" class="form-control" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>📉 予定消費量</label>
+                        <input type="number" v-model.number="plannedUsage" class="form-control" min="0">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 4px;">
+                    <label>繰り越し用の余剰ライト率 (%)</label>
+                    <input type="number" v-model.number="carryOverPercent" class="form-control" min="0" max="100">
+                </div>
+            </div>
 
-    <div class="layout-grid">
-        <div>
-            <div class="section-card">
-                <div class="section-header">幕 今日の精錬状況</div>
-                
-                <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                        <span style="font-weight: 500;">📅 本日の大キャンドル群:</span>
-                        <select v-model="dailyBonusArea" style="width: 110px; padding: 4px 6px; font-size: 12px;">
-                            <option value="none">なし</option>
-                            <option value="草原">草原 (+200)</option>
-                            <option value="雨林">雨林 (+200)</option>
-                            <option value="峡谷">峡谷 (+200)</option>
-                            <option value="捨て地">捨て地 (+200)</option>
-                            <option value="書庫">書庫 (+200)</option>
+            <div class="card">
+                <h3>📅 本日の日課クイック設定</h3>
+                <div class="grid-3" style="grid-template-columns: 1.2fr 1.8fr; gap: 12px;">
+                    <div class="form-group">
+                        <label>🎂 本日の大キャンドルエリア</label>
+                        <select v-model="dailyBonusArea" class="form-control">
+                            <option value="">なし</option>
+                            <option value="prairie">⛰️ 草原</option>
+                            <option value="forest">🌳 雨林</option>
+                            <option value="valley">⛷️ 峡谷</option>
+                            <option value="wasteland">💀 暮土</option>
+                            <option value="vault">📚 書庫</option>
                         </select>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                        <span style="font-weight: 500;">🌋 本日の闇の破片:</span>
-                        <select v-model="dailyShard" style="width: 110px; padding: 4px 6px; font-size: 12px;">
-                            <option value="none">なし</option>
-                            <option value="black">黒い破片 (+200)</option>
-                            <option value="red">赤い破片 (星キャン)</option>
+                    <div class="form-group">
+                        <label>🌋 本日の闇の破片（ウニ・パン焼き等含む）</label>
+                        <select v-model="dailyShard" class="form-control">
+                            <option value="none">破片なし / 未回収</option>
+                            <option value="normal">黒い破片 (通常ライト/約80)</option>
+                            <option value="strong">赤い破片 (星キャン対象/約150)</option>
                         </select>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div>精錬予定:</div>
-                    <div class="bold-text" style="color: var(--accent-orange);">{{ calculated.candles }} 本</div>
-                </div>
-                <div class="row">
-                    <div>火種合計:</div>
-                    <div>{{ totalLight }}</div>
-                </div>
-                <div class="row">
-                    <div style="font-weight: bold;">選択全体の総合効率:</div>
-                    <div class="bold-text" style="color: var(--accent-blue);">{{ totalEfficiency.toFixed(2) }} <span style="font-size:12px; font-weight:normal; color:var(--text-gray);">/s</span></div>
-                </div>
-                <div class="row">
-                    <div style="font-weight: bold;">総所要時間:</div>
-                    <div class="bold-text" style="color: var(--accent-blue);">{{ formattedTotalTime }}</div>
-                </div>
-                <div class="row" v-if="calculated.candles < thresholds.length">
-                    <div>次まで:</div>
-                    <div style="color: var(--text-gray);">{{ calculated.nextReq }}</div>
-                </div>
-                <button class="btn btn-blue" @click="dailyReset">デイリーリセット</button>
             </div>
 
-            <div v-if="visibleSections.candleManage" class="section-card">
-                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>📅 キャンドル管理</span>
-                    <span style="font-size: 11px; text-transform: none; font-weight: normal; color: var(--text-gray);">※大キャンドル＝DC</span>
+            <div class="card">
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h3>🗺️ マイルート管理</h3>
+                    <button class="btn btn-sm" @click="saveCurrentRoute">📍 現在の構成を保存</button>
                 </div>
-                <div class="row" style="flex-direction: column; align-items: flex-start;">
-                    <div style="display: flex; justify-content: space-between; width: 100%;">
-                        <div>繰越:</div>
-                        <div>{{ Math.floor(carryOverPercent) }}%</div>
+
+                <div style="margin-bottom: 12px; font-size: 0.85rem;">
+                    <div class="flex-gap">
+                        <input type="text" v-model="routeInputSpell" class="form-control" style="font-size: 0.8rem; padding: 4px 8px;" placeholder="ルートの呪文を入力して適用">
+                        <button class="btn btn-sm btn-success" @click="applyRouteSpell">読込</button>
                     </div>
-                    <input type="range" v-model.number="carryOverPercent" min="0" max="99" step="1">
-                </div>
-                <div class="row">
-                    <div>所持キャンドル数:</div>
-                    <input type="number" v-model.number="currentCandles">
-                </div>
-                <div class="row">
-                    <div>星キャンドル数:</div>
-                    <input type="number" v-model.number="currentAscendedCandles">
-                </div>
-                <div class="row">
-                    <div>ハート数:</div>
-                    <input type="number" v-model.number="currentHearts">
-                </div>
-                <div class="row">
-                    <div>使用予定数:</div>
-                    <input type="number" v-model.number="plannedUsage">
-                </div>
-                <div class="row">
-                    <div>イベント終了日:</div>
-                    <input type="date" v-model="targetDate" style="width: 130px; text-align: left;">
-                </div>
-                <div class="row">
-                    <div>稼げる残日数:</div>
-                    <div style="font-weight: bold;">{{ eventDays }} 日</div>
-                </div>
-                <div class="row">
-                    <div>予想残数:</div>
-                    <div class="bold-text" :style="{ color: projectedCandles >= 0 ? 'inherit' : 'var(--accent-red)' }">
-                        {{ projectedCandles }} 本
-                    </div>
-                </div>
-                <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0; margin-top: 10px;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">キャンドル管理メモ:</div>
-                    <textarea v-model="candleMemo" placeholder="交換・使用予定のアイテム、今後のイベント予定など自由に記載…" style="width: 100%; height: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
-                </div>
-            </div>
-
-            <div v-if="visibleSections.optimization" class="section-card">
-                <div class="section-header">効率自動最適化</div>
-                <div class="row">
-                    <div>目標本数:</div>
-                    <input type="number" v-model.number="targetCandlesForOptimization">
-                </div>
-                <button class="btn btn-orange" @click="optimize">高効率エリアを自動選択</button>
-            </div>
-
-            <div v-if="visibleSections.spellShare" class="section-card">
-                <div class="section-header">🧙‍♂️ データの共有（復活の呪文）</div>
-                <div class="row" style="flex-direction: column; align-items: flex-start;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">この端末のデータを呪文にする：</div>
-                    <button class="btn btn-blue" @click="generateSpell" style="margin-top: 0; padding: 8px; font-size:14px;">✨ 復活の呪文を生成</button>
-                    <textarea v-model="generatedSpell" readonly placeholder="ボタンを押すとここに呪文が生成されます..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: var(--input-bg);" @click="$event.target.select()"></textarea>
-                    <div v-if="spellMessage" :class="['inline-alert', spellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="width:100%; box-sizing:border-box;">
-                        {{ spellMessage }}
-                    </div>
-                </div>
-                
-                <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
-                
-                <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">他の端末の呪文から復元する：</div>
-                    <textarea v-model="inputSpell" placeholder="他端末で生成した呪文をここに貼り付けてください..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
-                    
-                    <div v-if="isConfirming" class="inline-alert inline-alert-confirm" style="width:100%; box-sizing:border-box; margin-bottom: 8px;">
-                        ⚠️ 呪文を唱えると現在のデータが完全に上書きされます。よろしいですか？
-                        <div style="display:flex; gap:8px; margin-top:8px;">
-                            <button class="btn-outline-blue" @click="confirmApplySpell" style="background:var(--accent-orange); color:white; border:none; padding:4px 12px;">上書きを実行</button>
-                            <button class="btn-outline-blue" @click="isConfirming = false" style="background:var(--card-bg); padding:4px 12px;">キャンセル</button>
-                        </div>
-                    </div>
-
-                    <button v-if="!isConfirming" class="btn btn-orange" @click="requestApplySpell" :disabled="!inputSpell.trim()" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱えて復元</button>
-                </div>
-            </div>
-
-            <div v-if="visibleSections.myRoutes" class="section-card">
-                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>🗺️ マイルート管理</span>
-                    <button class="btn-outline-blue" @click="saveCurrentRoute">現在の選択を保存</button>
-                </div>
-
-                <div v-if="routeError" class="inline-alert inline-alert-error" style="margin-bottom: 12px;">
-                    {{ routeError }}
-                </div>
-
-                <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 4px;">📥 共有ルートのインポート：</div>
-                    <div style="display: flex; gap: 6px;">
-                        <input type="text" v-model="routeInputSpell" placeholder="ルート共有呪文を貼り付け..." style="font-size: 12px; padding: 6px; flex-grow: 1;">
-                        <button class="btn-outline-blue" @click="applyRouteSpell" :disabled="!routeInputSpell.trim()" style="padding: 4px 10px; font-size: 12px;">読込</button>
-                    </div>
-                    <div v-if="routeSpellMessage" :class="['inline-alert', routeSpellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="font-size:11px; padding:6px; margin-top:6px;">
+                    <div v-if="routeSpellMessage" :style="{ color: routeSpellMessageType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)', marginTop: '4px', fontSize: '0.8rem' }">
                         {{ routeSpellMessage }}
                     </div>
                 </div>
 
-                <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px;">
-                    保存されたルートはありません。<br>右側のエリア管理でスポットを選択し、「現在の選択を保存」を押してください。
+                <div v-if="myRoutes.length === 0" style="color: var(--text-gray); font-size: 0.85rem; text-align: center; padding: 12px;">
+                    保存されたカスタムルートはありません。
                 </div>
 
-                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="subarea-accordion-box" style="margin-bottom: 12px; background: var(--card-bg);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <input type="text" v-model="route.name" style="font-weight: bold; font-size: 14px; width: 140px; padding: 4px; border: none; background: transparent; text-align: left;" placeholder="ルート名を入力...">
-                        
-                        <div style="display: flex; gap: 4px; align-items: center;">
-                            <button class="btn-outline-blue" @click="moveRouteCard(rIdx, -1)" :disabled="rIdx === 0" style="padding: 4px 6px; font-size: 11px;">↑</button>
-                            <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">↓</button>
-                            <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
-                            <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">📤 共有</button>
-                            <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
-                                {{ route.isExpanded ? '▼' : '▶' }}
-                            </button>
+                <div v-for="(route, rIdx) in myRoutes" :key="route.id" class="route-card" :class="{ running: runningRouteId === route.id }">
+                    <div class="flex-between">
+                        <div @click="toggleRouteExpand(route.id)" style="cursor: pointer; font-weight: bold; flex-grow: 1; font-size: 0.9rem;">
+                            {{ route.isExpanded ? '▼' : '▶' }} {{ route.name }}
+                            <span style="font-size: 0.75rem; color: var(--text-gray); font-weight: normal; margin-left: 6px;">
+                                ({{ getRouteStats(route).spotsCount }}箇所 / 🕯️約{{ getRouteStats(route).candles }}本)
+                            </span>
+                        </div>
+                        <div class="flex-gap">
+                            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" @click="moveRouteCard(rIdx, -1)" :disabled="rIdx === 0">▲</button>
+                            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1">▼</button>
+                            <button class="btn btn-sm btn-success" @click="applyRoute(route)">適用</button>
+                            <button class="btn btn-sm btn-danger" @click="deleteRoute(route.id)">削除</button>
                         </div>
                     </div>
 
-                    <div v-if="route.generatedSpell" style="margin-top: 8px; background: var(--input-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
-                        <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 4px; text-align: left;">このルートの共有呪文（クリックして全選択）：</div>
-                        <textarea :value="route.generatedSpell" readonly style="width:100%; height:45px; font-family:monospace; font-size:10px; box-sizing:border-box; padding:4px; resize:none;" @click="$event.target.select()"></textarea>
-                        <button class="btn-outline-blue" @click="route.generatedSpell = ''" style="padding:2px 6px; font-size:10px; margin-top:4px;">閉じる</button>
+                    <div class="flex-between" style="margin-top: 8px; background: var(--input-bg); padding: 6px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <div class="timer-display">
+                            {{ runningRouteId === route.id ? formatSeconds(runningSeconds) : formatSeconds(route.savedSeconds || 0) }}
+                        </div>
+                        <div class="flex-gap">
+                            <button v-if="runningRouteId !== route.id" class="btn btn-sm btn-warning" @click="startTimer(route.id)">▶ 再生</button>
+                            <button v-else class="btn btn-sm btn-secondary" @click="pauseTimer">⏸ 一時停止</button>
+                            <button class="btn btn-sm btn-danger" style="background-color:#8e8e93;" @click="resetTimer(route.id)">🔄 0クリア</button>
+                        </div>
                     </div>
 
-                    <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
-                        <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px; font-weight: bold;">📋 巡回スポット順序 (ドラッグ並び替え代用):</div>
-                        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
-                            <div v-for="(sId, sIdx) in route.selectedSpotIds" :key="sId" style="display:flex; justify-content:space-between; align-items:center; background:var(--stat-box-bg); padding:4px 8px; border-radius:4px; font-size:12px; border:1px solid var(--border-color);">
-                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">{{ getSpotNameById(sId) }}</span>
-                                <div style="display:flex; gap:2px;">
-                                    <button class="btn-outline-blue" @click="moveRouteSpot(route, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 10px;">↑</button>
-                                    <button class="btn-outline-blue" @click="moveRouteSpot(route, sIdx, 1)" :disabled="sIdx === route.selectedSpotIds.length - 1" style="padding: 2px 6px; font-size: 10px;">↓</button>
-                                    <button class="btn-outline-red" @click="removeSpotFromRoute(route, sIdx)" style="padding: 2px 5px; font-size: 10px; margin-left: 2px;">×</button>
-                                </div>
+                    <div style="margin-top: 6px; font-size: 0.75rem;">
+                        <button class="btn btn-sm btn-secondary" style="font-size: 0.7rem; padding: 2px 6px;" @click="generateRouteSpell(route)">🔮 ルート呪文をコピー</button>
+                    </div>
+
+                    <div v-if="route.isExpanded" style="margin-top: 8px; padding-left: 8px; border-left: 2px solid var(--accent-blue); font-size: 0.8rem;">
+                        <div style="color: var(--text-gray); margin-bottom: 4px;">巡回スポット順一覧:</div>
+                        <div v-for="(sRef, sIdx) in route.spots" :key="sRef.id" class="flex-between" style="padding: 2px 0; border-bottom: 1px dashed var(--border-color)">
+                            <span>{{ sIdx + 1 }}. {{ getSpotNameById(sRef.id) }}</span>
+                            <div class="flex-gap">
+                                <button class="btn btn-sm" style="padding: 0px 4px; font-size: 0.65rem;" @click="moveRouteSpot(route, sIdx, -1)" :disabled="sIdx === 0">▲</button>
+                                <button class="btn btn-sm" style="padding: 0px 4px; font-size: 0.65rem;" @click="moveRouteSpot(route, sIdx, 1)" :disabled="sIdx === route.spots.length - 1">▼</button>
+                                <button class="btn btn-sm btn-danger" style="padding: 0px 4px; font-size: 0.65rem;" @click="removeSpotFromRoute(route, sIdx)">×</button>
                             </div>
                         </div>
-
-                        <div style="margin-bottom: 8px;">
-                            <textarea v-model="route.memo" placeholder="ルートメモ…" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
-                        </div>
-
-                        <div class="timer-box">
-                            <div style="font-size:11px; color:var(--text-gray); text-align:center; font-weight:bold;">⏱️ マラソン計測タイマー</div>
-                            <div :class="['timer-display', runningRouteId === route.id ? 'running' : '']">
-                                {{ formatSeconds(runningRouteId === route.id ? runningSeconds : route.actualSeconds) }}
-                            </div>
-                            <div style="display:flex; justify-content:center; gap:6px;">
-                                <button v-if="runningRouteId !== route.id" class="btn-outline-blue" @click="startTimer(route)" style="background:var(--accent-green); color:white; border:none; padding:4px 12px; font-weight:bold;">スタート</button>
-                                <button v-else class="btn-outline-blue" @click="pauseTimer(route)" style="background:var(--accent-orange); color:white; border:none; padding:4px 12px; font-weight:bold;">ストップ</button>
-                                <button class="btn-outline-blue" @click="resetTimer(route)" style="padding:4px 10px;">リセット</button>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; margin-bottom: 4px; flex-wrap: wrap; gap: 4px;">
-                                <span>📐 理想値合計:</span>
-                                <span>🔥{{ getRouteStats(route).light }} / ⏱️{{ getRouteStats(route).timeStr }} / 効率: <b style="color:var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</b></span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
-                                <span>🏃 実測値合計:</span>
-                                <span>⏱️{{ formatSeconds(route.actualSeconds) }} / 実測効率: <b style="color:var(--accent-orange);">{{ route.actualSeconds > 0 ? (getRouteStats(route).light / route.actualSeconds).toFixed(1) : '0.0' }}/s</b></span>
-                            </div>
-                        </div>
-
-                        <div class="route-path-box" :title="getRouteAreaNames(route)">
-                            経路概要: {{ getRouteAreaNames(route) || 'スポットなし' }}
-                        </div>
-
-                        <button class="btn-outline-red" @click="deleteRoute(rIdx)" style="width: 100%; margin-top: 8px; padding: 4px; font-size: 12px;">
-                            🗑️ このルートを削除
-                        </button>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div>
-            <div class="section-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div class="section-header" style="margin-bottom: 0;">🗺️ エリア・スポット管理ツリー</div>
-                    <button class="btn-outline-blue" @click="addMainArea">+ 主エリア追加</button>
+            <div class="card">
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <h3>⛰️ エリア・スポット編集</h3>
+                    <button class="btn btn-sm btn-success" @click="addMainArea">➕ メインエリア追加</button>
                 </div>
 
-                <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
-                    <div class="area-title-row1">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1;">
-                            <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)">
-                            <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size: 16px; flex-grow: 1; border:none; background:transparent;" placeholder="主エリア名...">
+                <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-item">
+                    <div class="flex-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 6px;">
+                        <div @click="mainArea.isExpanded = !mainArea.isExpanded" style="cursor: pointer; font-weight: bold; font-size: 0.95rem;">
+                            {{ mainArea.isExpanded ? '▼' : '▶' }} {{ mainArea.name }}
+                            <span style="font-size: 0.75rem; color: var(--text-gray); font-weight: normal;">
+                                ({{ getMainAreaStats(mainArea).selectedCount }}/{{ getMainAreaStats(mainArea).totalCount }}箇所)
+                            </span>
                         </div>
-                        <div style="display: flex; gap: 4px; align-items: center;">
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
-                            <button class="expand-toggle-btn" @click="mainArea.isExpanded = !mainArea.isExpanded">
-                                {{ mainArea.isExpanded ? '隠す ▼' : '開く ▶' }}
-                            </button>
+                        <div class="flex-gap">
+                            <label style="font-size:0.75rem; color:var(--text-gray); margin:0;"><input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)"> 一括</label>
+                            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0">▲</button>
+                            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1">▼</button>
+                            <button class="btn btn-sm btn-success" style="padding:2px 4px;" @click="addSubArea(mainArea)">+サブ</button>
+                            <button class="btn btn-sm btn-danger" style="padding:2px 4px;" @click="requestDeleteMainArea(mIdx)">削除</button>
+                        </div>
+                    </div>
+
+                    <div v-if="mainArea.isExpanded" style="padding-left: 4px;">
+                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-item">
+                            <div class="flex-between" style="font-weight: bold; margin-bottom: 6px; font-size: 0.85rem;">
+                                <div>
+                                    <input type="text" v-model="subArea.name" class="form-control" style="display:inline-block; width:120px; font-size:0.8rem; padding: 2px 4px;">
+                                    <span style="font-size: 0.7rem; color: var(--text-gray); margin-left: 4px;">
+                                        ({{ getSubAreaStats(subArea).selectedCount }}/{{ getSubAreaStats(subArea).totalCount }})
+                                    </span>
+                                </div>
+                                <div class="flex-gap">
+                                    <label style="font-size:0.75rem; margin:0;"><input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)"> 一括</label>
+                                    <button class="btn btn-sm" style="padding: 1px 4px;" @click="moveSubArea(mainArea, sIdx, -1)" :disabled="sIdx === 0">▲</button>
+                                    <button class="btn btn-sm" style="padding: 1px 4px;" @click="moveSubArea(mainArea, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1">▼</button>
+                                    <button class="btn btn-sm btn-success" style="padding: 1px 4px;" @click="addSpot(subArea)">+スポット</button>
+                                    <button class="btn btn-sm btn-danger" style="padding: 1px 4px;" @click="requestDeleteSubArea(mainArea, sIdx)">削除</button>
+                                </div>
+                            </div>
+
+                            <div class="grid-3" style="font-size: 0.7rem; color: var(--text-gray); margin-bottom: 2px; padding-left: 4px;">
+                                <div>対象 / 選択</div>
+                                <div>🔥 ライト数</div>
+                                <div>⏱️ 時間(秒)</div>
+                            </div>
+
+                            <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item flex-between">
+                                <div class="flex-gap" style="flex: 1.2; min-width: 0;">
+                                    <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(spot)">
+                                    <input type="text" v-model="spot.name" class="form-control" style="font-size: 0.75rem; padding: 2px 4px;">
+                                </div>
+                                <div style="flex: 0.8; margin: 0 4px;">
+                                    <input type="number" v-model.number="spot.light" class="form-control" style="font-size: 0.75rem; padding: 2px 4px;" min="0">
+                                </div>
+                                <div style="flex: 0.8;" class="flex-gap">
+                                    <input type="number" v-model.number="spot.time" class="form-control" style="font-size: 0.75rem; padding: 2px 4px;" min="0">
+                                    <button class="btn btn-sm btn-danger" style="padding: 1px 4px; font-size:0.7rem;" @click="requestDeleteSpot(subArea, spIdx)">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="column-right">
+            <div class="sticky-box">
+                <div class="card" style="border-left: 5px solid var(--accent-blue);">
+                    <h3>✨ 本日の獲得シミュレーション</h3>
+                    <div class="flex-between" style="margin-bottom: 12px; background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <div>
+                            <span style="font-size: 0.85rem; color: var(--text-gray);">本日獲得キャンドル</span>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: var(--accent-orange);">🕯️ {{ calculated.candles }} 本</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.85rem; color: var(--text-gray);">総回収ライト数</span>
+                            <div style="font-size: 1.1rem; font-weight: bold;">🔥 {{ totalLight }}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-gray);">⏱️ 総想定飛行時間</span>
+                            <div style="font-size: 0.95rem; font-weight: bold;">{{ formattedTotalTime }}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-gray);">⚡ 飛行回収効率</span>
+                            <div style="font-size: 0.95rem; font-weight: bold; color: var(--accent-green);">{{ totalEfficiency }} 本/分</div>
                         </div>
                     </div>
                     
-                    <div class="area-title-row2">
-                        <span style="font-size: 12px; color: var(--text-gray);">
-                            🔥{{ getMainAreaStats(mainArea).light }} / ⏱️{{ getMainAreaStats(mainArea).time }}s (選択済: {{ getMainAreaStats(mainArea).selectedCount }}個)
-                        </span>
-                        <div style="display:flex; gap:6px;">
-                            <button class="btn-add" @click="addSubArea(mIdx)" style="font-size:12px; padding:2px 6px;">+ サブ領域</button>
-                            <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
+                    <button class="btn btn-sm btn-secondary" style="width: 100%; margin-top: 8px;" @click="dailyReset">🔄 本日の進捗をリセット (全チェック解除)</button>
+                </div>
+
+                <div class="card" style="border-left: 5px solid var(--accent-purple);">
+                    <h3>🔮 目標日への到達予測</h3>
+                    <div class="form-group">
+                        <span style="font-size: 0.85rem; color: var(--text-gray);">目標日時点の総予測数</span>
+                        <div style="font-size: 1.4rem; font-weight: bold; color: var(--accent-purple); margin: 4px 0;">
+                            🕯️ {{ projectedCandles }} 本
                         </div>
+                        <small style="color: var(--text-gray);">
+                            計算式: 現在の所持数 + (本日の獲得数 × 残り日数) - 予定消費量
+                        </small>
                     </div>
+                </div>
 
-                    <div v-if="mainArea.isExpanded" class="subarea-list">
-                        <div v-if="mainArea.subAreas.length === 0" style="color:var(--text-gray); font-size:12px; padding:6px;">
-                            サブエリアがありません。追加してください。
+                <div class="card" style="border-left: 5px solid var(--accent-green);">
+                    <h3>🎯 効率重視ルートの自動選定</h3>
+                    <div class="form-group">
+                        <label>目標獲得キャンドル数 (本日分)</label>
+                        <div class="flex-gap">
+                            <input type="number" v-model.number="targetCandlesForOptimization" class="form-control" min="1" max="25" placeholder="例: 15">
+                            <button class="btn btn-success" @click="optimize">自動選定</button>
                         </div>
-                        
-                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
-                            <div class="subarea-title-row1">
-                                <div style="display: flex; align-items: center; gap: 6px; flex-grow: 1;">
-                                    <input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)">
-                                    <input type="text" v-model="subArea.name" style="font-weight: bold; font-size: 14px; flex-grow: 1; border:none; background:transparent;" placeholder="サブエリア名...">
-                                </div>
-                                <div style="display: flex; gap: 4px; align-items: center;" @click="subArea.isExpanded = !subArea.isExpanded; save();">
-                                    <span style="font-size: 11px; color: var(--text-gray); cursor: pointer; user-select: none;">
-                                        🔥{{ getSubAreaStats(subArea).light }} / {{ getSubAreaStats(subArea).time }}s
-                                    </span>
-                                    <span style="margin-left: 4px; color: var(--text-gray); cursor: pointer; user-select: none;">{{ subArea.isExpanded ? '▼' : '▶' }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="subarea-title-row2" style="margin-top: 6px;">
-                                <div class="btn-action-group">
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
-                                </div>
-                                <div style="display:flex; gap:6px; align-items:center;">
-                                    <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size:12px; padding:2px 6px;">+ 📌スポット</button>
-                                    <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
-                                </div>
-                            </div>
-
-                            <div v-if="subArea.isExpanded" class="spot-list">
-                                <div v-if="subArea.spots.length === 0" style="color:var(--text-gray); font-size:12px; padding:4px;">
-                                    スポットがありません。
-                                </div>
-                                
-                                <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
-                                            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange">
-                                            <input type="text" v-model="spot.name" style="font-size: 13px; font-weight: 500; padding: 4px; width: 100%;" placeholder="スポット名を入力...">
-                                        </div>
-                                        <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px;">×</button>
-                                    </div>
-                                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-left: 30px; font-size: 12px;">
-                                        <div class="flex-group">
-                                            <span>火種:</span>
-                                            <input type="number" v-model.number="spot.light" @input="save" placeholder="0">
-                                        </div>
-                                        <div class="flex-group">
-                                            <span>秒数:</span>
-                                            <input type="number" v-model.number="spot.time" @input="save" placeholder="0">
-                                        </div>
-                                        <div class="flex-group" style="flex-grow:1;">
-                                            <span>グループ:</span>
-                                            <input type="text" v-model="spot.group" @input="save" placeholder="例:大キャン" style="width:70px; padding:4px; font-size:11px;">
-                                        </div>
-                                        <div style="font-size: 11px; color: var(--text-gray); margin-left: auto;">
-                                            効率: <b>{{ spot.time > 0 ? (spot.light / spot.time).toFixed(2) : '0.00' }}</b>/s
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
+                        <small style="color: var(--text-gray); display: block; margin-top: 4px;">
+                            時間効率（ライト/秒）が最も高いスポットを目標本数に達するまで自動で一括チェックします。
+                        </small>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
-    <div v-if="deleteModal.show" class="app-modal-overlay">
-        <div class="app-modal-content">
-            <h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:8px; color:var(--accent-red);">{{ deleteModal.title }}</h3>
-            <p style="font-size:14px; line-height:1.5; color:var(--text-color);">{{ deleteModal.message }}</p>
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button class="btn-outline-blue" @click="cancelDelete" style="border-color:var(--border-color); color:var(--text-color);">キャンセル</button>
-                <button class="btn-outline-red" @click="confirmDelete" style="background:var(--accent-red); color:white; border:none; font-weight:bold; padding:6px 16px; border-radius:6px;">削除する</button>
+    <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
+        <div class="modal-content">
+            <h3>⚙️ 構成データのバックアップ・共有</h3>
+            <p style="font-size: 0.8rem; color: var(--text-gray);">エリア構造、カスタムルート、タイマー等の全データを呪文（文字列）化して他端末と同期できます。</p>
+            <div class="form-group">
+                <label>🔮 生成された呪文（コピーしてください）</label>
+                <textarea class="form-control" style="font-family: monospace; font-size: 0.75rem; height: 80px;" readonly @click="$event.target.select()">{{ generatedSpell }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>📜 呪文をインポート</label>
+                <div class="flex-gap">
+                    <input type="text" v-model="inputSpell" class="form-control" placeholder="ここに呪文を貼り付け">
+                    <button class="btn btn-success" @click="requestApplySpell">適用</button>
+                </div>
+            </div>
+            <div v-if="spellMessage" :style="{ color: spellMessageType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)', fontSize: '0.85rem', marginTop: '4px' }">
+                {{ spellMessage }}
+            </div>
+            <div style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px; text-align: right;">
+                <button class="btn btn-sm btn-danger" style="float:left;" @click="resetCalculatorData">⚠️ 初期データに完全リセット</button>
+                <button class="btn btn-sm btn-secondary" @click="showSettings = false">閉じる</button>
             </div>
         </div>
     </div>
 
-    <footer>
-            © 2026 Sky キャンドル計算機 | 関連ツール: 
-        <a href="companion.html" style="font-weight: bold;">✨ 精霊同行ツール</a> | 
-        <a href="share.html" style="font-weight: bold;">📍 創作物管理ツール</a>
-        <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
-
-        <span style="color: var(--text-gray); font-size: 12px; margin-top: 4px; display: inline-block;">
-            参考文献: 
-            <a href="https://sky-children-of-the-light.fandom.com/wiki/Pieces_of_Light" target="_blank" rel="noopener noreferrer">Pieces of Light (Sky Wiki)</a> | 
-            <a href="https://sky-children-of-the-light.fandom.com/wiki/Additional_Light_Sources" target="_blank" rel="noopener noreferrer">Additional Light Sources (Sky Wiki)</a>
-        </span>
-    </footer>
-
+    <div v-if="confirmModal.show" class="modal-overlay">
+        <div class="modal-content" style="max-width: 380px;">
+            <h4>確認</h4>
+            <p style="font-size: 0.9rem;">{{ confirmModal.message }}</p>
+            <div style="text-align: right; gap: 8px; display: flex; justify-content: flex-end;">
+                <button class="btn btn-sm btn-secondary" @click="confirmModal.show = false">キャンセル</button>
+                <button class="btn btn-sm btn-danger" @click="executeConfirm">実行</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
 <script>
-    // 🧮 チェッカー用のチェイン閾値(火種累積量)の固定データ
-    const SYSTEM_THRESHOLDS = [94, 188, 282, 376, 470, 609, 748, 887, 1026, 1165, 1343, 1521, 1699, 1877, 2055, 2268, 2481, 2719, 3207, 4195, 6195, 10195, 18195];
+    const { createApp, ref, computed, watch, onMounted } = Vue;
 
-    // 🔒 簡易的な一意のIDを生成するヘルパー関数
-    function uuid() {
-        return Math.random().toString(36).substring(2, 11);
-    }
-
-    // 🗺️ `areas-data.js`が存在しなかった場合用の標準フォールバックデータ
-    function getFallbackAreas() {
-        return [
-            {
-                id: "a-island", name: "孤島", isExpanded: false,
-                subAreas: [
-                    { id: "s-island-main", name: "砂漠・神殿群", isExpanded: false, spots: [
-                        { id: "sp-isl-1", name: "砂漠スタート位置周辺", light: 42, time: 55, isSelected: false, group: "" },
-                        { id: "sp-isl-2", name: "預言者の石窟", light: 125, time: 90, isSelected: false, group: "" },
-                        { id: "sp-isl-3", name: "孤島神殿内部", light: 64, time: 40, isSelected: false, group: "" }
-                    ]}
-                ]
-            },
-            {
-                id: "a-prairie", name: "草原", isExpanded: false,
-                subAreas: [
-                    { id: "s-prairie-main", name: "蝶々の入江・鳥の巣", isExpanded: false, spots: [
-                        { id: "sp-pra-1", name: "定常キャンドル群(入江・三面連峰)", light: 168, time: 130, isSelected: false, group: "" },
-                        { id: "sp-pra-2", name: "鳥の巣・楽園エリア連結", light: 140, time: 110, isSelected: false, group: "" },
-                        { id: "sp-pra-3", name: "楽園の島々(間欠泉除く)", light: 345, time: 260, isSelected: false, group: "" }
-                    ]}
-                ]
-            },
-            {
-                id: "a-forest", name: "雨林", isExpanded: false,
-                subAreas: [
-                    { id: "s-forest-main", name: "本流・晴れ間・大樹", isExpanded: false, spots: [
-                        { id: "sp-for-1", name: "静かなお庭〜拓かれた地", light: 135, time: 95, isSelected: false, group: "" },
-                        { id: "sp-for-2", name: "川沿いのキャンプ場・大樹のツリーハウス", light: 220, time: 180, isSelected: false, group: "" },
-                        { id: "sp-for-3", name: "晴れ間・おこもりエリア", light: 195, time: 140, isSelected: false, group: "" },
-                        { id: "sp-for-4", name: "雨林神殿手前の森", light: 310, time: 210, isSelected: false, group: "" }
-                    ]}
-                ]
-            },
-            {
-                id: "a-valley", name: "峡谷", isExpanded: false,
-                subAreas: [
-                    { id: "s-valley-main", name: "スケートリンク・レース・夢の町", isExpanded: false, spots: [
-                        { id: "sp-val-1", name: "滑り台・スケートリンク周り", light: 110, time: 80, isSelected: false, group: "" },
-                        { id: "sp-val-2", name: "陸のレース・光の翼レーン", light: 150, time: 150, isSelected: false, group: "" },
-                        { id: "sp-val-3", name: "空のレース", light: 150, time: 180, isSelected: false, group: "" },
-                        { id: "sp-val-4", name: "夢の町〜隠者の峠", light: 290, time: 220, isSelected: false, group: "" }
-                    ]}
-                ]
-            },
-            {
-                id: "a-wasteland", name: "捨てられた地", isExpanded: false,
-                subAreas: [
-                    { id: "s-waste-main", name: "墓所・方舟・土砂降り", isExpanded: false, spots: [
-                        { id: "sp-was-1", name: "倒壊した砦・広場", light: 145, time: 110, isSelected: false, group: "" },
-                        { id: "sp-was-2", name: "忘れられた方舟", light: 210, time: 160, isSelected: false, group: "" },
-                        { id: "sp-was-3", name: "巨大墓所エリア", light: 260, time: 200, isSelected: false, group: "" }
-                    ]}
-                ]
-            },
-            {
-                id: "a-vault", name: "書庫", isExpanded: false,
-                subAreas: [
-                    { id: "s-vault-main", name: "各階層・星の実験室", isExpanded: false, spots: [
-                        { id: "sp-vau-1", name: "1階〜5階定常キャンドル", light: 190, time: 120, isSelected: false, group: "" },
-                        { id: "sp-vau-2", name: "星の実験室(書庫2階奥側)", light: 130, time: 85, isSelected: false, group: "" }
-                    ]}
-                ]
-            }
-        ];
-    }
-
-    const { createApp, ref, computed, onMounted, watch } = Vue;
+    // 初期デフォルトエリアデータ定義
+    const getDefaultAreas = () => [
+        {
+            id: 'prairie', name: '⛰️ 草原', isExpanded: true,
+            subAreas: [
+                { id: 'prairie_main', name: 'メインエリア', isSelected: false, spots: [
+                    { id: 'p_chou', name: '蝶々の入江', light: 120, time: 90, isSelected: false },
+                    { id: 'p_suiri', name: '鳥の巣', light: 160, time: 120, isSelected: false },
+                    { id: 'p_rakura', name: '楽園の楽園', light: 380, time: 240, isSelected: false },
+                    { id: 'p_sandou', name: '三連の鐘', light: 140, time: 100, isSelected: false }
+                ]}
+            ]
+        },
+        {
+            id: 'forest', name: '🌳 雨林', isExpanded: true,
+            subAreas: [
+                { id: 'forest_main', name: 'メイン・晴れ間', isSelected: false, spots: [
+                    { id: 'f_shizuku', name: '静けさの庭・川', light: 180, time: 110, isSelected: false },
+                    { id: 'f_hangan', name: '反転する岩場', light: 220, time: 150, isSelected: false },
+                    { id: 'f_kinoko', name: '神殿前（キノコ焼き含む）', light: 310, time: 200, isSelected: false },
+                    { id: 'f_hare', name: '晴れ間エリア', light: 140, time: 90, isSelected: false }
+                ]}
+            ]
+        },
+        {
+            id: 'valley', name: '⛷️ 峡谷', isExpanded: true,
+            subAreas: [
+                { id: 'valley_main', name: 'レース・夢の町', isSelected: false, spots: [
+                    { id: 'v_skate', name: 'スケートリンク', light: 100, time: 60, isSelected: false },
+                    { id: 'v_skyrace', name: '天のレース', light: 150, time: 180, isSelected: false },
+                    { id: 'v_sunset', name: '滑走路レース', light: 150, time: 180, isSelected: false },
+                    { id: 'v_yume', name: '夢の町・隠者峠', light: 240, time: 160, isSelected: false }
+                ]}
+            ]
+        },
+        {
+            id: 'wasteland', name: '💀 暮土', isExpanded: false,
+            subAreas: [
+                { id: 'w_main', name: '砂漠・エビ群', isSelected: false, spots: [
+                    { id: 'w_gla', name: '倒壊した神殿前', light: 150, time: 100, isSelected: false },
+                    { id: 'w_ship', name: '座礁船エリア', light: 180, time: 130, isSelected: false },
+                    { id: 'w_battle', name: '戦場神殿前', light: 260, time: 160, isSelected: false },
+                    { id: 'w_ark', name: '方舟エリア', light: 140, time: 120, isSelected: false }
+                ]}
+            ]
+        },
+        {
+            id: 'vault', name: '📚 書庫', isExpanded: false,
+            subAreas: [
+                { id: 'v_floor', name: 'エレベータ・サブ階', isSelected: false, spots: [
+                    { id: 'vt_base', name: '1階・2階・4階灯篭', light: 210, time: 140, isSelected: false },
+                    { id: 'vt_office', name: 'オフィス内 (要入場条件)', light: 130, time: 90, isSelected: false },
+                    { id: 'vt_collab', name: 'コラボエリア（星の王子様/満月）', light: 160, time: 100, isSelected: false }
+                ]}
+            ]
+        }
+    ];
 
     createApp({
         setup() {
-            // 基本リアクティブ変数
-            const thresholds = ref(SYSTEM_THRESHOLDS);
             const isDarkMode = ref(false);
-            const isWideScreen = ref(window.innerWidth >= 850);
-            
             const areas = ref([]);
-            const carryOverPercent = ref(0);
-            const candleMemo = ref("");
-            const showSettings = ref(false);
-            
-            // 各セクション表示フラグ
-            const visibleSections = ref({
-                candleManage: true,
-                optimization: true,
-                myRoutes: true,
-                spellShare: true
-            });
-
-            // マイルート、タイマー関連
             const myRoutes = ref([]);
-            const routeError = ref("");
-            const runningRouteId = ref(null);
-            const runningSeconds = ref(0);
-            let timerInterval = null;
-
-            // デイリーイベント関連
-            const dailyBonusArea = ref("none");
-            const dailyShard = ref("none");
-
-            // 所持数・日付関連
+            
+            // ユーザー変数
             const currentCandles = ref(0);
             const currentAscendedCandles = ref(0);
             const currentHearts = ref(0);
+            const carryOverPercent = ref(0);
+            const targetDate = ref('');
+            const eventDays = ref(0);
             const plannedUsage = ref(0);
-            const targetDate = ref("");
+            const targetCandlesForOptimization = ref(15);
+            
+            // クイック日課
+            const dailyBonusArea = ref('');
+            const dailyShard = ref('none');
 
-            // 最適化・データ共有バインド
-            const targetCandlesForOptimization = ref(20);
-            const generatedSpell = ref("");
-            const inputSpell = ref("");
-            const isConfirming = ref(false);
-            const spellMessage = ref("");
-            const spellMessageType = ref("");
+            // 共有呪文
+            const inputSpell = ref('');
+            const generatedSpell = ref('');
+            const spellMessage = ref('');
+            const spellMessageType = ref('success');
+            const showSettings = ref(false);
 
-            const routeInputSpell = ref("");
-            const routeSpellMessage = ref("");
-            const routeSpellMessageType = ref("");
+            // ルート個別呪文
+            const routeInputSpell = ref('');
+            const routeSpellMessage = ref('');
+            const routeSpellMessageType = ref('success');
 
-            // モーダル管理オブジェクト
-            const deleteModal = ref({
-                show: false,
-                title: "",
-                message: "",
-                type: "",
-                mIdx: null,
-                sIdx: null,
-                spIdx: null,
-                routeIdx: null
+            // 確認モーダル
+            const confirmModal = ref({ show: false, message: '', action: null });
+
+            // タイマー管理
+            let timerInterval = null;
+            const runningRouteId = ref(null);
+            const runningSeconds = ref(0);
+
+            // 段階式キャンドル閾値
+            const thresholds = ref([
+                { count: 5, cost: 50 },
+                { count: 5, cost: 75 },
+                { count: 5, cost: 113 },
+                { count: 5, cost: 175 }
+            ]);
+
+            // 日付変更で残日数を連動
+            watch(targetDate, (newVal) => {
+                if (!newVal) { eventDays.value = 0; return; }
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const target = new Date(newVal);
+                target.setHours(0,0,0,0);
+                const diffTime = target - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                eventDays.value = diffDays > 0 ? diffDays : 0;
             });
 
-            // 🌓 テーマ切り替え
-            const toggleTheme = () => {
-                isDarkMode.value = !isDarkMode.value;
-                localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
-                applyThemeToDOM();
-            };
-
-            const applyThemeToDOM = () => {
-                document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
-            };
-
-            // 💾 ローカルストレージ保存
-            const save = () => {
-                const data = {
-                    areas: areas.value,
-                    carryOverPercent: carryOverPercent.value,
-                    candleMemo: candleMemo.value,
-                    targetDate: targetDate.value,
-                    currentCandles: currentCandles.value,
-                    currentAscendedCandles: currentAscendedCandles.value,
-                    currentHearts: currentHearts.value,
-                    plannedUsage: plannedUsage.value,
-                    targetCandlesForOptimization: targetCandlesForOptimization.value,
-                    dailyBonusArea: dailyBonusArea.value,
-                    dailyShard: dailyShard.value,
-                    visibleSections: visibleSections.value,
-                    myRoutes: myRoutes.value.map(r => ({
-                        id: r.id,
-                        name: r.name,
-                        memo: r.memo,
-                        selectedSpotIds: r.selectedSpotIds,
-                        actualSeconds: r.actualSeconds
-                    }))
-                };
-                localStorage.setItem('sky_tracker_storage_v3', JSON.stringify(data));
-            };
-
-            // 📂 データ初期ロード
-            const load = () => {
-                try {
-                    const raw = localStorage.getItem('sky_tracker_storage_v3');
-                    if (raw) {
-                        const parsed = JSON.parse(raw);
-                        if (parsed.areas) areas.value = parsed.areas;
-                        if (parsed.carryOverPercent !== undefined) carryOverPercent.value = parsed.carryOverPercent;
-                        if (parsed.candleMemo !== undefined) candleMemo.value = parsed.candleMemo;
-                        if (parsed.targetDate) targetDate.value = parsed.targetDate;
-                        if (parsed.currentCandles !== undefined) currentCandles.value = parsed.currentCandles;
-                        if (parsed.currentAscendedCandles !== undefined) currentAscendedCandles.value = parsed.currentAscendedCandles;
-                        if (parsed.currentHearts !== undefined) currentHearts.value = parsed.currentHearts;
-                        if (parsed.plannedUsage !== undefined) plannedUsage.value = parsed.plannedUsage;
-                        if (parsed.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = parsed.targetCandlesForOptimization;
-                        if (parsed.dailyBonusArea) dailyBonusArea.value = parsed.dailyBonusArea;
-                        if (parsed.dailyShard) dailyShard.value = parsed.dailyShard;
-                        if (parsed.visibleSections) visibleSections.value = { ...visibleSections.value, ...parsed.visibleSections };
-                        
-                        if (Array.isArray(parsed.myRoutes)) {
-                            myRoutes.value = parsed.myRoutes.map(r => ({
-                                id: r.id || uuid(),
-                                name: r.name || "無題のルート",
-                                memo: r.memo || "",
-                                selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [],
-                                isExpanded: false,
-                                actualSeconds: r.actualSeconds || 0,
-                                generatedSpell: ""
-                            }));
-                        }
-                    } else {
-                        loadInitialData();
-                    }
-                } catch (e) {
-                    console.error("ストレージロードエラー、初期データを読み込みます", e);
-                    loadInitialData();
-                }
-            };
-
-            const loadInitialData = () => {
-                // 外部JSファイル(areas-data.js)等に定義がある場合はそれを利用、無い場合はフォールバック
-                if (typeof window.getDefaultAreas === 'function') {
-                    areas.value = window.getDefaultAreas();
-                } else {
-                    areas.value = getFallbackAreas();
-                }
-                myRoutes.value = [];
-                carryOverPercent.value = 0;
-                candleMemo.value = "";
-                currentCandles.value = 0;
-                currentAscendedCandles.value = 0;
-                currentHearts.value = 0;
-                plannedUsage.value = 0;
-                
-                // 明日のデフォルト日付を設定
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 7);
-                targetDate.value = tomorrow.toISOString().split('T')[0];
-            };
-
-            // 🧮 計算系 Computed
+            // リアルタイム総ライト計算
             const totalLight = computed(() => {
-                let total = 0;
-                areas.value.forEach(area => {
-                    if (area && Array.isArray(area.subAreas)) {
-                        area.subAreas.forEach(sub => {
-                            if (sub && Array.isArray(sub.spots)) {
-                                sub.spots.forEach(spot => {
-                                    if (spot && spot.isSelected) {
-                                        total += (Number(spot.light) || 0);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-                
-                // 本日の大キャンドル
-                if (dailyBonusArea.value !== "none") total += 200;
-                // 本日の闇の破片
-                if (dailyShard.value === "black" || dailyShard.value === "red") total += 200;
-                
-                return total;
-            });
-
-            const calculated = computed(() => {
-                const total = totalLight.value;
-                let candles = 0;
-                for (let i = 0; i < thresholds.value.length; i++) {
-                    if (total >= thresholds.value[i]) {
-                        candles = i + 1;
-                    } else {
-                        return { candles, nextReq: thresholds.value[i] - total };
-                    }
-                }
-                return { candles, nextReq: 0 };
-            });
-
-            const totalEfficiency = computed(() => {
-                let lightSum = 0;
-                let timeSum = 0;
-                areas.value.forEach(area => {
-                    area.subAreas?.forEach(sub => {
-                        sub.spots?.forEach(spot => {
-                            if (spot.isSelected) {
-                                lightSum += (Number(spot.light) || 0);
-                                timeSum += (Number(spot.time) || 0);
-                            }
+                let light = 0;
+                areas.value.forEach(main => {
+                    main.subAreas.forEach(sub => {
+                        sub.spots.forEach(spot => {
+                            if (spot.isSelected) light += (spot.light || 0);
                         });
                     });
                 });
-                return timeSum > 0 ? (lightSum / timeSum) : 0.0;
+                // 大キャンボーナス
+                if (dailyBonusArea.value) light += 200;
+                // 闇の破片ボーナス
+                if (dailyShard.value === 'normal') light += 80;
+                if (dailyShard.value === 'strong') light += 150;
+
+                return light;
+            });
+
+            // ライト数から算出される本日分キャンドル本数
+            const calculated = computed(() => {
+                let rem = totalLight.value;
+                let candles = 0;
+                for (const t of thresholds.value) {
+                    const capacity = t.count * t.cost;
+                    if (rem >= capacity) {
+                        candles += t.count;
+                        rem -= capacity;
+                    } else {
+                        candles += rem / t.cost;
+                        rem = 0;
+                        break;
+                    }
+                }
+                if (rem > 0) {
+                    candles += rem / 250; // 21本目以降
+                }
+                // 繰り越し余剰計算
+                if (carryOverPercent.value > 0) {
+                    candles = candles * (1 - (carryOverPercent.value / 100));
+                }
+                return {
+                    candles: parseFloat(candles.toFixed(2)),
+                    light: totalLight.value
+                };
+            });
+
+            // 未来予測数
+            const projectedCandles = computed(() => {
+                const totalGained = calculated.value.candles * (eventDays.value || 0);
+                const res = (currentCandles.value || 0) + totalGained - (plannedUsage.value || 0);
+                return res > 0 ? parseFloat(res.toFixed(1)) : 0;
+            });
+
+            // 効率性計算
+            const totalEfficiency = computed(() => {
+                let totalSec = 0;
+                areas.value.forEach(main => {
+                    main.subAreas.forEach(sub => {
+                        sub.spots.forEach(spot => {
+                            if (spot.isSelected) totalSec += (spot.time || 0);
+                        });
+                    });
+                });
+                if (totalSec === 0) return 0;
+                return parseFloat((calculated.value.candles / (totalSec / 60)).toFixed(2));
             });
 
             const formattedTotalTime = computed(() => {
-                let seconds = 0;
-                areas.value.forEach(area => {
-                    area.subAreas?.forEach(sub => {
-                        sub.spots?.forEach(spot => {
-                            if (spot.isSelected) seconds += (Number(spot.time) || 0);
+                let totalSec = 0;
+                areas.value.forEach(main => {
+                    main.subAreas.forEach(sub => {
+                        sub.spots.forEach(spot => {
+                            if (spot.isSelected) totalSec += (spot.time || 0);
                         });
                     });
                 });
-                return formatSeconds(seconds);
+                const m = Math.floor(totalSec / 60);
+                const s = totalSec % 60;
+                return `${m}分${s}秒`;
             });
 
-            const eventDays = computed(() => {
-                if (!targetDate.value) return 0;
-                const target = new Date(targetDate.value + "T00:00:00");
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const diff = target - today;
-                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                return days > 0 ? days : 0;
-            });
-
-            const projectedCandles = computed(() => {
-                return currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value;
-            });
-
-            // 🛠️ チェックボックス統括ロジック
-            const isAllSubSelected = (subArea) => {
-                return subArea && Array.isArray(subArea.spots) && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
+            // 一括選択ロジック
+            const isAllMainSelected = (main) => main.subAreas.every(s => s.spots.every(sp => sp.isSelected));
+            const toggleMainArea = (main) => {
+                const targetState = !isAllMainSelected(main);
+                main.subAreas.forEach(s => s.spots.forEach(sp => sp.isSelected = targetState));
+            };
+            const isAllSubSelected = (sub) => sub.spots.every(sp => sp.isSelected);
+            const toggleSubArea = (sub) => {
+                const targetState = !isAllSubSelected(sub);
+                sub.spots.forEach(sp => sp.isSelected = targetState);
             };
 
-            const toggleSubArea = (subArea) => {
-                if (!subArea || !Array.isArray(subArea.spots)) return;
-                const targetState = !isAllSubSelected(subArea);
-                subArea.spots.forEach(s => s.isSelected = targetState);
-                save();
+            const getMainAreaStats = (main) => {
+                let selected = 0, total = 0;
+                main.subAreas.forEach(s => s.spots.forEach(sp => { total++; if (sp.isSelected) selected++; }));
+                return { selectedCount: selected, totalCount: total };
+            };
+            const getSubAreaStats = (sub) => {
+                let selected = 0;
+                sub.spots.forEach(sp => { if (sp.isSelected) selected++; });
+                return { selectedCount: selected, totalCount: sub.spots.length };
             };
 
-            const isAllMainSelected = (mainArea) => {
-                return mainArea && Array.isArray(mainArea.subAreas) && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
+            // 並び替え・編集処理
+            const moveMainArea = (idx, direction) => {
+                const targetIdx = idx + direction;
+                if (targetIdx < 0 || targetIdx >= areas.value.length) return;
+                const temp = areas.value[idx];
+                areas.value[idx] = areas.value[targetIdx];
+                areas.value[targetIdx] = temp;
             };
 
-            const toggleMainArea = (mainArea) => {
-                if (!mainArea || !Array.isArray(mainArea.subAreas)) return;
-                const targetState = !isAllMainSelected(mainArea);
-                mainArea.subAreas.forEach(sub => {
-                    if (Array.isArray(sub.spots)) {
-                        sub.spots.forEach(s => s.isSelected = targetState);
-                    }
-                });
-                save();
+            const moveSubArea = (main, idx, direction) => {
+                const targetIdx = idx + direction;
+                if (targetIdx < 0 || targetIdx >= main.subAreas.length) return;
+                const temp = main.subAreas[idx];
+                main.subAreas[idx] = main.subAreas[targetIdx];
+                main.subAreas[targetIdx] = temp;
             };
 
-            // 📊 統計取得ヘルパー
-            const getSubAreaStats = (subArea) => {
-                let light = 0, time = 0;
-                if (subArea && Array.isArray(subArea.spots)) {
-                    subArea.spots.forEach(s => {
-                        light += (Number(s.light) || 0);
-                        time += (Number(s.time) || 0);
-                    });
-                }
-                return { light, time };
-            };
-
-            const getMainAreaStats = (mainArea) => {
-                let light = 0, time = 0, selectedCount = 0;
-                if (mainArea && Array.isArray(mainArea.subAreas)) {
-                    mainArea.subAreas.forEach(sub => {
-                        if (Array.isArray(sub.spots)) {
-                            sub.spots.forEach(s => {
-                                light += (Number(s.light) || 0);
-                                time += (Number(s.time) || 0);
-                                if (s.isSelected) selectedCount++;
-                            });
-                        }
-                    });
-                }
-                return { light, time, selectedCount };
-            };
-
-            // ⚡ 並び替え系メソッド
-            const moveMainArea = (mIdx, direction) => {
-                const target = mIdx + direction;
-                if (target < 0 || target >= areas.value.length) return;
-                const temp = areas.value[mIdx];
-                areas.value[mIdx] = areas.value[target];
-                areas.value[target] = temp;
-                save();
-            };
-
-            const moveSubArea = (mIdx, sIdx, direction) => {
-                const subAreas = areas.value[mIdx].subAreas;
-                const target = sIdx + direction;
-                if (target < 0 || target >= subAreas.length) return;
-                const temp = subAreas[sIdx];
-                subAreas[sIdx] = subAreas[target];
-                subAreas[target] = temp;
-                save();
-            };
-
-            const moveRouteCard = (rIdx, direction) => {
-                const target = rIdx + direction;
-                if (target < 0 || target >= myRoutes.value.length) return;
-                const temp = myRoutes.value[rIdx];
-                myRoutes.value[rIdx] = myRoutes.value[target];
-                myRoutes.value[target] = temp;
-                save();
-            };
-
-            const moveRouteSpot = (route, sIdx, direction) => {
-                const target = sIdx + direction;
-                if (target < 0 || target >= route.selectedSpotIds.length) return;
-                const temp = route.selectedSpotIds[sIdx];
-                route.selectedSpotIds[sIdx] = route.selectedSpotIds[target];
-                route.selectedSpotIds[target] = temp;
-                save();
-            };
-
-            const removeSpotFromRoute = (route, sIdx) => {
-                route.selectedSpotIds.splice(sIdx, 1);
-                save();
-            };
-
-            // ➕ CRUD（作成・削除要請）
             const addMainArea = () => {
-                areas.value.push({ id: uuid(), name: "新しい主エリア", isExpanded: true, subAreas: [] });
-                save();
-            };
-
-            const addSubArea = (mIdx) => {
-                areas.value[mIdx].subAreas.push({ id: uuid(), name: "新しいサブ領域", isExpanded: true, spots: [] });
-                areas.value[mIdx].isExpanded = true;
-                save();
-            };
-
-            const addSpot = (mIdx, sIdx) => {
-                areas.value[mIdx].subAreas[sIdx].spots.push({
-                    id: uuid(), name: "新スポット", light: 50, time: 60, isSelected: true, group: ""
+                areas.value.push({
+                    id: 'custom_m_' + Date.now(), name: '🆕 新しいエリア', isExpanded: true, subAreas: []
                 });
-                areas.value[mIdx].subAreas[sIdx].isExpanded = true;
-                save();
             };
 
-            // 🔔 削除ダイアログフック
-            const requestDeleteMainArea = (mIdx) => {
-                deleteModal.value = { show: true, title: "主エリアの削除", message: `「${areas.value[mIdx].name}」を削除しますか？配下のサブ領域・スポットも全て消失します。`, type: "main", mIdx };
-            };
-            const requestDeleteSubArea = (mIdx, sIdx) => {
-                deleteModal.value = { show: true, title: "サブ領域の削除", message: `「${areas.value[mIdx].subAreas[sIdx].name}」を削除しますか？`, type: "sub", mIdx, sIdx };
-            };
-            const requestDeleteSpot = (mIdx, sIdx, spIdx) => {
-                deleteModal.value = { show: true, title: "スポットの削除", message: `「${areas.value[mIdx].subAreas[sIdx].spots[spIdx].name}」を削除しますか？`, type: "spot", mIdx, sIdx, spIdx };
-            };
-            const deleteRoute = (rIdx) => {
-                deleteModal.value = { show: true, title: "ルートの削除", message: `マイルート「${myRoutes.value[rIdx].name}」を削除しますか？`, type: "route", routeIdx: rIdx };
-            };
-
-            const confirmDelete = () => {
-                const m = deleteModal.value;
-                if (m.type === "main") areas.value.splice(m.mIdx, 1);
-                if (m.type === "sub") areas.value[m.mIdx].subAreas.splice(m.sIdx, 1);
-                if (m.type === "spot") areas.value[m.mIdx].subAreas[m.sIdx].spots.splice(m.spIdx, 1);
-                if (m.type === "route") {
-                    if (runningRouteId.value === myRoutes.value[m.routeIdx].id) resetTimer();
-                    myRoutes.value.splice(m.routeIdx, 1);
-                }
-                deleteModal.value.show = false;
-                save();
-            };
-            const cancelDelete = () => { deleteModal.value.show = false; };
-
-            const handleSpotChange = () => { save(); };
-
-            // 🗺️ ルートロジック
-            const saveCurrentRoute = () => {
-                const selectedIds = [];
-                areas.value.forEach(area => {
-                    area.subAreas?.forEach(sub => {
-                        sub.spots?.forEach(spot => {
-                            if (spot.isSelected) selectedIds.push(spot.id);
-                        });
-                    });
+            const addSubArea = (main) => {
+                main.subAreas.push({
+                    id: 'custom_s_' + Date.now(), name: 'サブエリア区域', spots: []
                 });
+            };
+
+            const addSpot = (sub) => {
+                sub.spots.push({
+                    id: 'custom_sp_' + Date.now(), name: '採光スポット', light: 50, time: 30, isSelected: false
+                });
+            };
+
+            const requestDeleteMainArea = (idx) => {
+                confirmModal.value = {
+                    show: true, message: 'このメインエリアと中の全サブ区域を削除しますか？',
+                    action: () => { areas.value.splice(idx, 1); }
+                };
+            };
+            const requestDeleteSubArea = (main, idx) => {
+                confirmModal.value = {
+                    show: true, message: 'このサブエリアと含まれる全スポットを削除しますか？',
+                    action: () => { main.subAreas.splice(idx, 1); }
+                };
+            };
+            const requestDeleteSpot = (sub, idx) => {
+                sub.spots.splice(idx, 1);
+            };
+            const executeConfirm = () => {
+                if (confirmModal.value.action) confirmModal.value.action();
+                confirmModal.value.show = false;
+            };
+
+            const handleSpotChange = (spot) => { /* 変更イベント検知用 */ };
+            const dailyReset = () => {
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => sp.isSelected = false)));
+                dailyBonusArea.value = '';
+                dailyShard.value = 'none';
+            };
+
+            // ルート最適化ロジック (Knapsack代用貪欲法)
+            const optimize = () => {
+                const target = targetCandlesForOptimization.value;
+                if (!target || target <= 0) return;
                 
-                if (selectedIds.length === 0) {
-                    routeError.value = "エラー：スポットが1つも選択されていません。";
-                    setTimeout(() => { routeError.value = ""; }, 4000);
-                    return;
+                // リセット
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => sp.isSelected = false)));
+                
+                let flatSpots = [];
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => {
+                    const ratio = sp.time > 0 ? (sp.light / sp.time) : 0;
+                    flatSpots.push({ ref: sp, ratio: ratio });
+                })));
+                
+                // 効率の高い順にソート
+                flatSpots.sort((a,b) => b.ratio - a.ratio);
+                
+                for (const item of flatSpots) {
+                    item.ref.isSelected = true;
+                    if (calculated.value.candles >= target) break;
                 }
-                routeError.value = "";
+            };
+
+            // マイルート管理の処理
+            const saveCurrentRoute = () => {
+                const name = prompt("保存するルートの名前を入力してください:", `ルート ${myRoutes.value.length + 1}`);
+                if (!name) return;
+                const activeSpots = [];
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => {
+                    if (sp.isSelected) activeSpots.push({ id: sp.id });
+                })));
                 myRoutes.value.push({
-                    id: uuid(),
-                    name: `マイルート ${myRoutes.value.length + 1}`,
-                    memo: "",
-                    selectedSpotIds: selectedIds,
-                    isExpanded: false,
-                    actualSeconds: 0,
-                    generatedSpell: ""
+                    id: 'route_' + Date.now(), name: name, spots: activeSpots, isExpanded: false, savedSeconds: 0
                 });
-                save();
+            };
+
+            const deleteRoute = (id) => {
+                if (runningRouteId.value === id) pauseTimer();
+                myRoutes.value = myRoutes.value.filter(r => r.id !== id);
             };
 
             const applyRoute = (route) => {
-                if (!route || !Array.isArray(route.selectedSpotIds)) return;
-                areas.value.forEach(area => {
-                    area.subAreas?.forEach(sub => {
-                        sub.spots?.forEach(spot => {
-                            spot.isSelected = route.selectedSpotIds.includes(spot.id);
-                        });
-                    });
-                });
-                save();
-            };
-
-            const getSpotNameById = (id) => {
-                for (const area of areas.value) {
-                    for (const sub of area.subAreas || []) {
-                        const s = sub.spots?.find(sp => sp.id === id);
-                        if (s) return `${area.name}・${s.name}`;
-                    }
-                }
-                return "外部または削除されたスポット";
-            };
-
-            const getRouteAreaNames = (route) => {
-                if (!route || !route.selectedSpotIds) return "";
-                const names = [];
-                route.selectedSpotIds.forEach(id => {
-                    for (const area of areas.value) {
-                        for (const sub of area.subAreas || []) {
-                            const s = sub.spots?.find(sp => sp.id === id);
-                            if (s && !names.includes(area.name)) names.push(area.name);
-                        }
-                    }
-                });
-                return names.join(" ➔ ");
+                const idSet = new Set(route.spots.map(s => s.id));
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => {
+                    sp.isSelected = idSet.has(sp.id);
+                })));
             };
 
             const getRouteStats = (route) => {
-                let light = 0, time = 0;
-                route.selectedSpotIds.forEach(id => {
-                    for (const area of areas.value) {
-                        for (const sub of area.subAreas || []) {
-                            const s = sub.spots?.find(sp => sp.id === id);
-                            if (s) {
-                                light += (Number(s.light) || 0);
-                                time += (Number(s.time) || 0);
-                            }
-                        }
-                    }
-                });
-                return { light, time, timeStr: formatSeconds(time), eff: time > 0 ? (light / time) : 0.0 };
+                let totalL = 0;
+                const idMap = new Map();
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => idMap.set(sp.id, sp.light))));
+                route.spots.forEach(s => { totalL += (idMap.get(s.id) || 0); });
+                
+                let rem = totalL, candles = 0;
+                for (const t of thresholds.value) {
+                    const cap = t.count * t.cost;
+                    if (rem >= cap) { candles += t.count; rem -= cap; } 
+                    else { candles += rem / t.cost; rem = 0; break; }
+                }
+                if (rem > 0) candles += rem / 250;
+                return { spotsCount: route.spots.length, candles: parseFloat(candles.toFixed(1)) };
             };
 
-            const toggleRouteExpand = (route) => {
-                route.isExpanded = !route.isExpanded;
+            const getSpotNameById = (id) => {
+                let foundName = "不明なスポット";
+                areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(sp => {
+                    if (sp.id === id) foundName = `${m.name.substring(0,3)}:${sp.name}`;
+                })));
+                return foundName;
             };
 
-            // ⏱️ タイマー制御
-            const startTimer = (route) => {
-                if (runningRouteId.value) clearInterval(timerInterval);
-                runningRouteId.value = route.id;
-                runningSeconds.value = route.actualSeconds;
+            const toggleRouteExpand = (id) => {
+                const route = myRoutes.value.find(r => r.id === id);
+                if (route) route.isExpanded = !route.isExpanded;
+            };
+
+            const moveRouteCard = (idx, direction) => {
+                const targetIdx = idx + direction;
+                if (targetIdx < 0 || targetIdx >= myRoutes.value.length) return;
+                const temp = myRoutes.value[idx];
+                myRoutes.value[idx] = myRoutes.value[targetIdx];
+                myRoutes.value[targetIdx] = temp;
+            };
+
+            const moveRouteSpot = (route, idx, dir) => {
+                const targetIdx = idx + dir;
+                if (targetIdx < 0 || targetIdx >= route.spots.length) return;
+                const temp = route.spots[idx];
+                route.spots[idx] = route.spots[targetIdx];
+                route.spots[targetIdx] = temp;
+            };
+
+            const removeSpotFromRoute = (route, idx) => {
+                route.spots.splice(idx, 1);
+            };
+
+            // タイマーコア処理
+            const startTimer = (routeId) => {
+                if (timerInterval) clearInterval(timerInterval);
+                runningRouteId.value = routeId;
+                const route = myRoutes.value.find(r => r.id === routeId);
+                runningSeconds.value = route.savedSeconds || 0;
                 timerInterval = setInterval(() => {
                     runningSeconds.value++;
+                    if (route) route.savedSeconds = runningSeconds.value;
                 }, 1000);
             };
 
-            const pauseTimer = (route) => {
-                if (runningRouteId.value === route.id) {
-                    clearInterval(timerInterval);
-                    route.actualSeconds = runningSeconds.value;
-                    runningRouteId.value = null;
-                    save();
-                }
+            const pauseTimer = () => {
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                runningRouteId.value = null;
             };
 
-            const resetTimer = (route) => {
-                if (route && runningRouteId.value === route.id) {
-                    clearInterval(timerInterval);
-                    runningRouteId.value = null;
-                }
-                if (route) route.actualSeconds = 0;
-                else runningSeconds.value = 0;
-                save();
+            const resetTimer = (routeId) => {
+                if (runningRouteId.value === routeId) pauseTimer();
+                const route = myRoutes.value.find(r => r.id === routeId);
+                if (route) route.savedSeconds = 0;
+                if (runningRouteId.value === null) runningSeconds.value = 0;
             };
 
             const formatSeconds = (totalSec) => {
-                const h = Math.floor(totalSec / 3600);
-                const m = Math.floor((totalSec % 3600) / 60);
+                const m = Math.floor(totalSec / 60);
                 const s = totalSec % 60;
-                return h > 0 ? `${h}時間${m}分${s}秒` : `${m}分${s}秒`;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             };
 
-            // 🌋 デイリー＆全数値リセット
-            const dailyReset = () => {
-                dailyBonusArea.value = "none";
-                dailyShard.value = "none";
-                areas.value.forEach(area => {
-                    area.subAreas?.forEach(sub => {
-                        sub.spots?.forEach(spot => {
-                            if (spot.group === "大キャン" || spot.group === "破片") {
-                                spot.isSelected = false;
-                            }
-                        });
-                    });
-                });
-                carryOverPercent.value = 0;
-                save();
-            };
-
-            const resetCalculatorData = () => {
-                if (confirm("入力されている所持数、メモ、マイルートなどの全変数を初期化しますか？")) {
-                    localStorage.removeItem('sky_tracker_storage_v3');
-                    loadInitialData();
-                }
-            };
-
-            // ⚡ 効率自動最適化ロジック
-            const optimize = () => {
-                const targetIdx = targetCandlesForOptimization.value - 1;
-                let neededLight = 0;
-                if (targetIdx >= 0 && targetIdx < thresholds.value.length) {
-                    neededLight = thresholds.value[targetIdx];
-                } else if (targetIdx >= thresholds.value.length) {
-                    neededLight = thresholds.value[thresholds.value.length - 1];
-                }
-
-                if (dailyBonusArea.value !== "none") neededLight -= 200;
-                if (dailyShard.value !== "none") neededLight -= 200;
-
-                // 一旦すべて未選択にする
-                areas.value.forEach(a => a.subAreas?.forEach(s => s.spots?.forEach(sp => sp.isSelected = false)));
-
-                const flatSpots = [];
-                areas.value.forEach((area, mIdx) => {
-                    area.subAreas?.forEach((sub, sIdx) => {
-                        sub.spots?.forEach((spot, spIdx) => {
-                            const eff = spot.time > 0 ? (spot.light / spot.time) : 0;
-                            flatSpots.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
-                        });
-                    });
-                });
-
-                // 効率順で降順ソート
-                flatSpots.sort((a, b) => b.eff - a.eff);
-
-                let currentAccumulated = 0;
-                for (const item of flatSpots) {
-                    if (currentAccumulated >= neededLight) break;
-                    areas.value[item.mIdx].subAreas[item.sIdx].spots[item.spIdx].isSelected = true;
-                    currentAccumulated += item.light;
-                }
-                save();
-            };
-
-            // 🧙‍♂️ 復活の呪文（データ全体のシリアライズ共有）
+            // 全体同期呪文生成
             const generateSpell = () => {
-                try {
-                    const payload = {
-                        areas: areas.value,
-                        carryOverPercent: carryOverPercent.value,
-                        candleMemo: candleMemo.value,
-                        targetDate: targetDate.value,
-                        currentCandles: currentCandles.value,
-                        currentAscendedCandles: currentAscendedCandles.value,
-                        currentHearts: currentHearts.value,
-                        plannedUsage: plannedUsage.value,
-                        targetCandlesForOptimization: targetCandlesForOptimization.value,
-                        dailyBonusArea: dailyBonusArea.value,
-                        dailyShard: dailyShard.value,
-                        visibleSections: visibleSections.value,
-                        myRoutes: myRoutes.value
-                    };
-                    const jsonStr = JSON.stringify(payload);
-                    const uint8 = new TextEncoder().encode(jsonStr);
-                    let bin = "";
-                    for (let i = 0; i < uint8.length; i++) bin += String.fromCharCode(uint8[i]);
-                    
-                    generatedSpell.value = btoa(bin);
-                    spellMessage.value = "復活の呪文を生成しました！コピーして他端末へ引き継げます。";
-                    spellMessageType.value = "success";
-                } catch(e) {
-                    spellMessage.value = "呪文生成に失敗しました。";
-                    spellMessageType.value = "error";
-                }
+                const bundle = {
+                    v: 3,
+                    currentCandles: currentCandles.value,
+                    currentAscendedCandles: currentAscendedCandles.value,
+                    currentHearts: currentHearts.value,
+                    carryOverPercent: carryOverPercent.value,
+                    targetDate: targetDate.value,
+                    plannedUsage: plannedUsage.value,
+                    areas: areas.value,
+                    myRoutes: myRoutes.value
+                };
+                generatedSpell.value = btoa(unescape(encodeURIComponent(JSON.stringify(bundle))));
             };
 
             const requestApplySpell = () => {
-                if (inputSpell.value.trim()) isConfirming.value = true;
-            };
-
-            const confirmApplySpell = () => {
                 try {
-                    const bin = atob(inputSpell.value.trim());
-                    const uint8 = new Uint8Array(bin.length);
-                    for (let i = 0; i < bin.length; i++) uint8[i] = bin.charCodeAt(i);
-                    const decoded = JSON.parse(new TextDecoder().decode(uint8));
-
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(inputSpell.value))));
                     if (decoded.areas) areas.value = decoded.areas;
-                    if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
-                    if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
-                    if (decoded.targetDate) targetDate.value = decoded.targetDate;
+                    if (decoded.myRoutes) myRoutes.value = decoded.myRoutes;
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
                     if (decoded.currentAscendedCandles !== undefined) currentAscendedCandles.value = decoded.currentAscendedCandles;
                     if (decoded.currentHearts !== undefined) currentHearts.value = decoded.currentHearts;
+                    if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
+                    if (decoded.targetDate !== undefined) targetDate.value = decoded.targetDate;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
-                    if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
-                    if (decoded.dailyBonusArea) dailyBonusArea.value = decoded.dailyBonusArea;
-                    if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
-                    if (decoded.visibleSections) visibleSections.value = decoded.visibleSections;
-                    if (Array.isArray(decoded.myRoutes)) myRoutes.value = decoded.myRoutes;
-
-                    isConfirming.value = false;
-                    inputSpell.value = "";
-                    spellMessage.value = "データを完全に復元・上書きしました！";
-                    spellMessageType.value = "success";
-                    save();
+                    
+                    spellMessageType.value = 'success';
+                    spellMessage.value = '呪文のインポートに成功しました！';
+                    inputSpell.value = '';
                 } catch(e) {
-                    isConfirming.value = false;
-                    spellMessage.value = "復元に失敗しました。呪文コードが破損している可能性があります。";
-                    spellMessageType.value = "error";
+                    spellMessageType.value = 'danger';
+                    spellMessage.value = '無効な呪文形式です。';
                 }
             };
 
-            // 📤 個別マイルートのシリアライズ共有
+            // ルート単体呪文
             const generateRouteSpell = (route) => {
-                try {
-                    const serializedSpots = [];
-                    route.selectedSpotIds.forEach(id => {
-                        for (const area of areas.value) {
-                            for (const sub of area.subAreas || []) {
-                                const sp = sub.spots?.find(s => s.id === id);
-                                if (sp) {
-                                    serializedSpots.push({
-                                        mainName: area.name,
-                                        subName: sub.name,
-                                        spotName: sp.name,
-                                        light: sp.light,
-                                        time: sp.time,
-                                        group: sp.group
-                                    });
-                                }
-                            }
-                        }
-                    });
-
-                    const payload = {
-                        name: route.name,
-                        memo: route.memo,
-                        spots: serializedSpots,
-                        actualSeconds: route.actualSeconds
-                    };
-
-                    const jsonStr = JSON.stringify(payload);
-                    const uint8 = new TextEncoder().encode(jsonStr);
-                    let bin = "";
-                    for (let i = 0; i < uint8.length; i++) bin += String.fromCharCode(uint8[i]);
-
-                    route.generatedSpell = btoa(bin);
-                } catch (e) {
-                    alert("ルート呪文の生成に失敗しました。");
-                }
+                const str = btoa(unescape(encodeURIComponent(JSON.stringify(route))));
+                navigator.clipboard.writeText(str).then(() => {
+                    alert(`【${route.name}】の個別呪文をクリップボードにコピーしました。`);
+                });
             };
 
             const applyRouteSpell = () => {
-                if (!routeInputSpell.value.trim()) return;
                 try {
-                    const bin = atob(routeInputSpell.value.trim());
-                    const uint8 = new Uint8Array(bin.length);
-                    for (let i = 0; i < bin.length; i++) uint8[i] = bin.charCodeAt(i);
-                    const decoded = JSON.parse(new TextDecoder().decode(uint8));
-
-                    if (!decoded.name || !Array.isArray(decoded.spots)) throw new Error("Format Invalid");
-
-                    const importedSpotIds = [];
-                    decoded.spots.forEach(spInfo => {
-                        let targetId = "";
-                        // 同名スポットの逆引き探索
-                        for (const area of areas.value) {
-                            if (area.name === spInfo.mainName) {
-                                for (const sub of area.subAreas || []) {
-                                    if (sub.name === spInfo.subName) {
-                                        const found = sub.spots?.find(s => s.name === spInfo.spotName);
-                                        if (found) {
-                                            targetId = found.id;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // 他人が作ったカスタムスポット等の場合は、自動的に外部受託エリアを作って登録
-                        if (!targetId) {
-                            let extMain = areas.value.find(a => a.name === "📥 共有された外部エリア");
-                            if (!extMain) {
-                                extMain = { id: uuid(), name: "📥 共有された外部エリア", isExpanded: true, subAreas: [] };
-                                areas.value.push(extMain);
-                            }
-                            let extSub = extMain.subAreas.find(s => s.name === spInfo.subName);
-                            if (!extSub) {
-                                extSub = { id: uuid(), name: spInfo.subName, isExpanded: true, spots: [] };
-                                extMain.subAreas.push(extSub);
-                            }
-                            const newSpot = {
-                                id: uuid(), name: spInfo.spotName, light: Number(spInfo.light) || 0, time: Number(spInfo.time) || 0, isSelected: false, group: spInfo.group || ""
-                            };
-                            extSub.spots.push(newSpot);
-                            targetId = newSpot.id;
-                        }
-                        importedSpotIds.push(targetId);
-                    });
-
-                    myRoutes.value.push({
-                        id: uuid(),
-                        name: decoded.name + " (インポート)",
-                        memo: decoded.memo || "",
-                        selectedSpotIds: importedSpotIds,
-                        isExpanded: true,
-                        actualSeconds: decoded.actualSeconds || 0,
-                        generatedSpell: ""
-                    });
-
-                    routeInputSpell.value = "";
-                    routeSpellMessage.value = "共有ルートを正常にインポートしました！";
-                    routeSpellMessageType.value = "success";
-                    save();
-                    setTimeout(() => { routeSpellMessage.value = ""; }, 4000);
+                    const decodedRoute = JSON.parse(decodeURIComponent(escape(atob(routeInputSpell.value))));
+                    if (decodedRoute.name && Array.isArray(decodedRoute.spots)) {
+                        decodedRoute.id = 'route_imported_' + Date.now();
+                        myRoutes.value.push(decodedRoute);
+                        routeSpellMessageType.value = 'success';
+                        routeSpellMessage.value = `ルート「${decodedRoute.name}」を取り込みました！`;
+                        routeInputSpell.value = '';
+                    } else {
+                        throw new Error();
+                    }
                 } catch(e) {
-                    routeSpellMessage.value = "ルートインポート失敗。呪文が正しくありません。";
-                    routeSpellMessageType.value = "error";
-                    setTimeout(() => { routeSpellMessage.value = ""; }, 4000);
+                    routeSpellMessageType.value = 'danger';
+                    routeSpellMessage.value = '無効なルート呪文です。';
                 }
             };
 
-            // サイクル・フック
-            onMounted(() => {
-                const savedTheme = localStorage.getItem('sky_app_theme');
-                if (savedTheme) {
-                    isDarkMode.value = (savedTheme === 'dark');
-                } else {
-                    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const resetCalculatorData = () => {
+                if (confirm("本当に全てのカスタムデータを削除し、初期状態に戻しますか？")) {
+                    localStorage.removeItem('sky_calc_v3_data');
+                    areas.value = getDefaultAreas();
+                    myRoutes.value = [];
+                    currentCandles.value = 0;
+                    currentAscendedCandles.value = 0;
+                    currentHearts.value = 0;
+                    carryOverPercent.value = 0;
+                    targetDate.value = '';
+                    plannedUsage.value = 0;
+                    showSettings.value = false;
                 }
-                applyThemeToDOM();
+            };
+
+            // テーマ管理
+            const toggleTheme = () => {
+                isDarkMode.value = !isDarkMode.value;
+                document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+                localStorage.setItem('sky_calc_theme', isDarkMode.value ? 'dark' : 'light');
+            };
+
+            // ストレージ永続化
+            const save = () => {
+                const data = {
+                    currentCandles: currentCandles.value,
+                    currentAscendedCandles: currentAscendedCandles.value,
+                    currentHearts: currentHearts.value,
+                    carryOverPercent: carryOverPercent.value,
+                    targetDate: targetDate.value,
+                    plannedUsage: plannedUsage.value,
+                    areas: areas.value,
+                    myRoutes: myRoutes.value
+                };
+                localStorage.setItem('sky_calc_v3_data', JSON.stringify(data));
+            };
+
+            const load = () => {
+                const saved = localStorage.getItem('sky_calc_v3_data');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        areas.value = parsed.areas || getDefaultAreas();
+                        myRoutes.value = parsed.myRoutes || [];
+                        currentCandles.value = parsed.currentCandles || 0;
+                        currentAscendedCandles.value = parsed.currentAscendedCandles || 0;
+                        currentHearts.value = parsed.currentHearts || 0;
+                        carryOverPercent.value = parsed.carryOverPercent || 0;
+                        targetDate.value = parsed.targetDate || '';
+                        plannedUsage.value = parsed.plannedUsage || 0;
+                    } catch(e) {
+                        areas.value = getDefaultAreas();
+                    }
+                } else {
+                    areas.value = getDefaultAreas();
+                }
+
+                // テーマの復元
+                const savedTheme = localStorage.getItem('sky_calc_theme');
+                if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    isDarkMode.value = true;
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            };
+
+            onMounted(() => {
                 load();
-                
-                window.addEventListener('resize', () => {
-                    isWideScreen.value = window.innerWidth >= 850;
-                });
             });
 
-            // データの変更を監視して自動セーブ
-            watch([areas, carryOverPercent, candleMemo, targetDate, currentCandles, currentAscendedCandles, currentHearts, plannedUsage, targetCandlesForOptimization, dailyBonusArea, dailyShard], () => {
+            watch([
+                areas, myRoutes, currentCandles, currentAscendedCandles, currentHearts, carryOverPercent, targetDate, plannedUsage, dailyBonusArea, dailyShard
+            ], () => {
                 save();
+                generateSpell(); // 常に最新の共有呪文を裏で生成
             }, { deep: true });
 
             return {
-                isDarkMode, toggleTheme, thresholds, isWideScreen,
-                areas, carryOverPercent, candleMemo, showSettings, visibleSections,
-                myRoutes, routeError, runningRouteId, runningSeconds, dailyBonusArea, dailyShard,
-                currentCandles, currentAscendedCandles, currentHearts, plannedUsage, targetDate,
-                targetCandlesForOptimization, generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
-                routeInputSpell, routeSpellMessage, routeSpellMessageType, deleteModal,
-                totalLight, calculated, totalEfficiency, formattedTotalTime, eventDays, projectedCandles,
-                isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats,
-                moveMainArea, moveSubArea, moveRouteCard, moveRouteSpot, removeSpotFromRoute,
-                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot, deleteRoute,
-                confirmDelete, cancelDelete, handleSpotChange, saveCurrentRoute, applyRoute, getSpotNameById, getRouteAreaNames,
-                getRouteStats, toggleRouteExpand, startTimer, pauseTimer, resetTimer, formatSeconds, dailyReset, resetCalculatorData,
-                optimize, generateSpell, requestApplySpell, confirmApplySpell, generateRouteSpell, applyRouteSpell
+                isDarkMode, toggleTheme,
+                areas, carryOverPercent, targetDate, eventDays, currentCandles, currentAscendedCandles, currentHearts, plannedUsage, targetCandlesForOptimization, thresholds,
+                generatedSpell, inputSpell, spellMessage, spellMessageType, showSettings,
+                routeInputSpell, routeSpellMessage, routeSpellMessageType,
+                confirmModal, executeConfirm,
+                myRoutes, dailyBonusArea, dailyShard,
+                totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
+                isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, requestApplySpell,
+                generateRouteSpell, applyRouteSpell,
+                addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot,
+                handleSpotChange,
+                saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getSpotNameById, resetCalculatorData,
+                moveRouteCard, moveRouteSpot, removeSpotFromRoute, toggleRouteExpand,
+                runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer
             };
         }
     }).mount('#app');
