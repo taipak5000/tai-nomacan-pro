@@ -549,16 +549,27 @@
             <div v-if="visibleSections.myRoutes" class="section-card" style="margin-bottom: 20px;">
                 <div class="section-header">📍 マイルート管理（ルート比較・メモ・タイマー）</div>
                 
-                <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 8px; font-size: 14px; padding: 10px;">
+                <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 4px; font-size: 14px; padding: 10px;">
                     💾 現在の選択をルートとして保存
                 </button>
+
+                <div style="margin-top: 10px; margin-bottom: 14px; border: 1px dashed var(--border-color); padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.01);">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px;">📥 他人のルート呪文を読み込む</div>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" v-model="routeInputSpell" placeholder="ここにルート共有用の呪文を貼り付け..." style="flex-grow: 1; text-align: left; font-size: 12px; padding: 6px;">
+                        <button class="btn-outline-blue" @click="applyRouteSpell" style="padding: 6px 12px; font-size: 12px; background: var(--accent-orange); color: white; border: none; font-weight: bold; white-space: nowrap;">読み込み</button>
+                    </div>
+                    <div v-if="routeSpellMessage" :class="['inline-alert', routeSpellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="margin-top: 6px; font-size: 12px; padding: 6px;">
+                        {{ routeSpellMessage }}
+                    </div>
+                </div>
                 
                 <div v-if="routeError" class="inline-alert inline-alert-error" style="margin-top:0; margin-bottom:16px; text-align: center;">
                     {{ routeError }}
                 </div>
                 
                 <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px; line-height: 1.5;">
-                    保存されたルートはありません。<br>上のエリア管理でスポットのチェックを入れて、お気に入りルートを保存してみましょう！
+                    保存されたルートはありません。<br>下のエリア管理でスポットのチェックを入れて、お気に入りルートを保存してみましょう！
                 </div>
                 
                 <div v-for="(route, rIdx) in myRoutes" :key="route.id" style="background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px; width: 100%; box-sizing: border-box;">
@@ -570,9 +581,18 @@
                             <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">↓</button>
                             
                             <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
+                            <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">📤 共有</button>
                             <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
                                 {{ route.isExpanded ? '▼' : '▶' }}
                             </button>
+                        </div>
+                    </div>
+                    
+                    <div v-if="route.generatedSpell" style="margin-top: 8px; background: var(--input-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 4px; text-align: left;">このルートの共有呪文（クリックして全選択）：</div>
+                        <textarea :value="route.generatedSpell" readonly style="width: 100%; height: 50px; font-family: monospace; font-size: 11px; padding: 4px; box-sizing: border-box; resize: none; background: var(--card-bg);" @click="$event.target.select()"></textarea>
+                        <div style="text-align: right; margin-top: 4px;">
+                            <button class="btn-outline-blue" @click="route.generatedSpell = ''" style="padding: 2px 8px; font-size: 11px;">閉じる</button>
                         </div>
                     </div>
                     
@@ -749,6 +769,19 @@
         </div>
     </div>
 
+    <footer>
+            © 2026 Sky キャンドル計算機 | 関連ツール: 
+        <a href="companion.html" style="font-weight: bold;">✨ 精霊同行ツール</a> | 
+        <a href="share.html" style="font-weight: bold;">📍 創作物管理ツール</a>
+        <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
+
+        <span style="color: var(--text-gray); font-size: 12px; margin-top: 4px; display: inline-block;">
+            参考文献: 
+            <a href="https://sky-children-of-the-light.fandom.com/wiki/Pieces_of_Light" target="_blank" rel="noopener noreferrer">Pieces of Light (Sky Wiki)</a> | 
+            <a href="https://sky-children-of-the-light.fandom.com/wiki/Additional_Light_Sources" target="_blank" rel="noopener noreferrer">Additional Light Sources (Sky Wiki)</a>
+        </span>
+    </footer>
+
 </div>
 
 <script src="areas-data.js"></script>
@@ -793,7 +826,11 @@
             const spellMessage = ref("");
             const spellMessageType = ref("");
             
-            // 🛡️ アプリ内カスタム確認ダイアログ用のデータ管理
+            // 📥 マイルート個別の共有・読込用変数
+            const routeInputSpell = ref("");
+            const routeSpellMessage = ref("");
+            const routeSpellMessageType = ref("");
+
             const confirmModal = ref({
                 show: false,
                 message: "",
@@ -885,7 +922,6 @@
                 dailyShard.value = "none";
             };
 
-            // 各種削除・リセット処理を安全なアプリ内カスタム確認ダイアログへ移行
             const resetCalculatorData = () => {
                 openCustomConfirm(
                     "キャンドル数、メモ、エリアの選択状態などの入力数値をリセットしますか？\n（※保存したマイルートや自分で追加したエリアは消えずに残ります）",
@@ -1010,7 +1046,8 @@
                                     memo: r.memo || "",
                                     isExpanded: false,
                                     selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [],
-                                    actualSeconds: Number(r.actualSeconds) || 0
+                                    actualSeconds: Number(r.actualSeconds) || 0,
+                                    generatedSpell: "" // リアクティブ保持用
                                 }));
                             } else { myRoutes.value = []; }
                             if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
@@ -1171,7 +1208,8 @@
                     memo: "",
                     selectedSpotIds: selectedIds,
                     isExpanded: false,
-                    actualSeconds: 0
+                    actualSeconds: 0,
+                    generatedSpell: ""
                 });
                 save(); 
             };
@@ -1323,6 +1361,7 @@
                 route.isExpanded = !route.isExpanded;
             };
 
+            // 🪄 データの共有（全体の復活の呪文用）
             const generateSpell = () => {
                 try {
                     stopAnyActiveTimer();
@@ -1363,12 +1402,140 @@
                         myRoutes.value = decoded.myRoutes.map(r => ({
                             ...r, isExpanded: false,
                             selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [],
-                            actualSeconds: Number(r.actualSeconds) || 0
+                            actualSeconds: Number(r.actualSeconds) || 0,
+                            generatedSpell: ""
                         }));
                     }
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
                     inputSpell.value = ""; showInlineMessage("🌟 データの復元に成功しました！", "success");
                 } catch (e) { showInlineMessage("😢 じじゅもんが ちがいます！", "error"); }
+            };
+
+            // 📤 特定のマイルートのみをパッケージして共有呪文を生成
+            const generateRouteSpell = (route) => {
+                try {
+                    const packedSpots = [];
+                    if (Array.isArray(route.selectedSpotIds)) {
+                        route.selectedSpotIds.forEach(id => {
+                            for (const area of areas.value) {
+                                if (area && Array.isArray(area.subAreas)) {
+                                    for (const sub of area.subAreas) {
+                                        if (sub && Array.isArray(sub.spots)) {
+                                            const sp = sub.spots.find(s => s.id === id);
+                                            if (sp) {
+                                                packedSpots.push({
+                                                    mainName: area.name,
+                                                    subName: sub.name,
+                                                    spotName: sp.name,
+                                                    light: sp.light,
+                                                    time: sp.time,
+                                                    group: sp.group || ""
+                                                });
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    const exportData = {
+                        name: route.name,
+                        memo: route.memo,
+                        actualSeconds: route.actualSeconds || 0,
+                        spots: packedSpots
+                    };
+                    const uint8array = new TextEncoder().encode(JSON.stringify(exportData));
+                    let binString = "";
+                    for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
+                    route.generatedSpell = btoa(binString);
+                } catch (e) {
+                    routeSpellMessage.value = "⚠️ ルート呪文の生成に失敗しました。";
+                    routeSpellMessageType.value = "error";
+                }
+            };
+
+            // 📥 他人のルート呪文を解析して読み込む（名前マッピング ＆ 不足時は自動エリア生成）
+            const applyRouteSpell = () => {
+                if (!routeInputSpell.value.trim()) return;
+                try {
+                    const binString = atob(routeInputSpell.value.trim());
+                    const uint8array = new Uint8Array(binString.length);
+                    for (let i = 0; i < binString.length; i++) uint8array[i] = binString.charCodeAt(i);
+                    const decoded = JSON.parse(new TextDecoder().decode(uint8array));
+                    
+                    if (!decoded.name || !Array.isArray(decoded.spots)) {
+                        throw new Error("Invalid format");
+                    }
+                    
+                    const importedSpotIds = [];
+                    
+                    decoded.spots.forEach(spInfo => {
+                        let foundSpotId = null;
+                        
+                        // 1. 現存するエリア内を「メイン名・サブ名・スポット名」の完全一致で走査
+                        for (const area of areas.value) {
+                            if (area && area.name === spInfo.mainName && Array.isArray(area.subAreas)) {
+                                for (const sub of area.subAreas) {
+                                    if (sub && sub.name === spInfo.subName && Array.isArray(sub.spots)) {
+                                        const sp = sub.spots.find(s => s.name === spInfo.spotName);
+                                        if (sp) { foundSpotId = sp.id; break; }
+                                    }
+                                }
+                            }
+                            if (foundSpotId) break;
+                        }
+                        
+                        // 2. 見つからない（他人が作った自作スポット等）場合は自動でエリア管理に登録
+                        if (!foundSpotId) {
+                            let sharedMain = areas.value.find(a => a && a.name === "📥 共有された外部エリア");
+                            if (!sharedMain) {
+                                sharedMain = { id: uuid(), name: "📥 共有された外部エリア", isExpanded: true, subAreas: [] };
+                                areas.value.push(sharedMain);
+                            }
+                            
+                            let sharedSub = sharedMain.subAreas.find(s => s && s.name === spInfo.subName);
+                            if (!sharedSub) {
+                                sharedSub = { id: uuid(), name: spInfo.subName, isExpanded: true, spots: [] };
+                                sharedMain.subAreas.push(sharedSub);
+                            }
+                            
+                            const newSpot = {
+                                id: uuid(),
+                                name: spInfo.spotName,
+                                light: Number(spInfo.light) || 0,
+                                time: Number(spInfo.time) || 0,
+                                isSelected: false,
+                                group: spInfo.group || ""
+                            };
+                            sharedSub.spots.push(newSpot);
+                            foundSpotId = newSpot.id;
+                        }
+                        
+                        importedSpotIds.push(foundSpotId);
+                    });
+                    
+                    // 3. ルート配列に新規プッシュ
+                    myRoutes.value.push({
+                        id: uuid(),
+                        name: `[読込] ${decoded.name}`,
+                        memo: decoded.memo || "",
+                        selectedSpotIds: importedSpotIds,
+                        isExpanded: true,
+                        actualSeconds: decoded.actualSeconds || 0,
+                        generatedSpell: ""
+                    });
+                    
+                    routeInputSpell.value = "";
+                    routeSpellMessage.value = "📥 ルートを正常に取り込みました！";
+                    routeSpellMessageType.value = "success";
+                    setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
+                    save();
+                } catch (e) {
+                    routeSpellMessage.value = "😢 ルート呪文の構造が正しくありません。";
+                    routeSpellMessageType.value = "error";
+                    setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
+                }
             };
 
             const showInlineMessage = (msg, type) => {
@@ -1481,11 +1648,13 @@
                 isDarkMode, toggleTheme,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
+                routeInputSpell, routeSpellMessage, routeSpellMessageType,
                 confirmModal, executeConfirm,
                 showSettings, myRoutes, visibleSections, routeError,
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
+                generateRouteSpell, applyRouteSpell,
                 addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot,
                 handleSpotChange,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
@@ -1495,19 +1664,5 @@
         }
     }).mount('#app');
 </script>
-<footer>
-        © 2026 Sky キャンドル計算機 | 関連ツール: 
-        <a href="companion.html" style="font-weight: bold;">✨ 精霊同行ツール</a> | 
-        <a href="share.html" style="font-weight: bold;">📍 創作物管理ツール</a>
-        <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
-
-        <span style="color: var(--text-gray); font-size: 12px; margin-top: 4px; display: inline-block;">
-            参考文献: 
-            <a href="https://sky-children-of-the-light.fandom.com/wiki/Pieces_of_Light" target="_blank" rel="noopener noreferrer">Pieces of Light (Sky Wiki)</a> | 
-            <a href="https://sky-children-of-the-light.fandom.com/wiki/Additional_Light_Sources" target="_blank" rel="noopener noreferrer">Additional Light Sources (Sky Wiki)</a>
-        </span>
-    </footer>
-</div> <script>
-    
 </body>
 </html>
