@@ -699,6 +699,28 @@
                     </div>
 
                     <div v-if="mainArea.isExpanded" class="subarea-list">
+                        <!-- ★ メインエリアのみ（サブエリアなし）→ メインに直接入力 -->
+                        <div v-if="mainArea.subAreas.length === 0" style="padding: 10px 0;">
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--text-gray);">
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <input type="checkbox" v-model="mainArea.isSelected" style="width:18px; height:18px;">
+                                    <span style="color: var(--text-color); font-weight: bold;">このエリアを選択</span>
+                                </label>
+                                <div class="flex-group">
+                                    <span>🔥 火種:</span>
+                                    <input type="number" v-model.number="mainArea.light" style="width: 60px; padding: 4px 6px; font-size: 13px;">
+                                </div>
+                                <div class="flex-group">
+                                    <span>⏱️ 秒数:</span>
+                                    <input type="number" v-model.number="mainArea.time" style="width: 60px; padding: 4px 6px; font-size: 13px;">
+                                </div>
+                                <span v-if="(mainArea.time || 0) > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 12px;">
+                                    {{ ((mainArea.light || 0) / mainArea.time).toFixed(1) }}/s
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- ★ サブエリアあり -->
                         <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
                             <div class="subarea-title-row1">
                                 <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
@@ -721,31 +743,55 @@
                                 <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
                             </div>
 
-                            <div v-if="subArea.isExpanded" class="spot-list">
-                                <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
-                                            <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
-                                            <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
-                                        </div>
-                                        <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
+                            <div v-if="subArea.isExpanded">
+                                <!-- ★★ スポットなし → サブエリアに直接入力 -->
+                                <div v-if="subArea.spots.length === 0" style="padding: 10px 0 4px 0;">
+                                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-gray); padding-left: 4px;">
+                                        <label style="display: flex; align-items: center; gap: 6px;">
+                                            <input type="checkbox" v-model="subArea.isSelected" style="width:18px; height:18px;">
+                                            <span style="color: var(--text-color);">選択</span>
+                                        </label>
                                         <div class="flex-group">
-                                            <span>火種:</span>
-                                            <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                            <span>🔥 火種:</span>
+                                            <input type="number" v-model.number="subArea.light" style="width: 55px; padding: 3px 5px; font-size: 12px;">
                                         </div>
                                         <div class="flex-group">
-                                            <span>秒数:</span>
-                                            <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                            <span>⏱️ 秒数:</span>
+                                            <input type="number" v-model.number="subArea.time" style="width: 55px; padding: 3px 5px; font-size: 12px;">
                                         </div>
-                                        <div class="flex-group">
-                                            <span>グループ:</span>
-                                            <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
-                                        </div>
-                                        <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
-                                            {{ (spot.light / spot.time).toFixed(1) }}/s
+                                        <span v-if="(subArea.time || 0) > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
+                                            {{ ((subArea.light || 0) / subArea.time).toFixed(1) }}/s
                                         </span>
+                                    </div>
+                                </div>
+
+                                <!-- ★★ スポットあり → スポットに入力（従来通り） -->
+                                <div v-else class="spot-list">
+                                    <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+                                            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
+                                                <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
+                                                <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+                                            </div>
+                                            <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
+                                            <div class="flex-group">
+                                                <span>火種:</span>
+                                                <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                            </div>
+                                            <div class="flex-group">
+                                                <span>秒数:</span>
+                                                <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                            </div>
+                                            <div class="flex-group">
+                                                <span>グループ:</span>
+                                                <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
+                                            </div>
+                                            <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
+                                                {{ (spot.light / spot.time).toFixed(1) }}/s
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size: 13px; padding: 6px 4px; color: var(--accent-purple);">➕ スポットを追加</button>
@@ -793,7 +839,12 @@
 </div>
 
 <script src="areas-data.js"></script>
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script>
+    if (typeof Vue === 'undefined') {
+        document.write('<script src="https://unpkg.com/vue@3/dist/vue.global.js"><\/script>');
+    }
+</script>
 <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
@@ -948,11 +999,16 @@ plannedUsage.value = 0;
                         
                         if (Array.isArray(areas.value)) {
                             areas.value.forEach(area => {
-                                if (area && Array.isArray(area.subAreas)) {
+                                if (!area) return;
+                                const aMode = getAreaMode(area);
+                                if (aMode === "main") {
+                                    area.isSelected = false;
+                                } else if (Array.isArray(area.subAreas)) {
                                     area.subAreas.forEach(sub => {
-                                        if (sub && Array.isArray(sub.spots)) {
-                                            sub.spots.forEach(s => { if (s) s.isSelected = false; });
-                                        }
+                                        if (!sub) return;
+                                        const sMode = getSubMode(sub);
+                                        if (sMode === "sub") { sub.isSelected = false; }
+                                        else if (Array.isArray(sub.spots)) { sub.spots.forEach(s => { if (s) s.isSelected = false; }); }
                                     });
                                 }
                             });
@@ -1082,13 +1138,34 @@ currentHearts: currentHearts.value,
                 return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
             });
 
+            // エリアの「モード」判定ヘルパー
+            // main に subAreas がなければ "main"、sub に spots がなければ "sub"、spots があれば "spot"
+            const getAreaMode = (mainArea) => {
+                if (!mainArea || !Array.isArray(mainArea.subAreas) || mainArea.subAreas.length === 0) return "main";
+                return "sub"; // サブあり → サブ以下で判定
+            };
+            const getSubMode = (subArea) => {
+                if (!subArea || !Array.isArray(subArea.spots) || subArea.spots.length === 0) return "sub";
+                return "spot";
+            };
+
             const selectedLight = computed(() => {
                 let total = 0;
                 if (!Array.isArray(areas.value)) return 0;
                 areas.value.forEach(area => {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) return;
+                    const aMode = getAreaMode(area);
+                    if (aMode === "main") {
+                        // メインエリアに直接値
+                        if (area.isSelected) total += (area.light || 0);
+                    } else {
                         area.subAreas.forEach(sub => {
-                            if (sub && Array.isArray(sub.spots)) {
+                            if (!sub) return;
+                            const sMode = getSubMode(sub);
+                            if (sMode === "sub") {
+                                // サブエリアに直接値
+                                if (sub.isSelected) total += (sub.light || 0);
+                            } else {
                                 sub.spots.forEach(spot => { if (spot && spot.isSelected) total += spot.light; });
                             }
                         });
@@ -1101,9 +1178,17 @@ currentHearts: currentHearts.value,
                 let total = 0;
                 if (!Array.isArray(areas.value)) return 0;
                 areas.value.forEach(area => {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) return;
+                    const aMode = getAreaMode(area);
+                    if (aMode === "main") {
+                        if (area.isSelected) total += (area.time || 0);
+                    } else {
                         area.subAreas.forEach(sub => {
-                            if (sub && Array.isArray(sub.spots)) {
+                            if (!sub) return;
+                            const sMode = getSubMode(sub);
+                            if (sMode === "sub") {
+                                if (sub.isSelected) total += (sub.time || 0);
+                            } else {
                                 sub.spots.forEach(spot => { if (spot && spot.isSelected) total += spot.time; });
                             }
                         });
@@ -1143,27 +1228,53 @@ currentHearts: currentHearts.value,
 
             const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
 
-            const isAllSubSelected = (subArea) => subArea && Array.isArray(subArea.spots) && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
+            const isAllSubSelected = (subArea) => {
+                const sMode = getSubMode(subArea);
+                if (sMode === "sub") return !!subArea.isSelected;
+                return subArea && Array.isArray(subArea.spots) && subArea.spots.length > 0 && subArea.spots.every(s => s.isSelected);
+            };
             const toggleSubArea = (subArea) => {
-                if (!subArea || !Array.isArray(subArea.spots)) return;
-                const targetState = !isAllSubSelected(subArea);
-                subArea.spots.forEach(s => s.isSelected = targetState);
+                if (!subArea) return;
+                const sMode = getSubMode(subArea);
+                if (sMode === "sub") {
+                    subArea.isSelected = !subArea.isSelected;
+                } else {
+                    const targetState = !isAllSubSelected(subArea);
+                    subArea.spots.forEach(s => s.isSelected = targetState);
+                }
                 save();
             };
 
-            const isAllMainSelected = (mainArea) => mainArea && Array.isArray(mainArea.subAreas) && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
+            const isAllMainSelected = (mainArea) => {
+                const aMode = getAreaMode(mainArea);
+                if (aMode === "main") return !!mainArea.isSelected;
+                return mainArea && Array.isArray(mainArea.subAreas) && mainArea.subAreas.length > 0 && mainArea.subAreas.every(sub => isAllSubSelected(sub));
+            };
             const toggleMainArea = (mainArea) => {
-                if (!mainArea || !Array.isArray(mainArea.subAreas)) return;
-                const targetState = !isAllMainSelected(mainArea);
-                mainArea.subAreas.forEach(sub => {
-                    if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => { s.isSelected = targetState; });
-                });
+                if (!mainArea) return;
+                const aMode = getAreaMode(mainArea);
+                if (aMode === "main") {
+                    mainArea.isSelected = !mainArea.isSelected;
+                } else {
+                    const targetState = !isAllMainSelected(mainArea);
+                    mainArea.subAreas.forEach(sub => {
+                        const sMode = getSubMode(sub);
+                        if (sMode === "sub") {
+                            sub.isSelected = targetState;
+                        } else if (sub && Array.isArray(sub.spots)) {
+                            sub.spots.forEach(s => { s.isSelected = targetState; });
+                        }
+                    });
+                }
                 save();
             };
 
             const getSubAreaStats = (subArea) => {
                 let light = 0; let time = 0;
-                if (subArea && Array.isArray(subArea.spots)) {
+                const sMode = getSubMode(subArea);
+                if (sMode === "sub") {
+                    if (subArea && subArea.isSelected) { light = subArea.light || 0; time = subArea.time || 0; }
+                } else if (subArea && Array.isArray(subArea.spots)) {
                     subArea.spots.forEach(s => { if (s && s.isSelected) { light += s.light; time += s.time; } });
                 }
                 return { light, eff: time > 0 ? (light / time) : 0.0 };
@@ -1171,9 +1282,15 @@ currentHearts: currentHearts.value,
 
             const getMainAreaStats = (mainArea) => {
                 let light = 0; let time = 0;
-                if (mainArea && Array.isArray(mainArea.subAreas)) {
+                const aMode = getAreaMode(mainArea);
+                if (aMode === "main") {
+                    if (mainArea && mainArea.isSelected) { light = mainArea.light || 0; time = mainArea.time || 0; }
+                } else if (mainArea && Array.isArray(mainArea.subAreas)) {
                     mainArea.subAreas.forEach(sub => {
-                        if (sub && Array.isArray(sub.spots)) {
+                        const sMode = getSubMode(sub);
+                        if (sMode === "sub") {
+                            if (sub && sub.isSelected) { light += sub.light || 0; time += sub.time || 0; }
+                        } else if (sub && Array.isArray(sub.spots)) {
                             sub.spots.forEach(s => { if (s && s.isSelected) { light += s.light; time += s.time; } });
                         }
                     });
@@ -1201,9 +1318,17 @@ currentHearts: currentHearts.value,
             const saveCurrentRoute = () => {
                 const selectedIds = [];
                 areas.value.forEach(area => {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) return;
+                    const aMode = getAreaMode(area);
+                    if (aMode === "main") {
+                        if (area.isSelected) selectedIds.push(area.id);
+                    } else if (Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub && Array.isArray(sub.spots)) {
+                            if (!sub) return;
+                            const sMode = getSubMode(sub);
+                            if (sMode === "sub") {
+                                if (sub.isSelected) selectedIds.push(sub.id);
+                            } else if (Array.isArray(sub.spots)) {
                                 sub.spots.forEach(s => { if (s && s.isSelected) selectedIds.push(s.id); });
                             }
                         });
@@ -1234,13 +1359,19 @@ currentHearts: currentHearts.value,
                 if (!route || !Array.isArray(route.selectedSpotIds)) return "";
                 route.selectedSpotIds.forEach(id => {
                     for (const area of areas.value) {
-                        if (area && Array.isArray(area.subAreas)) {
+                        if (!area) continue;
+                        if (area.id === id) { names.push(area.name); break; }
+                        if (Array.isArray(area.subAreas)) {
+                            let found = false;
                             for (const sub of area.subAreas) {
-                                if (sub && Array.isArray(sub.spots)) {
+                                if (!sub) continue;
+                                if (sub.id === id) { names.push(`${area.name}・${sub.name}`); found = true; break; }
+                                if (Array.isArray(sub.spots)) {
                                     const sp = sub.spots.find(s => s.id === id);
-                                    if (sp) { names.push(`${sub.name}(${sp.name})`); break; }
+                                    if (sp) { names.push(`${sub.name}(${sp.name})`); found = true; break; }
                                 }
                             }
+                            if (found) break;
                         }
                     }
                 });
@@ -1250,9 +1381,17 @@ currentHearts: currentHearts.value,
             const applyRoute = (route) => {
                 if (!route || !Array.isArray(route.selectedSpotIds)) return;
                 areas.value.forEach(area => {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) return;
+                    const aMode = getAreaMode(area);
+                    if (aMode === "main") {
+                        area.isSelected = route.selectedSpotIds.includes(area.id);
+                    } else if (Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub && Array.isArray(sub.spots)) {
+                            if (!sub) return;
+                            const sMode = getSubMode(sub);
+                            if (sMode === "sub") {
+                                sub.isSelected = route.selectedSpotIds.includes(sub.id);
+                            } else if (Array.isArray(sub.spots)) {
                                 sub.spots.forEach(s => {
                                     if (s) s.isSelected = route.selectedSpotIds.includes(s.id);
                                 });
@@ -1267,9 +1406,13 @@ currentHearts: currentHearts.value,
                 let light = 0; let time = 0;
                 if (route && Array.isArray(route.selectedSpotIds)) {
                     areas.value.forEach(area => {
-                        if (area && Array.isArray(area.subAreas)) {
+                        if (!area) return;
+                        if (route.selectedSpotIds.includes(area.id)) { light += area.light || 0; time += area.time || 0; return; }
+                        if (Array.isArray(area.subAreas)) {
                             area.subAreas.forEach(sub => {
-                                if (sub && Array.isArray(sub.spots)) {
+                                if (!sub) return;
+                                if (route.selectedSpotIds.includes(sub.id)) { light += sub.light || 0; time += sub.time || 0; return; }
+                                if (Array.isArray(sub.spots)) {
                                     sub.spots.forEach(s => {
                                         if (s && route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
                                     });
@@ -1293,9 +1436,13 @@ currentHearts: currentHearts.value,
 
             const getSpotNameById = (id) => {
                 for (const area of areas.value) {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) continue;
+                    if (area.id === id) return area.name;
+                    if (Array.isArray(area.subAreas)) {
                         for (const sub of area.subAreas) {
-                            if (sub && Array.isArray(sub.spots)) {
+                            if (!sub) continue;
+                            if (sub.id === id) return `${area.name}・${sub.name}`;
+                            if (Array.isArray(sub.spots)) {
                                 const sp = sub.spots.find(s => s.id === id);
                                 if (sp) return `${sub.name}・${sp.name}`;
                             }
@@ -1574,9 +1721,19 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
 
                 if (Array.isArray(areas.value)) {
                     areas.value.forEach(area => {
-                        if (area && Array.isArray(area.subAreas)) {
+                        if (!area) return;
+                        const aMode = getAreaMode(area);
+                        if (aMode === "main") {
+                            area.isSelected = false;
+                        } else if (Array.isArray(area.subAreas)) {
                             area.subAreas.forEach(sub => {
-                                if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => { if (s) s.isSelected = false; });
+                                if (!sub) return;
+                                const sMode = getSubMode(sub);
+                                if (sMode === "sub") {
+                                    sub.isSelected = false;
+                                } else if (Array.isArray(sub.spots)) {
+                                    sub.spots.forEach(s => { if (s) s.isSelected = false; });
+                                }
                             });
                         }
                     });
@@ -1589,23 +1746,43 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
                 
                 if (!Array.isArray(areas.value)) return;
+                // まず全選択解除
                 areas.value.forEach(area => {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) return;
+                    const aMode = getAreaMode(area);
+                    if (aMode === "main") {
+                        area.isSelected = false;
+                    } else if (Array.isArray(area.subAreas)) {
                         area.subAreas.forEach(sub => {
-                            if (sub && Array.isArray(sub.spots)) sub.spots.forEach(s => { if (s) s.isSelected = false; });
+                            if (!sub) return;
+                            const sMode = getSubMode(sub);
+                            if (sMode === "sub") { sub.isSelected = false; }
+                            else if (Array.isArray(sub.spots)) sub.spots.forEach(s => { if (s) s.isSelected = false; });
                         });
                     }
                 });
                 
                 let refs = [];
                 areas.value.forEach((area, mIdx) => {
-                    if (area && Array.isArray(area.subAreas)) {
+                    if (!area) return;
+                    const aMode = getAreaMode(area);
+                    if (aMode === "main") {
+                        const lt = area.light || 0; const tm = area.time || 0;
+                        const eff = tm > 0 ? (lt / tm) : 0.0;
+                        refs.push({ type: "main", mIdx, eff, light: lt });
+                    } else if (Array.isArray(area.subAreas)) {
                         area.subAreas.forEach((sub, sIdx) => {
-                            if (sub && Array.isArray(sub.spots)) {
+                            if (!sub) return;
+                            const sMode = getSubMode(sub);
+                            if (sMode === "sub") {
+                                const lt = sub.light || 0; const tm = sub.time || 0;
+                                const eff = tm > 0 ? (lt / tm) : 0.0;
+                                refs.push({ type: "sub", mIdx, sIdx, eff, light: lt });
+                            } else if (Array.isArray(sub.spots)) {
                                 sub.spots.forEach((spot, spIdx) => {
                                     if (spot) {
                                         const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
-                                        refs.push({ mIdx, sIdx, spIdx, eff, light: spot.light });
+                                        refs.push({ type: "spot", mIdx, sIdx, spIdx, eff, light: spot.light });
                                     }
                                 });
                             }
@@ -1617,7 +1794,13 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 let accumulated = 0;
                 for (let ref of refs) {
                     if (accumulated >= targetLightNeeded) break;
-                    if (areas.value[ref.mIdx]?.subAreas[ref.sIdx]?.spots[ref.spIdx]) {
+                    if (ref.type === "main" && areas.value[ref.mIdx]) {
+                        areas.value[ref.mIdx].isSelected = true;
+                        accumulated += ref.light;
+                    } else if (ref.type === "sub" && areas.value[ref.mIdx]?.subAreas[ref.sIdx]) {
+                        areas.value[ref.mIdx].subAreas[ref.sIdx].isSelected = true;
+                        accumulated += ref.light;
+                    } else if (ref.type === "spot" && areas.value[ref.mIdx]?.subAreas[ref.sIdx]?.spots[ref.spIdx]) {
                         areas.value[ref.mIdx].subAreas[ref.sIdx].spots[ref.spIdx].isSelected = true;
                         accumulated += ref.light;
                     }
@@ -1625,8 +1808,8 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 save(); 
             };
 
-            const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, subAreas: [] }); };
-            const addSubArea = (mIdx) => { if (areas.value[mIdx]) areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, spots: [] }); };
+            const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, light: 0, time: 0, isSelected: false, subAreas: [] }); };
+            const addSubArea = (mIdx) => { if (areas.value[mIdx]) areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, light: 0, time: 0, isSelected: false, spots: [] }); };
             const addSpot = (mIdx, sIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]) areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false, group: "" }); };
 
             const handleSpotChange = (mIdx, sIdx, spIdx) => {
@@ -1679,7 +1862,8 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 handleSpotChange,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
-                runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand
+                runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand,
+                getAreaMode, getSubMode
             };
         }
     }).mount('#app');
