@@ -24,12 +24,13 @@
             /* アクセントカラー */
             --accent-blue: #007aff;
             --accent-orange: #ff9500;
-            --accent-purple: #af52de;\n            --accent-green: #34c759;
+            --accent-purple: #af52de;
+            --accent-green: #34c759;
             --accent-red: #ff3b30;
         }
 
         /* 🌙 ダークモード用の共通色 */
-        [data-theme=\"dark\"] {
+        [data-theme="dark"] {
             --bg-color: #0c081a;
             --card-bg: #1b1535;
             --text-color: #ffffff;
@@ -680,8 +681,8 @@
                 <div class="card" style="padding: 14px; margin-bottom: 16px; border: 1px dashed var(--accent-blue);">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">💾 現在の選択状態をルート保存</div>
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" id="newRouteName" placeholder="ルート名（例: 日課最速、ウニパンセット）" style="padding: 8px; font-size: 14px;">
-                        <button class="btn-primary" @click="saveCurrentRoute(document.getElementById('newRouteName')? document.getElementById('newRouteName').value : '')" style="padding: 0 16px; font-size: 13px; white-space: nowrap;">保存</button>
+                        <input type="text" v-model="newRouteNameInput" placeholder="ルート名（例: 日課最速、ウニパンセット）" style="padding: 8px; font-size: 14px;">
+                        <button class="btn-primary" @click="saveCurrentRoute" style="padding: 0 16px; font-size: 13px; white-space: nowrap;">保存</button>
                     </div>
                     <div v-if="routeError" class="alert alert-danger" style="margin-top: 8px; padding: 6px;">{{ routeError }}</div>
                     
@@ -785,13 +786,15 @@
         75, 100, 125, 150, 175, 200, 300, 400, 500, 700, 1000
     ];
 
+    // Vueの基本機能をグローバルから分解抽出 (超重要：これがないと画面が白くクラッシュします)
+    const { ref, computed, onMounted, watch } = Vue;
+
     Vue.createApp({
         setup() {
             // ダークモード状態
             const isDarkMode = ref(false);
 
             // --- 🗺️ エリアデータの初期化 ---------------------------------------------
-            // areas-data.js からデフォルト値を安全にディープコピーして取得する関数
             const getDefaultAreas = () => {
                 if (typeof SKY_DEFAULT_AREAS !== 'undefined') {
                     return JSON.parse(JSON.stringify(SKY_DEFAULT_AREAS));
@@ -815,6 +818,7 @@
             const candleMemo = ref('');
             const dailyBonusArea = ref('');
             const dailyShard = ref('');
+            const newRouteNameInput = ref('');
 
             // UI表示切り替え用
             const showSettings = ref(false);
@@ -899,11 +903,11 @@
                 }
 
                 // 闇の破片・デイリーイベントオブジェクトの火種加算
-                if (dailyShard.value === 'shard_red') sum += 0; // 星キャンなので火種は0
+                if (dailyShard.value === 'shard_red') sum += 0;
                 else if (dailyShard.value === 'shard_black') sum += 100;
-                else if (dailyShard.value === 'geyser') sum += 260; // ウニ最大
-                else if (dailyShard.value === 'grandma') sum += 750; // おばあちゃん最大
-                else if (dailyShard.value === 'sunset') sum += 450; // 夕暮れ最大
+                else if (dailyShard.value === 'geyser') sum += 260;
+                else if (dailyShard.value === 'grandma') sum += 750;
+                else if (dailyShard.value === 'sunset') sum += 450;
 
                 return sum;
             });
@@ -941,7 +945,6 @@
             const calculated = computed(() => {
                 let currentLight = totalLight.value;
                 
-                // 持ち越し分の火種を現在のメーターに仮想加算
                 if (carryOverPercent.value > 0) {
                     let nextCandleIndex = 1;
                     let virtualCandles = 0;
@@ -954,7 +957,6 @@
                             virtualCandles++;
                             nextCandleIndex++;
                         } else {
-                            // メーターが止まる寸前の1本に対して、持ち越し％を付与
                             let addedVirtual = required * (carryOverPercent.value / 100);
                             currentLight += addedVirtual;
                             break;
@@ -1075,10 +1077,7 @@
                 subs[target] = temp;
             };
 
-            // スポットの内容変更監視
-            const handleSpotChange = (spot) => {
-                // 必要に応じて個別処理
-            };
+            const handleSpotChange = (spot) => {};
 
             // 新規構造の動的追加ツール
             const addMainArea = () => {
@@ -1150,7 +1149,7 @@
                 deleteModal.value.show = false;
             };
 
-            // 日次リセット（デイリー要素とチェック状態の初期化）
+            // 日次リセット
             const dailyReset = () => {
                 dailyBonusArea.value = '';
                 dailyShard.value = '';
@@ -1163,17 +1162,14 @@
                 });
             };
 
-            // 工場出荷時データリセット（画面内カスタム確認モーダルを使用）
+            // 工場出荷時データリセット
             const resetCalculatorData = () => {
                 confirmModal.value = {
                     show: true,
                     title: "計算機データのリセット",
                     message: "すべてのエリアデータ設定、チェック状態、入力数値を初期状態（デフォルト）に戻しますか？\n（保存されているルートデータは削除されません）",
                     action: () => {
-                        // areas-data.js の初期構成を完全再適用
                         areas.value = getDefaultAreas();
-                        
-                        // 入力フォーム類の初期化
                         currentCandles.value = 0;
                         currentAscendedCandles.value = 0;
                         currentHearts.value = 0;
@@ -1183,25 +1179,22 @@
                         dailyShard.value = '';
                         targetCandlesForOptimization.value = 20;
                         candleMemo.value = '';
-                        
                         save();
                     }
                 };
             };
 
-            // ⚡ ルート最適化ロジック (火種/秒 の効率順に自動チェック)
+            // ⚡ ルート最適化ロジック
             const optimize = () => {
                 let targetCount = targetCandlesForOptimization.value;
                 if (targetCount < 1) return;
                 if (targetCount > 21) targetCount = 21;
 
-                // 必要な目標累積火種数を算出
                 let requiredLightTotal = 0;
                 for (let i = 1; i <= targetCount; i++) {
                     requiredLightTotal += (thresholds[i] || 1000);
                 }
 
-                // 大キャンやデイリーイベントで既に確定している火種量を引く
                 let baseLight = 0;
                 if (dailyBonusArea.value) baseLight += 200;
                 if (dailyShard.value === 'shard_black') baseLight += 100;
@@ -1211,7 +1204,6 @@
 
                 let neededFromSpots = requiredLightTotal - baseLight;
 
-                // すべてのチェックを一度外す
                 areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(p => p.isSelected = false)));
 
                 if (neededFromSpots <= 0) {
@@ -1219,7 +1211,6 @@
                     return;
                 }
 
-                // スロット全抽出
                 let allSpotsList = [];
                 areas.value.forEach(m => {
                     m.subAreas.forEach(s => {
@@ -1234,7 +1225,6 @@
                     });
                 });
 
-                // 効率（火種/秒）の降順でソート
                 allSpotsList.sort((a, b) => b.efficiency - a.efficiency);
 
                 let accumulated = 0;
@@ -1249,7 +1239,7 @@
                 alert(`目標のキャンドル ${targetCount} 本 (必要火種: ${requiredLightTotal}) に到達するための、時間対効果が最も高いスポットを自動選択しました！`);
             };
 
-            // 🔮 構成呪文（Base64圧縮データ）の生成と適用
+            // 🔮 構成呪文の生成と適用
             const generateSpell = () => {
                 try {
                     const activeSpots = [];
@@ -1278,7 +1268,7 @@
                     let binString = "";
                     utf8Bytes.forEach(b => binString += String.fromCharCode(b));
                     generatedSpell.value = btoa(binString);
-                    spellMessage.value = "呪文を生成しました。ボックス内を3回クリック等で全選択してコピーしてください。";
+                    spellMessage.value = "呪文を生成しました。ボックス内をコピーしてください。";
                     spellMessageType.value = "success";
                 } catch (err) {
                     spellMessage.value = "呪文の生成に失敗しました。";
@@ -1312,7 +1302,6 @@
                             if (data.ds !== undefined) dailyShard.value = data.ds;
                             if (data.memo !== undefined) candleMemo.value = data.memo;
 
-                            // チェックボックスの初期化
                             areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(p => p.isSelected = false)));
 
                             if (data.s && Array.isArray(data.s)) {
@@ -1341,15 +1330,14 @@
             };
 
             // 🛣️ カスタムルート管理ロジック
-            const saveCurrentRoute = (customName) => {
+            const saveCurrentRoute = () => {
                 routeError.value = '';
-                const name = customName ? customName.trim() : "";
+                const name = newRouteNameInput.value ? newRouteNameInput.value.trim() : "";
                 if (!name) {
                     routeError.value = "ルート名を入力してください。";
                     return;
                 }
 
-                // チェックがついている全スポットを一意なID表記に変換して配列化
                 const spotIds = [];
                 areas.value.forEach((m, mI) => {
                     m.subAreas.forEach((s, sI) => {
@@ -1373,8 +1361,7 @@
                     isExpanded: false
                 });
 
-                const inputEl = document.getElementById('newRouteName');
-                if (inputEl) inputEl.value = '';
+                newRouteNameInput.value = '';
                 routeError.value = '';
             };
 
@@ -1398,7 +1385,6 @@
                     title: "ルートデータの適用",
                     message: `「${route.name}」のチェック状態を計算機に展開しますか？\n（現在選択中のチェックは上書きされます）`,
                     action: () => {
-                        // 一旦全チェック解除
                         areas.value.forEach(m => m.subAreas.forEach(s => s.spots.forEach(p => p.isSelected = false)));
                         
                         route.spotIds.forEach(id => {
@@ -1460,7 +1446,6 @@
                 route.isExpanded = !route.isExpanded;
             };
 
-            // ルートカード自体の並び替え
             const moveRouteCard = (idx, dir) => {
                 const target = idx + dir;
                 if (target < 0 || target >= myRoutes.value.length) return;
@@ -1469,7 +1454,6 @@
                 myRoutes.value[target] = temp;
             };
 
-            // ルート内スポットの順序入れ替え
             const moveRouteSpot = (rIdx, sOrderIdx, dir) => {
                 const route = myRoutes.value[rIdx];
                 const target = sOrderIdx + dir;
@@ -1483,7 +1467,7 @@
                 myRoutes.value[rIdx].spotIds.splice(sOrderIdx, 1);
             };
 
-            // ルート周回用実測タイマー処理群
+            // タイマー処理
             const startTimer = (routeId) => {
                 if (runningRouteId.value !== routeId) {
                     clearInterval(timerInterval);
@@ -1518,7 +1502,7 @@
             // 🛣️ ルート単体の呪文インポート・エクスポート
             const generateRouteSpell = () => {
                 if (myRoutes.value.length === 0) {
-                    routeSpellMessage.value = "保存されたルートがありません。先にルートを作成してください。";
+                    routeSpellMessage.value = "保存されたルートがありません。";
                     routeSpellMessageType.value = "danger";
                     return;
                 }
@@ -1528,7 +1512,7 @@
                     let binString = "";
                     utf8Bytes.forEach(b => binString += String.fromCharCode(b));
                     routeInputSpell.value = btoa(binString);
-                    routeSpellMessage.value = "ルート構成呪文を出力しました。上記ボックス内の文字列をコピーして共有可能です。";
+                    routeSpellMessage.value = "ルート構成呪文を出力しました。";
                     routeSpellMessageType.value = "success";
                 } catch (e) {
                     routeSpellMessage.value = "呪文変換に失敗しました。";
@@ -1542,7 +1526,7 @@
                 confirmModal.value = {
                     show: true,
                     title: "ルート呪文の読み込み確認",
-                    message: "外部のルートデータをインポートして、既存のマイラウンドルート一覧に結合・上書きしますか？",
+                    message: "外部のルートデータをインポートして、既存のマイラウンドルート一覧に結合しますか？",
                     action: () => {
                         try {
                             const binString = atob(routeInputSpell.value.trim());
@@ -1557,7 +1541,6 @@
                             if (Array.isArray(parsed)) {
                                 parsed.forEach(newR => {
                                     if (newR.name && Array.isArray(newR.spotIds)) {
-                                        // 重複回避のために仮IDを再設定
                                         newR.id = 'route_' + Date.now() + Math.floor(Math.random() * 1000);
                                         newR.isExpanded = false;
                                         myRoutes.value.push(newR);
@@ -1618,8 +1601,7 @@
                 }
             };
 
-            // アプリ起動時のライフサイクル初期化
-            Vue.onMounted(() => {
+            onMounted(() => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
                 if (savedTheme) {
                     isDarkMode.value = (savedTheme === 'dark');
@@ -1631,8 +1613,7 @@
                 load();
             });
 
-            // すべての入力変更を常時監視してローカルストレージへ即時保存
-            Vue.watch(
+            watch(
                 [
                     areas, carryOverPercent, targetDate, currentCandles, currentAscendedCandles, currentHearts,
                     plannedUsage, targetCandlesForOptimization, candleMemo, myRoutes, dailyBonusArea, dailyShard
@@ -1647,7 +1628,7 @@
                 myRoutes, routeError, runningRouteId, runningSeconds, dailyBonusArea, dailyShard,
                 currentCandles, currentAscendedCandles, currentHearts, plannedUsage, targetDate,
                 targetCandlesForOptimization, generatedSpell, inputSpell, confirmModal, executeConfirm,
-                routeInputSpell, routeSpellMessage, routeSpellMessageType, deleteModal,
+                routeInputSpell, routeSpellMessage, routeSpellMessageType, deleteModal, newRouteNameInput,
                 totalLight, calculated, totalEfficiency, formattedTotalTime, eventDays, projectedCandles,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats,
                 moveMainArea, moveSubArea, moveRouteCard, moveRouteSpot, removeSpotFromRoute,
