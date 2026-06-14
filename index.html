@@ -676,127 +676,133 @@
                 <div class="section-header">🗺️ エリア管理</div>
                 
                 <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
+
+                    <!-- ══ メインエリア ヘッダー行 ══ -->
                     <div class="area-title-row1">
-                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
-                            <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)">
-                            <input type="text" v-model="mainArea.name" style="font-weight: bold; font-size:16px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
+                            <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)" style="flex-shrink:0;">
+                            <input type="text" v-model="mainArea.name" style="font-weight:bold; font-size:15px; background:transparent; border:none; min-width:0; flex:1;">
                         </div>
-                        
                         <div class="expand-toggle-btn" @click="mainArea.isExpanded = !mainArea.isExpanded">
-                            <span v-if="getMainAreaStats(mainArea).light > 0" style="font-size: 12px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 3px 8px; border-radius: 6px; white-space: nowrap; font-weight: bold;">
-                                🔥{{ getMainAreaStats(mainArea).light }} ({{ getMainAreaStats(mainArea).eff.toFixed(1) }}/s)
-                            </span>
-                            <span style="margin-left: 4px; color: var(--text-gray);">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
+                            <span style="color:var(--text-gray); font-size:13px;">{{ mainArea.isExpanded ? '▼' : '▶' }}</span>
                         </div>
                     </div>
 
+                    <!-- メインエリア直接入力（サブなしのとき、折り畳み外に常時表示） -->
+                    <div v-if="mainArea.subAreas.length === 0" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:6px 0 4px 28px; font-size:13px; color:var(--text-gray);">
+                        <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                            <input type="checkbox" v-model="mainArea.isSelected" style="width:16px;height:16px;">
+                            <span style="color:var(--text-color); font-size:12px;">選択</span>
+                        </label>
+                        <div class="flex-group">
+                            <span>🔥</span>
+                            <input type="number" v-model.number="mainArea.light" min="0" style="width:58px; padding:3px 5px; font-size:13px;">
+                        </div>
+                        <div class="flex-group">
+                            <span>⏱️</span>
+                            <input type="number" v-model.number="mainArea.time" min="0" style="width:58px; padding:3px 5px; font-size:13px;">
+                            <span style="font-size:11px;">秒</span>
+                        </div>
+                        <span v-if="(mainArea.time||0)>0" style="color:var(--accent-orange); font-weight:bold; font-size:12px;">
+                            {{ ((mainArea.light||0)/mainArea.time).toFixed(1) }}/s
+                        </span>
+                    </div>
+
+                    <!-- 操作ボタン行 -->
                     <div class="area-title-row2">
                         <div class="btn-action-group">
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, -1)" :disabled="mIdx === 0">↑ 上へ</button>
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx, 1)" :disabled="mIdx === areas.length - 1">↓ 下へ</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx,-1)" :disabled="mIdx===0">↑ 上へ</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx,1)" :disabled="mIdx===areas.length-1">↓ 下へ</button>
                         </div>
                         <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)">🗑️ エリア削除</button>
                     </div>
 
+                    <!-- ══ 折り畳み内：サブエリア一覧 ══ -->
                     <div v-if="mainArea.isExpanded" class="subarea-list">
-                        <!-- ★ メインエリアのみ（サブエリアなし）→ メインに直接入力 -->
-                        <div v-if="mainArea.subAreas.length === 0" style="padding: 10px 0;">
-                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--text-gray);">
-                                <label style="display: flex; align-items: center; gap: 6px;">
-                                    <input type="checkbox" v-model="mainArea.isSelected" style="width:18px; height:18px;">
-                                    <span style="color: var(--text-color); font-weight: bold;">このエリアを選択</span>
+
+                        <!-- サブエリアあり -->
+                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
+
+                            <!-- サブエリア ヘッダー行 -->
+                            <div class="subarea-title-row1">
+                                <div style="display:flex; align-items:center; gap:8px; flex-grow:1; min-width:0;">
+                                    <input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)" style="flex-shrink:0;">
+                                    <input type="text" v-model="subArea.name" style="font-weight:bold; font-size:13px; background:transparent; border:none; min-width:0; flex:1;">
+                                </div>
+                                <div class="expand-toggle-btn" @click="subArea.isExpanded = !subArea.isExpanded" style="padding:4px 8px; font-size:12px;">
+                                    <span style="color:var(--text-gray);">{{ subArea.isExpanded ? '▼' : '▶' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- サブエリア直接入力（スポットなし、折り畳み外に常時表示） -->
+                            <div v-if="subArea.spots.length === 0" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:5px 0 3px 26px; font-size:12px; color:var(--text-gray);">
+                                <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                    <input type="checkbox" v-model="subArea.isSelected" style="width:15px;height:15px;">
+                                    <span style="color:var(--text-color); font-size:11px;">選択</span>
                                 </label>
                                 <div class="flex-group">
-                                    <span>🔥 火種:</span>
-                                    <input type="number" v-model.number="mainArea.light" style="width: 60px; padding: 4px 6px; font-size: 13px;">
+                                    <span>🔥</span>
+                                    <input type="number" v-model.number="subArea.light" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
                                 </div>
                                 <div class="flex-group">
-                                    <span>⏱️ 秒数:</span>
-                                    <input type="number" v-model.number="mainArea.time" style="width: 60px; padding: 4px 6px; font-size: 13px;">
+                                    <span>⏱️</span>
+                                    <input type="number" v-model.number="subArea.time" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
+                                    <span style="font-size:11px;">秒</span>
                                 </div>
-                                <span v-if="(mainArea.time || 0) > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 12px;">
-                                    {{ ((mainArea.light || 0) / mainArea.time).toFixed(1) }}/s
+                                <span v-if="(subArea.time||0)>0" style="color:var(--accent-orange); font-weight:bold; font-size:11px;">
+                                    {{ ((subArea.light||0)/subArea.time).toFixed(1) }}/s
                                 </span>
                             </div>
-                        </div>
 
-                        <!-- ★ サブエリアあり -->
-                        <div v-for="(subArea, sIdx) in mainArea.subAreas" :key="subArea.id" class="subarea-accordion-box">
-                            <div class="subarea-title-row1">
-                                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
-                                    <input type="checkbox" :checked="isAllSubSelected(subArea)" @change="toggleSubArea(subArea)">
-                                    <input type="text" v-model="subArea.name" style="font-weight: bold; font-size:14px; background: transparent; border: none; width: 100%; box-sizing: border-box;">
+                            <!-- サブエリアにスポットがある場合：サブエリアの秒数入力を折り畳み外に表示 -->
+                            <div v-else style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:5px 0 3px 26px; font-size:12px; color:var(--text-gray);">
+                                <div class="flex-group">
+                                    <span>⏱️ 所要時間:</span>
+                                    <input type="number" v-model.number="subArea.time" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
+                                    <span style="font-size:11px;">秒</span>
                                 </div>
-                                <div class="expand-toggle-btn" @click="subArea.isExpanded = !subArea.isExpanded" style="padding: 4px 8px; font-size: 12px;">
-                                    <span v-if="getSubAreaStats(subArea).light > 0" style="font-size: 11px; color: var(--accent-orange); background: rgba(255,149,0,0.12); padding: 2px 5px; border-radius: 4px; font-weight: bold; white-space: nowrap;">
-                                        🔥{{ getSubAreaStats(subArea).light }}
-                                    </span>
-                                    <span style="margin-left: 4px; color: var(--text-gray);">{{ subArea.isExpanded ? '▼' : '▶' }}</span>
-                                </div>
+                                <span v-if="(subArea.time||0)>0 && getSubAreaStats(subArea).light>0" style="color:var(--accent-orange); font-weight:bold; font-size:11px;">
+                                    {{ (getSubAreaStats(subArea).light/subArea.time).toFixed(1) }}/s
+                                </span>
                             </div>
-                            
-                            <div class="subarea-title-row2" style="margin-top: 6px;">
+
+                            <!-- 操作ボタン -->
+                            <div class="subarea-title-row2" style="margin-top:4px;">
                                 <div class="btn-action-group">
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, -1)" :disabled="sIdx === 0" style="padding: 2px 6px; font-size: 11px;">↑</button>
-                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx, sIdx, 1)" :disabled="sIdx === mainArea.subAreas.length - 1" style="padding: 2px 6px; font-size: 11px;">↓</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx,sIdx,-1)" :disabled="sIdx===0" style="padding:2px 6px;font-size:11px;">↑</button>
+                                    <button class="btn-outline-blue" @click="moveSubArea(mIdx,sIdx,1)" :disabled="sIdx===mainArea.subAreas.length-1" style="padding:2px 6px;font-size:11px;">↓</button>
                                 </div>
-                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx, sIdx)" style="padding: 2px 6px; font-size: 11px;">削除</button>
+                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx,sIdx)" style="padding:2px 6px;font-size:11px;">削除</button>
                             </div>
 
+                            <!-- 折り畳み内：スポット一覧 -->
                             <div v-if="subArea.isExpanded">
-                                <!-- ★★ スポットなし → サブエリアに直接入力 -->
-                                <div v-if="subArea.spots.length === 0" style="padding: 10px 0 4px 0;">
-                                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-gray); padding-left: 4px;">
-                                        <label style="display: flex; align-items: center; gap: 6px;">
-                                            <input type="checkbox" v-model="subArea.isSelected" style="width:18px; height:18px;">
-                                            <span style="color: var(--text-color);">選択</span>
-                                        </label>
-                                        <div class="flex-group">
-                                            <span>🔥 火種:</span>
-                                            <input type="number" v-model.number="subArea.light" style="width: 55px; padding: 3px 5px; font-size: 12px;">
-                                        </div>
-                                        <div class="flex-group">
-                                            <span>⏱️ 秒数:</span>
-                                            <input type="number" v-model.number="subArea.time" style="width: 55px; padding: 3px 5px; font-size: 12px;">
-                                        </div>
-                                        <span v-if="(subArea.time || 0) > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
-                                            {{ ((subArea.light || 0) / subArea.time).toFixed(1) }}/s
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- ★★ スポットあり → スポットに入力（従来通り） -->
-                                <div v-else class="spot-list">
+                                <div v-if="subArea.spots.length > 0" class="spot-list">
                                     <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id" class="spot-item">
-                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-                                            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; min-width: 0;">
-                                                <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx, sIdx, spIdx)" style="width:18px; height:18px;">
-                                                <input type="text" v-model="spot.name" placeholder="スポット名" style="width: 100%; font-size: 13px; padding: 4px 6px;">
+                                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px;">
+                                            <div style="display:flex; align-items:center; gap:8px; flex-grow:1; min-width:0;">
+                                                <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx,sIdx,spIdx)" style="width:17px;height:17px; flex-shrink:0;">
+                                                <input type="text" v-model="spot.name" placeholder="スポット名" style="width:100%; font-size:13px; padding:3px 5px;">
                                             </div>
-                                            <button class="btn-outline-red" @click="requestDeleteSpot(mIdx, sIdx, spIdx)" style="padding: 2px 5px; font-size: 11px; border-radius: 4px;">×</button>
+                                            <button class="btn-outline-red" @click="requestDeleteSpot(mIdx,sIdx,spIdx)" style="padding:2px 5px;font-size:11px;border-radius:4px;">×</button>
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 12px; padding-left: 26px; font-size: 12px; color: var(--text-gray); flex-wrap: wrap;">
+                                        <!-- 火種のみ（秒数欄なし） -->
+                                        <div style="display:flex; align-items:center; gap:12px; padding-left:25px; font-size:12px; color:var(--text-gray); flex-wrap:wrap;">
                                             <div class="flex-group">
-                                                <span>火種:</span>
-                                                <input type="number" v-model.number="spot.light" style="width: 50px; padding: 2px 4px; font-size: 12px;">
-                                            </div>
-                                            <div class="flex-group">
-                                                <span>秒数:</span>
-                                                <input type="number" v-model.number="spot.time" style="width: 50px; padding: 2px 4px; font-size: 12px;">
+                                                <span>🔥 火種:</span>
+                                                <input type="number" v-model.number="spot.light" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
                                             </div>
                                             <div class="flex-group">
                                                 <span>グループ:</span>
-                                                <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width: 70px; padding: 2px 4px; font-size: 12px; text-align: left;">
+                                                <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width:68px; padding:2px 4px; font-size:12px;">
                                             </div>
-                                            <span v-if="spot.time > 0" style="color: var(--accent-orange); font-weight: bold; font-size: 11px;">
-                                                {{ (spot.light / spot.time).toFixed(1) }}/s
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <button class="btn-add" @click="addSpot(mIdx, sIdx)" style="font-size: 13px; padding: 6px 4px; color: var(--accent-purple);">➕ スポットを追加</button>
+                                <button class="btn-add" @click="addSpot(mIdx,sIdx)" style="font-size:13px;padding:6px 4px;color:var(--accent-purple);">➕ スポットを追加</button>
                             </div>
                         </div>
+
                         <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
                     </div>
                 </div>
@@ -1189,7 +1195,9 @@ currentHearts: currentHearts.value,
                             if (sMode === "sub") {
                                 if (sub.isSelected) total += (sub.time || 0);
                             } else {
-                                sub.spots.forEach(spot => { if (spot && spot.isSelected) total += spot.time; });
+                                // スポットの秒数は廃止。選択スポットがあればサブエリアのtimeを使う
+                                const hasSelected = sub.spots.some(s => s && s.isSelected);
+                                if (hasSelected) total += (sub.time || 0);
                             }
                         });
                     }
@@ -1275,7 +1283,10 @@ currentHearts: currentHearts.value,
                 if (sMode === "sub") {
                     if (subArea && subArea.isSelected) { light = subArea.light || 0; time = subArea.time || 0; }
                 } else if (subArea && Array.isArray(subArea.spots)) {
-                    subArea.spots.forEach(s => { if (s && s.isSelected) { light += s.light; time += s.time; } });
+                    // スポットの秒数は廃止。選択スポットの火種合計 + サブエリアのtime
+                    subArea.spots.forEach(s => { if (s && s.isSelected) light += s.light; });
+                    const hasSelected = subArea.spots.some(s => s && s.isSelected);
+                    if (hasSelected) time = subArea.time || 0;
                 }
                 return { light, eff: time > 0 ? (light / time) : 0.0 };
             };
@@ -1291,7 +1302,9 @@ currentHearts: currentHearts.value,
                         if (sMode === "sub") {
                             if (sub && sub.isSelected) { light += sub.light || 0; time += sub.time || 0; }
                         } else if (sub && Array.isArray(sub.spots)) {
-                            sub.spots.forEach(s => { if (s && s.isSelected) { light += s.light; time += s.time; } });
+                            sub.spots.forEach(s => { if (s && s.isSelected) light += s.light; });
+                            const hasSelected = sub.spots.some(s => s && s.isSelected);
+                            if (hasSelected) time += sub.time || 0;
                         }
                     });
                 }
@@ -1781,7 +1794,9 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                             } else if (Array.isArray(sub.spots)) {
                                 sub.spots.forEach((spot, spIdx) => {
                                     if (spot) {
-                                        const eff = spot.time > 0 ? (spot.light / spot.time) : 0.0;
+                                        // スポット秒数廃止：サブエリアのtimeで効率を計算
+                                        const subTime = sub.time || 0;
+                                        const eff = subTime > 0 ? (spot.light / subTime) : 0.0;
                                         refs.push({ type: "spot", mIdx, sIdx, spIdx, eff, light: spot.light });
                                     }
                                 });
