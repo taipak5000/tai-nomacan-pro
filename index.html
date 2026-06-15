@@ -706,6 +706,16 @@
                         </span>
                     </div>
 
+                    <!-- メインエリアの所要時間入力（サブエリアありだが全サブの所要時間が未入力のとき） -->
+                    <div v-if="mainArea.subAreas.length > 0 && mainArea.subAreas.every(s => !(s.time > 0))" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:4px 0 2px 28px; font-size:12px; color:var(--text-gray);">
+                        <div class="flex-group">
+                            <span>⏱️ 所要時間:</span>
+                            <input type="number" v-model.number="mainArea.time" min="0" style="width:58px; padding:2px 4px; font-size:12px;">
+                            <span style="font-size:11px;">秒</span>
+                        </div>
+                        <span style="font-size:11px; color:var(--accent-blue);">（サブエリアに時間未入力のため代用）</span>
+                    </div>
+
                     <!-- 操作ボタン行 -->
                     <div class="area-title-row2">
                         <div class="btn-action-group">
@@ -1187,17 +1197,29 @@ currentHearts: currentHearts.value,
                     if (aMode === "main") {
                         if (area.isSelected) total += (area.time || 0);
                     } else {
-                        area.subAreas.forEach(sub => {
-                            if (!sub) return;
-                            const sMode = getSubMode(sub);
-                            if (sMode === "sub") {
-                                if (sub.isSelected) total += (sub.time || 0);
-                            } else {
-                                // スポットの秒数は廃止。選択スポットがあればサブエリアのtimeを使う
-                                const hasSelected = sub.spots.some(s => s && s.isSelected);
-                                if (hasSelected) total += (sub.time || 0);
-                            }
-                        });
+                        // 全サブエリアのtimeが未入力(0)ならメインエリアのtimeをフォールバックとして使う
+                        const allSubTimeZero = area.subAreas.every(s => !s || !(s.time > 0));
+                        if (allSubTimeZero) {
+                            const hasAnySelected = area.subAreas.some(sub => {
+                                if (!sub) return false;
+                                const sMode = getSubMode(sub);
+                                if (sMode === "sub") return !!sub.isSelected;
+                                return Array.isArray(sub.spots) && sub.spots.some(s => s && s.isSelected);
+                            });
+                            if (hasAnySelected) total += (area.time || 0);
+                        } else {
+                            area.subAreas.forEach(sub => {
+                                if (!sub) return;
+                                const sMode = getSubMode(sub);
+                                if (sMode === "sub") {
+                                    if (sub.isSelected) total += (sub.time || 0);
+                                } else {
+                                    // スポットの秒数は廃止。選択スポットがあればサブエリアのtimeを使う
+                                    const hasSelected = sub.spots.some(s => s && s.isSelected);
+                                    if (hasSelected) total += (sub.time || 0);
+                                }
+                            });
+                        }
                     }
                 });
                 return total;
