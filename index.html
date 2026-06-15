@@ -423,21 +423,19 @@
                 <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                         <span style="font-weight: 500;">📅 本日の大キャンドル群:</span>
-                        <select v-model="dailyBonusArea" style="width: 110px; padding: 4px 6px; font-size: 12px;">
-                            <option value="none">なし</option>
-                            <option value="草原">草原 (+200)</option>
-                            <option value="雨林">雨林 (+200)</option>
-                            <option value="峡谷">峡谷 (+200)</option>
-                            <option value="捨て地">捨て地 (+200)</option>
-                            <option value="書庫">書庫 (+200)</option>
+                        <select v-model.number="dailyBonusArea" style="width: 130px; padding: 4px 6px; font-size: 12px;">
+                            <option :value="0">なし</option>
+                            <option :value="1">1個 (+50)</option>
+                            <option :value="2">2個 (+100)</option>
+                            <option :value="3">3個 (+150)</option>
+                            <option :value="4">4個 (+200)</option>
                         </select>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                        <span style="font-weight: 500;">🌋 本日の闇の破片:</span>
-                        <select v-model="dailyShard" style="width: 110px; padding: 4px 6px; font-size: 12px;">
+                        <span style="font-weight: 500;">🌋 本日の闇の破片（黒）:</span>
+                        <select v-model="dailyShard" style="width: 130px; padding: 4px 6px; font-size: 12px;">
                             <option value="none">なし</option>
-                            <option value="black">黒い破片 (+200)</option>
-                            <option value="red">赤い破片 (星キャン)</option>
+                            <option value="black">あり (+200)</option>
                         </select>
                     </div>
                 </div>
@@ -931,7 +929,7 @@ const plannedUsage = ref(0);
             let timerId = null;
             let startTime = 0; 
 
-            const dailyBonusArea = ref("none");
+            const dailyBonusArea = ref(0);
             const dailyShard = ref("none");
 
             const uuid = () => crypto.randomUUID();
@@ -987,7 +985,7 @@ currentAscendedCandles.value = 0; // 💡 追加
 currentHearts.value = 0;         // 💡 追加
 plannedUsage.value = 0;
                 targetCandlesForOptimization.value = 20;
-                dailyBonusArea.value = "none";
+                dailyBonusArea.value = 0;
                 dailyShard.value = "none";
             };
 
@@ -999,7 +997,7 @@ plannedUsage.value = 0;
                         currentCandles.value = 0;
                         plannedUsage.value = 0;
                         carryOverPercent.value = 0;
-                        dailyBonusArea.value = "none";
+                        dailyBonusArea.value = 0;
                         dailyShard.value = "none";
                         candleMemo.value = "";
                         
@@ -1113,7 +1111,7 @@ currentHearts: currentHearts.value,
                             currentHearts.value = Number(decoded.currentHearts) || 0;
                             plannedUsage.value = Number(decoded.plannedUsage) || 0;
                             targetCandlesForOptimization.value = Number(decoded.targetCandlesForOptimization) || 20;
-                            dailyBonusArea.value = decoded.dailyBonusArea || "none";
+                            dailyBonusArea.value = Number(decoded.dailyBonusArea) || 0;
                             dailyShard.value = decoded.dailyShard || "none";
 
                             if (Array.isArray(decoded.myRoutes)) {
@@ -1220,8 +1218,8 @@ currentHearts: currentHearts.value,
             
             const totalLight = computed(() => {
                 let bonus = 0;
-                if (dailyBonusArea.value !== "none") bonus += 200; 
-                if (dailyShard.value === "black") bonus += 200;     
+                bonus += (Number(dailyBonusArea.value) || 0) * 50;  // 個数×50火種
+                if (dailyShard.value === "black") bonus += 200;      // 黒い破片+200火種
                 return selectedLight.value + Math.floor(carryOverLight.value) + bonus;
             });
 
@@ -1573,7 +1571,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                     if (decoded.currentHearts !== undefined) currentHearts.value = decoded.currentHearts;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
-                    if (decoded.dailyBonusArea) dailyBonusArea.value = decoded.dailyBonusArea;
+                    if (decoded.dailyBonusArea !== undefined) dailyBonusArea.value = Number(decoded.dailyBonusArea) || 0;
                     if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
                     
                     if (Array.isArray(decoded.myRoutes)) {
@@ -1730,7 +1728,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 }
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
-                dailyBonusArea.value = "none"; dailyShard.value = "none";
+                dailyBonusArea.value = 0; dailyShard.value = "none";
 
                 if (Array.isArray(areas.value)) {
                     areas.value.forEach(area => {
