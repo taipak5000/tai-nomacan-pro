@@ -1729,33 +1729,53 @@ currentHearts: currentHearts.value,
             // ════════════════════════════════════════════════════
 
             // ── 圧縮ユーティリティ（CompressionStream / DecompressionStream） ──
+            const readStream = (readable) => {
+                return new Promise((resolve, reject) => {
+                    const chunks = [];
+                    const reader = readable.getReader();
+                    const pump = () => reader.read().then(({ done, value }) => {
+                        if (done) {
+                            const total = chunks.reduce((n, c) => n + c.length, 0);
+                            const merged = new Uint8Array(total);
+                            let offset = 0;
+                            chunks.forEach(c => { merged.set(c, offset); offset += c.length; });
+                            resolve(merged.buffer);
+                        } else {
+                            chunks.push(value);
+                            pump();
+                        }
+                    }).catch(reject);
+                    pump();
+                });
+            };
+
             const compressToUrlSafe = async (jsonStr) => {
+                if (typeof CompressionStream === 'undefined') throw new Error('CompressionStream not supported');
                 const bytes = new TextEncoder().encode(jsonStr);
                 const cs = new CompressionStream('deflate-raw');
                 const writer = cs.writable.getWriter();
                 writer.write(bytes);
                 writer.close();
-                const compressed = await new Response(cs.readable).arrayBuffer();
-                // URLセーフBase64に変換
+                const buf = await readStream(cs.readable);
+                const u8 = new Uint8Array(buf);
                 let bin = "";
-                const u8 = new Uint8Array(compressed);
                 for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
                 return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
             };
 
             const decompressFromUrlSafe = async (urlSafeB64) => {
-                // URLセーフBase64 → 通常Base64
                 let b64 = urlSafeB64.replace(/-/g, '+').replace(/_/g, '/');
                 while (b64.length % 4 !== 0) b64 += '=';
                 const bin = atob(b64);
                 const u8 = new Uint8Array(bin.length);
                 for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+                if (typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream not supported');
                 const ds = new DecompressionStream('deflate-raw');
                 const writer = ds.writable.getWriter();
                 writer.write(u8);
                 writer.close();
-                const decompressed = await new Response(ds.readable).arrayBuffer();
-                return new TextDecoder().decode(decompressed);
+                const buf = await readStream(ds.readable);
+                return new TextDecoder().decode(buf);
             };
 
             // ── shareModal state ──
@@ -1778,65 +1798,96 @@ currentHearts: currentHearts.value,
 
             // ── モーダルを開く ──
             const openShareModal = async (isRoute, route = null) => {
-                shareModal.value.copyMsg = '';
-                shareModal.value.qrError = '';
-                shareModal.value.isRoute = isRoute;
-                shareModal.value._route = route;
-                shareModal.value.tab = 'qr';
+                try {
+                    shareModal.value.copyMsg = '';
+                    shareModal.value.qrError = '';
+                    shareModal.value.isRoute = isRoute;
+                    shareModal.value._route = route;
+                    shareModal.value.tab = 'qr';
+                    shareModal.value.spell = '';
+                    shareModal.value.shareUrl = '';
 
-                let jsonStr = '';
-                if (isRoute && route) {
-                    // ルート共有データを組み立て
-                    const packedSpots = [];
-                    if (Array.isArray(route.selectedSpotIds)) {
-                        route.selectedSpotIds.forEach(id => {
-                            for (const area of areas.value) {
-                                if (area && Array.isArray(area.subAreas)) {
-                                    for (const sub of area.subAreas) {
-                                        if (sub && Array.isArray(sub.spots)) {
-                                            const sp = sub.spots.find(s => s.id === id);
-                                            if (sp) {
-                                                packedSpots.push({ mainName: area.name, subName: sub.name, spotName: sp.name, light: sp.light, time: sp.time, group: sp.group || '' });
-                                                break;
+                    let jsonStr = '';
+                    if (isRoute && route) {
+                        // ルート共有データを組み立て
+                        const packedSpots = [];
+                        if (Array.isArray(route.selectedSpotIds)) {
+                            route.selectedSpotIds.forEach(id => {
+                                for (const area of areas.value) {
+                                    if (area && Array.isArray(area.subAreas)) {
+                                        for (const sub of area.subAreas) {
+                                            if (sub && Array.isArray(sub.spots)) {
+                                                const sp = sub.spots.find(s => s.id === id);
+                                                if (sp) {
+                                                    packedSpots.push({ mainName: area.name, subName: sub.name, spotName: sp.name, light: sp.light, time: sp.time, group: sp.group || '' });
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
+                        jsonStr = JSON.stringify({ name: route.name, memo: route.memo, actualSeconds: route.actualSeconds || 0, spots: packedSpots });
+                    } else {
+                        // 全体データ共有 — save()と同じ方式でシリアライズ
+                        stopAnyActiveTimer();
+                        const dataToSave = {
+                            areas: areas.value,
+                            placedItems: placedItems.value,
+                            carryOverPercent: carryOverPercent.value,
+                            targetDate: targetDate.value,
+                            currentCandles: currentCandles.value,
+                            currentAscendedCandles: currentAscendedCandles.value,
+                            currentHearts: currentHearts.value,
+                            plannedUsage: plannedUsage.value,
+                            targetCandlesForOptimization: targetCandlesForOptimization.value,
+                            candleMemo: candleMemo.value,
+                            myRoutes: myRoutes.value.map(r => ({
+                                id: r.id, name: r.name, memo: r.memo,
+                                selectedSpotIds: r.selectedSpotIds || [],
+                                actualSeconds: r.actualSeconds || 0
+                            })),
+                            visibleSections: visibleSections.value,
+                            dailyBonusArea: dailyBonusArea.value,
+                            dailyShard: dailyShard.value
+                        };
+                        jsonStr = JSON.stringify(dataToSave);
                     }
-                    jsonStr = JSON.stringify({ name: route.name, memo: route.memo, actualSeconds: route.actualSeconds || 0, spots: packedSpots });
-                } else {
-                    // 全体データ共有
-                    stopAnyActiveTimer();
-                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, currentAscendedCandles: currentAscendedCandles.value, currentHearts: currentHearts.value, plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
-                    jsonStr = JSON.stringify(dataToSave);
+
+                    // 従来の呪文（Base64のまま）
+                    const uint8 = new TextEncoder().encode(jsonStr);
+                    let bin = "";
+                    for (let i = 0; i < uint8.length; i++) bin += String.fromCharCode(uint8[i]);
+                    shareModal.value.spell = btoa(bin);
+
+                    // 圧縮URL生成
+                    try {
+                        const compressed = await compressToUrlSafe(jsonStr);
+                        const type = isRoute ? 'route' : 'full';
+                        const baseUrl = window.location.href.split('?')[0].split('#')[0];
+                        shareModal.value.shareUrl = `${baseUrl}?t=${type}&d=${compressed}`;
+                        const ratio = Math.round((1 - compressed.length / shareModal.value.spell.length) * 100);
+                        shareModal.value.compressionLabel = `約${ratio}%圧縮`;
+                        shareModal.value.sizeLabel = `${Math.round(compressed.length / 1024 * 10) / 10} KB`;
+                    } catch (compErr) {
+                        // CompressionStream非対応環境のフォールバック
+                        const type = isRoute ? 'route' : 'full';
+                        const baseUrl = window.location.href.split('?')[0].split('#')[0];
+                        shareModal.value.shareUrl = `${baseUrl}?t=${type}&d=${encodeURIComponent(shareModal.value.spell)}`;
+                        shareModal.value.compressionLabel = '圧縮なし';
+                        shareModal.value.sizeLabel = `${Math.round(shareModal.value.spell.length / 1024 * 10) / 10} KB`;
+                    }
+
+                    shareModal.value.show = true;
+                    await nextTick();
+                    renderQR();
+                } catch (err) {
+                    console.error('openShareModal error:', err);
+                    // エラーでもモーダルを開き、エラー内容をQRエラー欄に表示する
+                    shareModal.value.qrError = '⚠️ データ生成エラー: ' + (err && err.message ? err.message : String(err));
+                    shareModal.value.show = true;
                 }
-
-                // 従来の呪文（Base64のまま）
-                const uint8 = new TextEncoder().encode(jsonStr);
-                let bin = "";
-                for (let i = 0; i < uint8.length; i++) bin += String.fromCharCode(uint8[i]);
-                shareModal.value.spell = btoa(bin);
-
-                // 圧縮URL生成
-                try {
-                    const compressed = await compressToUrlSafe(jsonStr);
-                    const type = isRoute ? 'route' : 'full';
-                    const baseUrl = window.location.href.split('?')[0].split('#')[0];
-                    shareModal.value.shareUrl = `${baseUrl}?t=${type}&d=${compressed}`;
-                    const ratio = Math.round((1 - compressed.length / shareModal.value.spell.length) * 100);
-                    shareModal.value.compressionLabel = `約${ratio}%圧縮`;
-                    shareModal.value.sizeLabel = `${Math.round(compressed.length / 1024 * 10) / 10} KB`;
-                } catch (e) {
-                    shareModal.value.shareUrl = window.location.href.split('?')[0] + '?t=' + (isRoute ? 'route' : 'full') + '&d=' + encodeURIComponent(shareModal.value.spell);
-                    shareModal.value.compressionLabel = '圧縮なし';
-                    shareModal.value.sizeLabel = `${Math.round(shareModal.value.spell.length / 1024 * 10) / 10} KB`;
-                }
-
-                shareModal.value.show = true;
-                await nextTick();
-                renderQR();
             };
 
             const closeShareModal = () => {
