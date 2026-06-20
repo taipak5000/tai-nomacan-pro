@@ -367,97 +367,6 @@
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* QR・URL共有モーダル */
-        .share-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 10000;
-            animation: fadeIn 0.15s ease-out;
-            padding: 16px;
-            box-sizing: border-box;
-        }
-        .share-modal-content {
-            background: var(--card-bg);
-            color: var(--text-color);
-            padding: 22px;
-            border-radius: 14px;
-            max-width: 420px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            box-sizing: border-box;
-            border: 1px solid var(--border-color);
-            animation: scaleUp 0.15s ease-out;
-        }
-        .share-modal-title {
-            font-size: 15px;
-            font-weight: bold;
-            margin-bottom: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .share-tab-bar {
-            display: flex;
-            background: var(--tab-bg);
-            border-radius: 8px;
-            padding: 3px;
-            margin-bottom: 14px;
-            gap: 2px;
-        }
-        .share-tab-btn {
-            flex: 1;
-            padding: 6px 4px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            background: transparent;
-            color: var(--text-gray);
-            transition: all 0.15s;
-        }
-        .share-tab-btn.active {
-            background: var(--tab-btn-active);
-            color: var(--text-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .share-url-box {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 10px;
-            font-family: monospace;
-            font-size: 11px;
-            word-break: break-all;
-            max-height: 70px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            line-height: 1.5;
-            color: var(--text-color);
-        }
-        .share-btn-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .share-btn-row button {
-            flex: 1;
-            min-width: 80px;
-            padding: 8px 6px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .share-size-badge {
-            font-size: 11px;
-            color: var(--text-gray);
-            text-align: center;
-            margin-bottom: 8px;
-        }
 
     </style>
 </head>
@@ -613,42 +522,31 @@
             </div>
 
             <div v-if="visibleSections.spellShare" class="section-card">
-                <div class="section-header">🧙‍♂️ データの共有</div>
-
-                <!-- URL読み込みバナー -->
-                <div v-if="urlImportBanner.show" class="inline-alert" style="background:rgba(0,122,255,0.08);border:1px solid var(--accent-blue);color:var(--accent-blue);margin-bottom:12px;">
-                    <div style="font-weight:bold;margin-bottom:6px;">🔗 共有URLからデータを読み込みますか？</div>
-                    <div style="font-size:12px;margin-bottom:8px;">URLに含まれるデータを検出しました。読み込むと現在のデータが上書きされます。</div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <button @click="applyUrlImport" style="background:var(--accent-blue);color:white;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;font-size:13px;cursor:pointer;">📥 読み込む</button>
-                        <button @click="urlImportBanner.show=false" style="background:var(--tab-bg);color:var(--text-color);border:none;padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer;">無視する</button>
-                    </div>
+                <div class="section-header">🧙‍♂️ データの共有（復活の呪文）</div>
+                <div class="row" style="flex-direction: column; align-items: flex-start;">
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">この端末のデータを呪文にする：</div>
+                    <button class="btn btn-blue" @click="generateSpell" style="margin-top: 0; padding: 8px; font-size:14px;">✨ 復活の呪文を生成</button>
+                    <textarea v-model="generatedSpell" readonly placeholder="ボタンを押すとここに呪文が生成されます..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: #f9f9f9;" @click="$event.target.select()"></textarea>
                 </div>
-
-                <div style="display:flex;flex-direction:column;gap:10px;">
-                    <div>
-                        <div style="font-size:12px;color:var(--text-gray);margin-bottom:6px;">📤 この端末のデータを共有する：</div>
-                        <button class="btn btn-blue" @click="openShareModal(false)" style="margin-top:0;padding:10px;font-size:14px;">✨ 共有する（QR / URL / 呪文）</button>
+                
+                <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
+                
+                <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">他の端末の呪文から復元する：</div>
+                    <textarea v-model="inputSpell" placeholder="他端末で生成した呪文をここに貼り付けてください..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
+                    
+                    <div v-if="isConfirming" class="inline-alert inline-alert-confirm" style="width:100%; box-sizing:border-box;">
+                        ⚠️ 呪文を唱えると現在のデータが上書きされます。よろしいですか？
+                        <div style="display:flex; gap:10px; margin-top:8px;">
+                            <button class="btn-outline-blue" @click="confirmApplySpell" style="background:var(--accent-orange); color:white; border:none; padding:6px 12px; font-weight:bold;">はい、唱えます</button>
+                            <button class="btn-outline-blue" @click="isConfirming = false" style="background:#ccc; color:#333; border:none; padding:6px 12px;">やめる</button>
+                        </div>
                     </div>
+                    
+                    <button v-else class="btn btn-orange" @click="requestApplySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱える</button>
 
-                    <hr style="border:none;border-top:1px solid var(--border-color);margin:4px 0;">
-
-                    <div>
-                        <div style="font-size:12px;color:var(--text-gray);margin-bottom:6px;">📥 他の端末の呪文から復元する：</div>
-                        <textarea v-model="inputSpell" placeholder="呪文文字列をここに貼り付けてください..." style="width:100%;height:55px;padding:8px;border:1px solid var(--border-color);border-radius:6px;font-family:monospace;font-size:11px;box-sizing:border-box;resize:none;background:var(--input-bg);color:var(--text-color);"></textarea>
-
-                        <div v-if="isConfirming" class="inline-alert inline-alert-confirm" style="width:100%;box-sizing:border-box;margin-top:6px;">
-                            ⚠️ 呪文を唱えると現在のデータが上書きされます。よろしいですか？
-                            <div style="display:flex;gap:10px;margin-top:8px;">
-                                <button class="btn-outline-blue" @click="confirmApplySpell" style="background:var(--accent-orange);color:white;border:none;padding:6px 12px;font-weight:bold;">はい、唱えます</button>
-                                <button class="btn-outline-blue" @click="isConfirming=false" style="background:#ccc;color:#333;border:none;padding:6px 12px;">やめる</button>
-                            </div>
-                        </div>
-                        <button v-else class="btn btn-orange" @click="requestApplySpell" style="margin-top:8px;padding:8px;font-size:14px;">🔮 呪文を唱える</button>
-
-                        <div v-if="spellMessage" :class="['inline-alert', spellMessageType==='success'?'inline-alert-success':'inline-alert-error']" style="width:100%;box-sizing:border-box;">
-                            {{ spellMessage }}
-                        </div>
+                    <div v-if="spellMessage" :class="['inline-alert', spellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="width:100%; box-sizing:border-box;">
+                        {{ spellMessage }}
                     </div>
                 </div>
             </div>
@@ -690,7 +588,7 @@
                             <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">↓</button>
                             
                             <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
-                            <button class="btn-outline-blue" @click="openShareModal(true, route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">📤 共有</button>
+                            <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">📤 共有</button>
                             <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
                                 {{ route.isExpanded ? '▼' : '▶' }}
                             </button>
@@ -924,46 +822,7 @@
 
     
     <!-- ═══ QR・URL共有モーダル ═══ -->
-    <div v-if="shareModal.show" class="share-modal-overlay" @click.self="closeShareModal">
-        <div class="share-modal-content">
-            <div class="share-modal-title">
-                <span>{{ shareModal.isRoute ? '📤 ルート共有' : '🧙‍♂️ データ共有' }}</span>
-                <button @click="closeShareModal" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-gray);line-height:1;">×</button>
-            </div>
 
-            <!-- タブ切り替え -->
-            <div class="share-tab-bar">
-                <button class="share-tab-btn" :class="{ active: shareModal.tab === 'url' }" @click="shareModal.tab = 'url'">🔗 共有URL</button>
-                <button class="share-tab-btn" :class="{ active: shareModal.tab === 'spell' }" @click="shareModal.tab = 'spell'">📜 呪文文字列</button>
-            </div>
-
-            <!-- URLタブ -->
-            <div v-show="shareModal.tab === 'url'">
-                <div style="font-size:12px;color:var(--text-gray);margin-bottom:6px;">このURLを共有すると、開くだけでデータが読み込まれます：</div>
-                <div class="share-url-box">{{ shareModal.shareUrl }}</div>
-                <div class="share-size-badge">URL長さ: {{ shareModal.shareUrl.length.toLocaleString() }} 文字 / データ圧縮率: {{ shareModal.compressionLabel }}</div>
-                <div class="share-btn-row">
-                    <button @click="copyShareUrl" style="background:var(--accent-blue);color:white;">📋 URLをコピー</button>
-                    <button v-if="shareModal.canNativeShare" @click="nativeShare" style="background:var(--accent-green);color:white;">📤 共有</button>
-                    <button @click="closeShareModal" style="background:var(--tab-bg);color:var(--text-color);">閉じる</button>
-                </div>
-                <div v-if="shareModal.copyMsg" style="margin-top:8px;font-size:12px;color:var(--accent-green);font-weight:bold;text-align:center;">{{ shareModal.copyMsg }}</div>
-            </div>
-
-            <!-- 呪文文字列タブ -->
-            <div v-show="shareModal.tab === 'spell'">
-                <div style="font-size:12px;color:var(--text-gray);margin-bottom:6px;">従来の呪文文字列（クリックで全選択）：</div>
-                <textarea :value="shareModal.spell" readonly @click="$event.target.select()"
-                    style="width:100%;height:80px;font-family:monospace;font-size:10px;padding:6px;box-sizing:border-box;resize:none;background:var(--input-bg);border:1px solid var(--border-color);border-radius:6px;color:var(--text-color);"></textarea>
-                <div class="share-size-badge">文字数: {{ shareModal.spell.length.toLocaleString() }} 文字</div>
-                <div class="share-btn-row">
-                    <button @click="copySpell" style="background:var(--accent-blue);color:white;">📋 コピー</button>
-                    <button @click="closeShareModal" style="background:var(--tab-bg);color:var(--text-color);">閉じる</button>
-                </div>
-                <div v-if="shareModal.copyMsg" style="margin-top:8px;font-size:12px;color:var(--accent-green);font-weight:bold;text-align:center;">{{ shareModal.copyMsg }}</div>
-            </div>
-        </div>
-    </div>
 
 <div v-if="confirmModal.show" class="app-modal-overlay" @click.self="confirmModal.show = false">
         <div class="app-modal-content">
@@ -1005,7 +864,7 @@
     }
 </script>
 <script>
-    const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
+    const { createApp, ref, computed, onMounted, watch } = Vue;
 
     createApp({
         setup() {
@@ -1736,295 +1595,6 @@ currentHearts: currentHearts.value,
                 route.isExpanded = !route.isExpanded;
             };
 
-            // ════════════════════════════════════════════════════
-            // 🔗 QR / URL共有モーダル
-            // ════════════════════════════════════════════════════
-
-            // ── 圧縮ユーティリティ（CompressionStream / DecompressionStream） ──
-            const readStream = (readable) => {
-                return new Promise((resolve, reject) => {
-                    const chunks = [];
-                    const reader = readable.getReader();
-                    const pump = () => reader.read().then(({ done, value }) => {
-                        if (done) {
-                            const total = chunks.reduce((n, c) => n + c.length, 0);
-                            const merged = new Uint8Array(total);
-                            let offset = 0;
-                            chunks.forEach(c => { merged.set(c, offset); offset += c.length; });
-                            resolve(merged.buffer);
-                        } else {
-                            chunks.push(value);
-                            pump();
-                        }
-                    }).catch(reject);
-                    pump();
-                });
-            };
-
-            const compressToUrlSafe = async (jsonStr) => {
-                if (typeof CompressionStream === 'undefined') throw new Error('CompressionStream not supported');
-                const bytes = new TextEncoder().encode(jsonStr);
-                const cs = new CompressionStream('deflate-raw');
-                const writer = cs.writable.getWriter();
-                writer.write(bytes);
-                writer.close();
-                const buf = await readStream(cs.readable);
-                const u8 = new Uint8Array(buf);
-                let bin = "";
-                for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
-                return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-            };
-
-            const decompressFromUrlSafe = async (urlSafeB64) => {
-                let b64 = urlSafeB64.replace(/-/g, '+').replace(/_/g, '/');
-                while (b64.length % 4 !== 0) b64 += '=';
-                const bin = atob(b64);
-                const u8 = new Uint8Array(bin.length);
-                for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-                if (typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream not supported');
-                const ds = new DecompressionStream('deflate-raw');
-                const writer = ds.writable.getWriter();
-                writer.write(u8);
-                writer.close();
-                const buf = await readStream(ds.readable);
-                return new TextDecoder().decode(buf);
-            };
-
-            // ── shareModal state ──
-            const shareModal = ref({
-                show: false,
-                tab: 'url',
-                isRoute: false,
-                spell: '',
-                shareUrl: '',
-                sizeLabel: '',
-                compressionLabel: '',
-                copyMsg: '',
-                canNativeShare: !!navigator.share,
-                _route: null,
-            });
-
-            // URL読み込みバナー
-            const urlImportBanner = ref({ show: false, data: '' });
-
-            // ── モーダルを開く ──
-            const openShareModal = async (isRoute, route = null) => {
-                try {
-                    shareModal.value.copyMsg = '';
-                    shareModal.value.isRoute = isRoute;
-                    shareModal.value._route = route;
-                    shareModal.value.tab = 'url';
-                    shareModal.value.spell = '';
-                    shareModal.value.shareUrl = '';
-
-                    let jsonStr = '';
-                    if (isRoute && route) {
-                        // ルート共有データを組み立て
-                        const packedSpots = [];
-                        if (Array.isArray(route.selectedSpotIds)) {
-                            route.selectedSpotIds.forEach(id => {
-                                for (const area of areas.value) {
-                                    if (area && Array.isArray(area.subAreas)) {
-                                        for (const sub of area.subAreas) {
-                                            if (sub && Array.isArray(sub.spots)) {
-                                                const sp = sub.spots.find(s => s.id === id);
-                                                if (sp) {
-                                                    packedSpots.push({ mainName: area.name, subName: sub.name, spotName: sp.name, light: sp.light, time: sp.time, group: sp.group || '' });
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                        jsonStr = JSON.stringify({ name: route.name, memo: route.memo, actualSeconds: route.actualSeconds || 0, spots: packedSpots });
-                    } else {
-                        // 全体データ共有 — save()と同じ方式でシリアライズ
-                        stopAnyActiveTimer();
-                        const dataToSave = {
-                            areas: areas.value,
-                            placedItems: placedItems.value,
-                            carryOverPercent: carryOverPercent.value,
-                            targetDate: targetDate.value,
-                            currentCandles: currentCandles.value,
-                            currentAscendedCandles: currentAscendedCandles.value,
-                            currentHearts: currentHearts.value,
-                            plannedUsage: plannedUsage.value,
-                            targetCandlesForOptimization: targetCandlesForOptimization.value,
-                            candleMemo: candleMemo.value,
-                            myRoutes: myRoutes.value.map(r => ({
-                                id: r.id, name: r.name, memo: r.memo,
-                                selectedSpotIds: r.selectedSpotIds || [],
-                                actualSeconds: r.actualSeconds || 0
-                            })),
-                            visibleSections: visibleSections.value,
-                            dailyBonusArea: dailyBonusArea.value,
-                            dailyShard: dailyShard.value
-                        };
-                        jsonStr = JSON.stringify(dataToSave);
-                    }
-
-                    // 従来の呪文（Base64のまま）
-                    const uint8 = new TextEncoder().encode(jsonStr);
-                    let bin = "";
-                    for (let i = 0; i < uint8.length; i++) bin += String.fromCharCode(uint8[i]);
-                    shareModal.value.spell = btoa(bin);
-
-                    // 圧縮URL生成
-                    try {
-                        const compressed = await compressToUrlSafe(jsonStr);
-                        const type = isRoute ? 'route' : 'full';
-                        const baseUrl = window.location.href.split('?')[0].split('#')[0];
-                        shareModal.value.shareUrl = `${baseUrl}?t=${type}&d=${compressed}`;
-                        const ratio = Math.round((1 - compressed.length / shareModal.value.spell.length) * 100);
-                        shareModal.value.compressionLabel = `約${ratio}%圧縮`;
-                        shareModal.value.sizeLabel = `${Math.round(compressed.length / 1024 * 10) / 10} KB`;
-                    } catch (compErr) {
-                        // CompressionStream非対応環境のフォールバック
-                        const type = isRoute ? 'route' : 'full';
-                        const baseUrl = window.location.href.split('?')[0].split('#')[0];
-                        shareModal.value.shareUrl = `${baseUrl}?t=${type}&d=${encodeURIComponent(shareModal.value.spell)}`;
-                        shareModal.value.compressionLabel = '圧縮なし';
-                        shareModal.value.sizeLabel = `${Math.round(shareModal.value.spell.length / 1024 * 10) / 10} KB`;
-                    }
-
-                    shareModal.value.show = true;
-                } catch (err) {
-                    console.error('openShareModal error:', err);
-                    showInlineMessage('😢 共有データの生成に失敗しました。', 'error');
-                }
-            };
-
-            const closeShareModal = () => {
-                shareModal.value.show = false;
-            };
-
-            // ── URLコピー ──
-            const copyShareUrl = async () => {
-                try {
-                    await navigator.clipboard.writeText(shareModal.value.shareUrl);
-                    shareModal.value.copyMsg = '✅ URLをコピーしました！';
-                    setTimeout(() => { shareModal.value.copyMsg = ''; }, 3000);
-                } catch (e) {
-                    shareModal.value.copyMsg = '⚠️ コピーに失敗しました。手動でコピーしてください。';
-                }
-            };
-
-            // ── 呪文文字列コピー ──
-            const copySpell = async () => {
-                try {
-                    await navigator.clipboard.writeText(shareModal.value.spell);
-                    shareModal.value.copyMsg = '✅ 呪文をコピーしました！';
-                    setTimeout(() => { shareModal.value.copyMsg = ''; }, 3000);
-                } catch (e) {
-                    shareModal.value.copyMsg = '⚠️ コピーに失敗しました。手動でコピーしてください。';
-                }
-            };
-
-            // ── ネイティブ共有（Web Share API） ──
-            const nativeShare = async () => {
-                try {
-                    await navigator.share({
-                        title: shareModal.value.isRoute ? 'Skyルート共有' : 'Sky キャンドル計算機データ共有',
-                        text: shareModal.value.isRoute ? 'ルートデータを共有します' : 'キャンドル計算機のデータを共有します',
-                        url: shareModal.value.shareUrl
-                    });
-                } catch (e) { /* キャンセル等 */ }
-            };
-
-            // ── URLパラメータの自動検出（ページ読み込み時） ──
-            const checkUrlImport = async () => {
-                const params = new URLSearchParams(window.location.search);
-                const d = params.get('d');
-                const t = params.get('t');
-                if (!d) return;
-                urlImportBanner.value = { show: true, data: d, type: t || 'full' };
-                // URLを綺麗にする（ブラウザ履歴を汚さない）
-                const cleanUrl = window.location.href.split('?')[0];
-                window.history.replaceState({}, '', cleanUrl);
-            };
-
-            // ── URLインポートを実行 ──
-            const applyUrlImport = async () => {
-                const { data, type } = urlImportBanner.value;
-                urlImportBanner.value.show = false;
-                try {
-                    let jsonStr = '';
-                    try {
-                        jsonStr = await decompressFromUrlSafe(data);
-                    } catch {
-                        // 圧縮なしのBase64フォールバック
-                        let b64 = data.replace(/-/g, '+').replace(/_/g, '/');
-                        while (b64.length % 4 !== 0) b64 += '=';
-                        const bin = atob(b64);
-                        const u8 = new Uint8Array(bin.length);
-                        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-                        jsonStr = new TextDecoder().decode(u8);
-                    }
-                    const decoded = JSON.parse(jsonStr);
-
-                    if (type === 'route') {
-                        // ルートとして読み込む
-                        if (!decoded.name || !Array.isArray(decoded.spots)) throw new Error('Invalid route format');
-                        routeInputSpell.value = shareModal.value.spell || '';
-                        // decoded を使って直接インポート処理
-                        const newRoute = { id: uuid(), name: decoded.name || 'インポートルート', memo: decoded.memo || '', actualSeconds: decoded.actualSeconds || 0, isExpanded: false, generatedSpell: '', selectedSpotIds: [] };
-                        decoded.spots.forEach(sp => {
-                            let matched = null;
-                            for (const area of areas.value) {
-                                if (!area || area.name !== sp.mainName) continue;
-                                if (Array.isArray(area.subAreas)) {
-                                    for (const sub of area.subAreas) {
-                                        if (!sub || sub.name !== sp.subName) continue;
-                                        if (Array.isArray(sub.spots)) {
-                                            const s = sub.spots.find(s => s.name === sp.spotName);
-                                            if (s) { matched = s.id; break; }
-                                        }
-                                    }
-                                }
-                                if (matched) break;
-                            }
-                            if (!matched) {
-                                let sharedMain = areas.value.find(a => a && a.name === '📥 共有された外部エリア');
-                                if (!sharedMain) { sharedMain = { id: uuid(), name: '📥 共有された外部エリア', isExpanded: true, light: 0, time: 0, isSelected: false, subAreas: [] }; areas.value.push(sharedMain); }
-                                let sharedSub = sharedMain.subAreas.find(s => s && s.name === sp.subName);
-                                if (!sharedSub) { sharedSub = { id: uuid(), name: sp.subName, isExpanded: false, light: 0, time: sp.time || 0, isSelected: false, spots: [] }; sharedMain.subAreas.push(sharedSub); }
-                                const newSpot = { id: uuid(), name: sp.spotName, light: sp.light, time: sp.time || 0, isSelected: false, group: sp.group || '' };
-                                sharedSub.spots.push(newSpot);
-                                matched = newSpot.id;
-                            }
-                            if (matched) newRoute.selectedSpotIds.push(matched);
-                        });
-                        myRoutes.value.push(newRoute);
-                        save();
-                        showInlineMessage('📥 ルートをURLから読み込みました！', 'success');
-                    } else {
-                        // 全体データとして読み込む（confirmApplySpellと同ロジック）
-                        stopAnyActiveTimer();
-                        if (decoded.areas) areas.value = decoded.areas;
-                        if (decoded.placedItems) placedItems.value = decoded.placedItems;
-                        if (decoded.carryOverPercent !== undefined) carryOverPercent.value = decoded.carryOverPercent;
-                        if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
-                        if (decoded.targetDate) targetDate.value = decoded.targetDate;
-                        if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
-                        if (decoded.currentAscendedCandles !== undefined) currentAscendedCandles.value = decoded.currentAscendedCandles;
-                        if (decoded.currentHearts !== undefined) currentHearts.value = decoded.currentHearts;
-                        if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
-                        if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
-                        if (decoded.dailyBonusArea !== undefined) dailyBonusArea.value = Number(decoded.dailyBonusArea) || 0;
-                        if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
-                        if (Array.isArray(decoded.myRoutes)) {
-                            myRoutes.value = decoded.myRoutes.map(r => ({ ...r, isExpanded: false, selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [], actualSeconds: Number(r.actualSeconds) || 0, generatedSpell: '' }));
-                        }
-                        if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
-                        showInlineMessage('🌟 URLからデータを復元しました！', 'success');
-                    }
-                } catch (e) {
-                    showInlineMessage('😢 URLのデータが正しくありません。', 'error');
-                }
-            };
-
             // 🪄 データの共有（全体の復活の呪文用）
             const generateSpell = () => {
                 try {
@@ -2334,7 +1904,6 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
                 applyThemeToDOM();
                 load();
-                checkUrlImport();
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
@@ -2369,8 +1938,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand,
                 getAreaMode, getSubMode,
-                shareModal, urlImportBanner, openShareModal, closeShareModal,
-                copyShareUrl, copySpell, nativeShare, applyUrlImport
+
             };
         }
     }).mount('#app');
