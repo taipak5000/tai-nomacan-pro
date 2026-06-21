@@ -521,6 +521,29 @@
                 <button class="btn btn-orange" @click="optimize">高効率エリアを自動選択</button>
             </div>
 
+            <!-- ══ プレイスタイル診断カード ══ -->
+            <div class="section-card" style="border:2px solid var(--accent-purple);background:linear-gradient(135deg,rgba(147,51,234,0.06) 0%,var(--card-bg) 60%);">
+                <div class="section-header" style="color:var(--accent-purple);">🌟 プレイスタイル診断</div>
+                <div style="font-size:12px;color:var(--text-gray);margin-bottom:12px;line-height:1.6;">
+                    あなたのプレイスタイルに合わせて、各エリアの<b>所要時間の初期値</b>を自動設定します。
+                </div>
+                <!-- 現在のレベル表示 -->
+                <div v-if="skillModal.lastLevel" style="display:flex;align-items:center;gap:12px;background:var(--bg-color);border-radius:12px;padding:12px 16px;margin-bottom:12px;border:1px solid var(--border-color);">
+                    <span style="font-size:32px;line-height:1;">{{ skillModal.lastLevel.label.split(' ')[0] }}</span>
+                    <div style="min-width:0;">
+                        <div style="font-size:15px;font-weight:bold;">{{ skillModal.lastLevel.label }}</div>
+                        <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">{{ skillModal.lastLevel.desc }}</div>
+                    </div>
+                </div>
+                <div v-else style="background:var(--bg-color);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-gray);text-align:center;border:1px dashed var(--border-color);">
+                    まだ診断していません。下のボタンから始めてください。
+                </div>
+                <button @click="openSkillModal(false)"
+                    style="width:100%;padding:13px;background:var(--accent-purple);color:white;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;letter-spacing:0.03em;">
+                    {{ skillModal.lastLevel ? '🔄 プレイスタイルを再診断する' : '▶ 診断スタート' }}
+                </button>
+            </div>
+
             <div v-if="visibleSections.spellShare" class="section-card">
                 <div class="section-header">🧙‍♂️ データの共有（復活の呪文）</div>
                 <div class="row" style="flex-direction: column; align-items: flex-start;">
@@ -854,6 +877,84 @@
         </span>
     </footer>
 
+    <!-- ════ 習熟度アンケートモーダル ════ -->
+    <div v-if="skillModal.show" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="!skillModal.isFirst && (skillModal.show=false)">
+        <div style="background:var(--card-bg);border-radius:16px;padding:0;max-width:460px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.35);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;">
+
+            <!-- ヘッダー -->
+            <div style="padding:20px 24px 0;position:sticky;top:0;background:var(--card-bg);z-index:1;border-radius:16px 16px 0 0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                    <div style="font-size:18px;font-weight:bold;">🌟 プレイスタイル診断</div>
+                    <button v-if="!skillModal.isFirst" @click="skillModal.show=false" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-gray);line-height:1;padding:0 4px;">×</button>
+                </div>
+                <div style="font-size:12px;color:var(--text-gray);margin-bottom:14px;">各質問にどのくらい当てはまるか選んでください。結果に応じて所要時間の初期値が設定されます。</div>
+                <hr style="border:none;border-top:1px solid var(--border-color);margin:0 -24px 0;">
+            </div>
+
+            <!-- 質問エリア -->
+            <div style="padding:16px 24px;display:flex;flex-direction:column;gap:20px;">
+
+                <!-- 共通ラベル説明 -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;font-size:10px;color:var(--text-gray);padding:0 0 0 0;">
+                    <div>まったく<br>当てはまらない</div>
+                    <div>あまり<br>当てはまらない</div>
+                    <div>やや<br>当てはまる</div>
+                    <div>とても<br>当てはまる</div>
+                </div>
+
+                <!-- Q1〜Q4 共通テンプレート -->
+                <div v-for="(q, qi) in skillModal.questions" :key="qi" style="background:var(--bg-color);border-radius:12px;padding:14px 16px;">
+                    <div style="font-size:13px;font-weight:bold;margin-bottom:12px;line-height:1.4;">
+                        <span style="color:var(--accent-blue);margin-right:6px;">Q{{ qi+1 }}</span>{{ q.label }}
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+                        <button v-for="opt in q.opts" :key="opt.v"
+                            @click="skillModal.answers[qi] = opt.v"
+                            style="padding:10px 4px;border-radius:8px;border:2px solid var(--border-color);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1.3;background:var(--card-bg);color:var(--text-color);"
+                            :style="skillModal.answers[qi]===opt.v ? {background:'var(--accent-blue)',color:'white',borderColor:'var(--accent-blue)',fontWeight:'bold'} : {}"
+                        >{{ opt.icon }}</button>
+                    </div>
+                </div>
+
+                <!-- スコアバー & 結果プレビュー -->
+                <div style="background:var(--bg-color);border-radius:12px;padding:14px 16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <span style="font-size:12px;color:var(--text-gray);">スコア</span>
+                        <span style="font-size:13px;font-weight:bold;">{{ skillModal.totalScore }} / 12点</span>
+                    </div>
+                    <!-- バー（4点以上で中級者ライン、視覚的に区切り） -->
+                    <div style="position:relative;background:var(--border-color);border-radius:99px;height:12px;margin-bottom:6px;overflow:hidden;">
+                        <div :style="{width:(skillModal.totalScore/12*100)+'%',background:'var(--accent-blue)',height:'100%',borderRadius:'99px',transition:'width 0.3s'}"></div>
+                    </div>
+                    <!-- ラベル目盛り -->
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-gray);margin-bottom:12px;">
+                        <span>0</span><span>〜3</span><span>〜6</span><span>〜9</span><span>10〜<br>倍率なし</span>
+                    </div>
+                    <!-- レベル表示 -->
+                    <div v-if="skillModal.allAnswered" style="text-align:center;padding:6px;background:var(--card-bg);border-radius:10px;">
+                        <div style="font-size:22px;margin-bottom:2px;">{{ skillModal.resultLabel }}</div>
+                        <div style="font-size:12px;color:var(--text-gray);">所要時間を <b style="color:var(--text-color);">{{ skillModal.resultDesc }}</b> で設定します</div>
+                    </div>
+                    <div v-else style="text-align:center;font-size:12px;color:var(--text-gray);">全問回答すると結果が表示されます</div>
+                </div>
+            </div>
+
+            <!-- フッターボタン -->
+            <div style="padding:0 24px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+                <button v-if="!skillModal.isFirst" @click="skillModal.show=false"
+                    style="background:var(--tab-bg);color:var(--text-color);border:none;padding:10px 18px;border-radius:8px;font-size:13px;cursor:pointer;">
+                    キャンセル
+                </button>
+                <button @click="applySkillLevel"
+                    :disabled="!skillModal.allAnswered"
+                    :style="skillModal.allAnswered ? {background:'var(--accent-blue)',opacity:'1',cursor:'pointer'} : {background:'var(--accent-blue)',opacity:'0.35',cursor:'not-allowed'}"
+                    style="color:white;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;">
+                    ✅ この設定で所要時間を設定する
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="areas-data.js"></script>
@@ -948,28 +1049,149 @@ const plannedUsage = ref(0);
 
             const uuid = () => crypto.randomUUID();
 
-            const getDefaultAreas = () => {
+            // ════════════════════════════════════════════════════
+            // 🌟 プレイスタイル診断 & 所要時間初期値設定
+            // ════════════════════════════════════════════════════
+
+            // ────────────────────────────────────────────────────
+            // 🌟 プレイスタイル診断
+            // スコア 0〜12点：高いほど熟練 → 倍率なし〜低い（速い）
+            // areas-data.js の time は「中級者（×1.0）」基準
+            // ────────────────────────────────────────────────────
+            const SKILL_LEVELS = [
+                { key: "beginner",     label: "🌱 はじめたて",   desc: "基準の2.5倍（ゆっくり設定）",   mult: 2.5  },
+                { key: "novice",       label: "🌿 なれてきた",   desc: "基準の2.0倍",                  mult: 2.0  },
+                { key: "intermediate", label: "⭐ 中級者",       desc: "基準の1.7倍",                  mult: 1.7  },
+                { key: "advanced",     label: "🌟 上級者",       desc: "基準の1.3倍",                  mult: 1.3  },
+                { key: "expert",       label: "💫 エキスパート", desc: "基準値そのまま（倍率なし）",   mult: 1.0  },
+            ];
+
+            // スコア（0〜12点）→ レベルインデックス
+            // 高得点ほど熟練 → mult が小さい（所要時間が短い）
+            const scoreToLevel = (score) => {
+                if (score >= 10) return 4; // 💫 エキスパート
+                if (score >= 7)  return 3; // 🌟 上級者
+                if (score >= 4)  return 2; // ⭐ 中級者（倍率なし）
+                if (score >= 2)  return 1; // 🌿 なれてきた
+                return 0;                  // 🌱 はじめたて
+            };
+
+            // 4段階の選択肢（全問共通ラベル・アイコン）
+            const SCALE_OPTS = [
+                { v: 0, icon: "😕\nまったく" },
+                { v: 1, icon: "🙁\nあまり" },
+                { v: 2, icon: "🙂\nやや" },
+                { v: 3, icon: "😄\nとても" },
+            ];
+
+            const skillModal = ref({
+                show: false,
+                isFirst: false,
+                lastLevel: null,
+                answers: [null, null, null, null],
+                questions: [
+                    { label: "プレイに自信がある" },
+                    { label: "おんぶロケットやテントを利用する" },
+                    { label: "リトル抜けなどグリッチを多用する" },
+                    { label: "ルートはある程度決まっている" },
+                ],
+                get totalScore() {
+                    return this.answers.reduce((s, v) => s + (v ?? 0), 0);
+                },
+                get allAnswered() {
+                    return this.answers.every(v => v !== null);
+                },
+                get _levelIdx() { return scoreToLevel(this.totalScore); },
+                get resultLabel() { return SKILL_LEVELS[this._levelIdx]?.label ?? ''; },
+                get resultDesc()  { return SKILL_LEVELS[this._levelIdx]?.desc  ?? ''; },
+                get lastLevel()  { return this.allAnswered ? SKILL_LEVELS[this._levelIdx] : null; },
+            });
+
+            // questionsにoptsを追加（リアクティブ外で定数として持つ）
+            skillModal.value.questions = skillModal.value.questions.map(q => ({ ...q, opts: SCALE_OPTS }));
+
+            const openSkillModal = (isFirst = false) => {
+                skillModal.value.isFirst = isFirst;
+                skillModal.value.answers = [null, null, null, null];
+                skillModal.value.show = true;
+            };
+
+            // 係数を適用してエリアの time を書き換える
+            const applyTimeMult = (mult) => {
+                areas.value.forEach(area => {
+                    if (!area) return;
+                    // メインエリアに直接timeがある場合
+                    if (typeof area.time === 'number' && area._baseTime != null) {
+                        area.time = Math.round(area._baseTime * mult);
+                    }
+                    if (!Array.isArray(area.subAreas)) return;
+                    area.subAreas.forEach(sub => {
+                        if (!sub) return;
+                        if (sub._baseTime != null) {
+                            sub.time = Math.round(sub._baseTime * mult);
+                        }
+                        if (Array.isArray(sub.spots)) {
+                            sub.spots.forEach(spot => {
+                                if (spot && spot._baseTime != null) {
+                                    spot.time = Math.round(spot._baseTime * mult);
+                                }
+                            });
+                        }
+                    });
+                });
+            };
+
+            const applySkillLevel = () => {
+                if (!skillModal.value.allAnswered) return;
+                const score = skillModal.value.totalScore;
+                const levelIdx = scoreToLevel(score);
+                const level = SKILL_LEVELS[levelIdx];
+                localStorage.setItem('sky_skill_answered', '1');
+                localStorage.setItem('sky_skill_level_key', level.key);
+                applyTimeMult(level.mult);
+                skillModal.value.lastLevel = level;
+                save();
+                skillModal.value.show = false;
+                const multStr = level.mult === 1.0 ? '倍率なし（基準値そのまま）' : `基準×${level.mult}`;
+                showInlineMessage(`${level.label} として所要時間を設定しました（${multStr}）`, 'success');
+            };
+
+            const getDefaultAreas = (timeMult = 1.0) => {
                 if (typeof SKY_DEFAULT_AREAS === 'undefined' || !Array.isArray(SKY_DEFAULT_AREAS)) return [];
                 return SKY_DEFAULT_AREAS.map(area => {
                     const subAreas = Array.isArray(area.subAreas) ? area.subAreas : [];
+                    const baseAreaTime = Number(area.time) || 0;
                     return {
                         id: uuid(),
                         name: area.name || "無題のエリア",
                         isExpanded: !!area.isExpanded,
+                        light: Number(area.light) || 0,
+                        time: Math.round(baseAreaTime * timeMult),
+                        _baseTime: baseAreaTime,
+                        isSelected: false,
                         subAreas: subAreas.map(sub => {
                             const spots = Array.isArray(sub.spots) ? sub.spots : [];
+                            const baseSubTime = Number(sub.time) || 0;
                             return {
                                 id: uuid(),
                                 name: sub.name || "無題のサブエリア",
                                 isExpanded: !!sub.isExpanded,
-                                spots: spots.map(spot => ({
-                                    id: uuid(),
-                                    name: spot.name || "無題のスポット",
-                                    light: Number(spot.light) || 0,
-                                    time: Number(spot.time) || 0,
-                                    isSelected: !!spot.isSelected,
-                                    group: spot.group || ""
-                                }))
+                                light: Number(sub.light) || 0,
+                                time: Math.round(baseSubTime * timeMult),
+                                _baseTime: baseSubTime,
+                                isSelected: false,
+                                spots: spots.map(spot => {
+                                    const baseSpotTime = Number(spot.time) || 0;
+                                    return {
+                                        id: uuid(),
+                                        name: spot.name || "無題のスポット",
+                                        light: Number(spot.light) || 0,
+                                        time: Math.round(baseSpotTime * timeMult),
+                                        _baseTime: baseSpotTime,
+                                        isSelected: !!spot.isSelected,
+                                        group: spot.group || ""
+                                    };
+                                })
                             };
                         })
                     };
@@ -977,7 +1199,8 @@ const plannedUsage = ref(0);
             };
 
             const loadInitialData = () => {
-                areas.value = getDefaultAreas();
+                // 初回は time=0（未設定）でロード → アンケート後に applyTimeMult で書き込む
+                areas.value = getDefaultAreas(0);
                 if (areas.value.length === 0) {
                     areas.value = [{
                         id: uuid(),
@@ -1115,7 +1338,37 @@ currentHearts: currentHearts.value,
                     if (saved) {
                         const decoded = JSON.parse(saved);
                         if (decoded && Array.isArray(decoded.areas)) {
-                            areas.value = decoded.areas;
+                            // _baseTimeをSKY_DEFAULT_ARESから復元（再設定ボタンのために必要）
+                            const baseMap = {};
+                            if (typeof SKY_DEFAULT_AREAS !== 'undefined' && Array.isArray(SKY_DEFAULT_AREAS)) {
+                                SKY_DEFAULT_AREAS.forEach(a => {
+                                    baseMap[a.name] = { time: Number(a.time) || 0, subs: {} };
+                                    (a.subAreas || []).forEach(s => {
+                                        baseMap[a.name].subs[s.name] = { time: Number(s.time) || 0, spots: {} };
+                                        (s.spots || []).forEach(sp => {
+                                            baseMap[a.name].subs[s.name].spots[sp.name] = Number(sp.time) || 0;
+                                        });
+                                    });
+                                });
+                            }
+                            areas.value = decoded.areas.map(area => {
+                                const baseArea = baseMap[area.name];
+                                return {
+                                    ...area,
+                                    _baseTime: baseArea?.time ?? (area._baseTime ?? Number(area.time) ?? 0),
+                                    subAreas: (area.subAreas || []).map(sub => {
+                                        const baseSub = baseArea?.subs[sub.name];
+                                        return {
+                                            ...sub,
+                                            _baseTime: baseSub?.time ?? (sub._baseTime ?? Number(sub.time) ?? 0),
+                                            spots: (sub.spots || []).map(spot => ({
+                                                ...spot,
+                                                _baseTime: baseSub?.spots[spot.name] ?? (spot._baseTime ?? Number(spot.time) ?? 0)
+                                            }))
+                                        };
+                                    })
+                                };
+                            });
                             placedItems.value = Array.isArray(decoded.placedItems) ? decoded.placedItems : [];
                             carryOverPercent.value = decoded.carryOverPercent || 0;
                             candleMemo.value = decoded.candleMemo || "";
@@ -1147,6 +1400,10 @@ currentHearts: currentHearts.value,
                 
                 localStorage.removeItem('sky_tracker_storage_v3');
                 loadInitialData();
+                // 初回のみアンケートを表示（localStorage未回答フラグで判定）
+                if (!localStorage.getItem('sky_skill_answered')) {
+                    setTimeout(() => openSkillModal(true), 300);
+                }
             };
 
             const eventDays = computed(() => {
@@ -1904,6 +2161,11 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
                 applyThemeToDOM();
                 load();
+                // 前回の診断結果を復元
+                const savedLevelKey = localStorage.getItem('sky_skill_level_key');
+                if (savedLevelKey) {
+                    skillModal.value.lastLevel = SKILL_LEVELS.find(l => l.key === savedLevelKey) || null;
+                }
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
@@ -1931,6 +2193,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, getMainAreaSelectedCount, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
+                skillModal, openSkillModal, applySkillLevel,
                 generateRouteSpell, applyRouteSpell,
                 addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot,
                 handleSpotChange,
