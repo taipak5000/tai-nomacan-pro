@@ -11,7 +11,7 @@ const SKY_DEFAULT_AREAS = [
                 // 花鳥郷：密集しているが数が多い。徒歩移動多め
                 name: "花鳥郷",
                 isExpanded: false,
-                time: 300,
+                time: 60,
                 spots: [
                     { name: "カフェ入り口",           light: 3,   time: 0, isSelected: false },
                     { name: "シェアメモ付近",          light: 3,   time: 0, isSelected: false },
@@ -29,7 +29,7 @@ const SKY_DEFAULT_AREAS = [
                 // 旧ホーム：祠前がまとまっている
                 name: "旧ホーム",
                 isExpanded: false,
-                time: 120,
+                time: 30,
                 spots: [
                     { name: "池付近",       light: 6, time: 0, isSelected: false },
                     { name: "祠前・持ち物", light: 4, time: 0, isSelected: false },
@@ -43,7 +43,7 @@ const SKY_DEFAULT_AREAS = [
                 // アリスカフェ：コラボエリア、内部巡回あり
                 name: "アリスカフェ",
                 isExpanded: false,
-                time: 480,
+                time: 296,
                 spots: [
                     { name: "暖炉付近・赤キャンドル1本",   light: 5,   time: 0, isSelected: false },
                     { name: "ソファ横・１本",              light: 5,   time: 0, isSelected: false },
@@ -62,7 +62,7 @@ const SKY_DEFAULT_AREAS = [
                 // カーニバル：ボート系でやや移動
                 name: "カーニバルエリア",
                 isExpanded: false,
-                time: 180,
+                time: 110,
                 spots: [
                     { name: "大キャンドル3つ",        light: 150, time: 0, isSelected: false },
                     { name: "小型ボートキャンドル１本", light: 1,   time: 0, isSelected: false },
