@@ -492,6 +492,16 @@
     <div>使用予定数:</div>
     <input type="number" v-model.number="plannedUsage">
 </div>
+                <div class="row" style="align-items:flex-start; flex-wrap:wrap; gap:4px;">
+                    <div style="white-space:nowrap;">💛 毎日送るハート数:</div>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <input type="number" v-model.number="heartsToSend" min="0" style="width:70px;">
+                        <span v-if="heartsToSend > 0" style="font-size:12px; color:var(--text-gray); white-space:nowrap;">
+                            = 1日 <b style="color:var(--accent-orange);">-{{ dailyHeartCost }}本</b>
+                            <span v-if="eventDays > 0">／ {{ eventDays }}日間で <b style="color:var(--accent-red);">-{{ dailyHeartCost * eventDays }}本</b></span>
+                        </span>
+                    </div>
+                </div>
                 <div class="row">
                     <div>イベント終了日:</div>
                     <input type="date" v-model="targetDate" style="width: 130px; text-align: left;">
@@ -1036,6 +1046,7 @@
 const currentAscendedCandles = ref(0); // 💡 追加
 const currentHearts = ref(0);         // 💡 追加
 const plannedUsage = ref(0);
+            const heartsToSend = ref(0);
             const targetCandlesForOptimization = ref(20);
             const isWideScreen = ref(window.innerWidth >= 850);
 
@@ -1221,7 +1232,7 @@ currentCandles.value = 0;
 currentAscendedCandles.value = 0; // 💡 追加
 currentHearts.value = 0;         // 💡 追加
 plannedUsage.value = 0;
-                targetCandlesForOptimization.value = 20;
+                heartsToSend.value = 0;
                 dailyBonusArea.value = 0;
                 dailyShard.value = "none";
             };
@@ -1233,6 +1244,7 @@ plannedUsage.value = 0;
                         stopAnyActiveTimer();
                         currentCandles.value = 0;
                         plannedUsage.value = 0;
+                        heartsToSend.value = 0;
                         carryOverPercent.value = 0;
                         dailyBonusArea.value = 0;
                         dailyShard.value = "none";
@@ -1317,6 +1329,7 @@ plannedUsage.value = 0;
                         currentCandles: currentCandles.value,currentAscendedCandles: currentAscendedCandles.value, // 💡 追加
 currentHearts: currentHearts.value,
                         plannedUsage: plannedUsage.value,
+                        heartsToSend: heartsToSend.value,
                         targetCandlesForOptimization: targetCandlesForOptimization.value,
                         candleMemo: candleMemo.value,
                         dailyBonusArea: dailyBonusArea.value, 
@@ -1377,6 +1390,7 @@ currentHearts: currentHearts.value,
                             currentAscendedCandles.value = Number(decoded.currentAscendedCandles) || 0;
                             currentHearts.value = Number(decoded.currentHearts) || 0;
                             plannedUsage.value = Number(decoded.plannedUsage) || 0;
+                            heartsToSend.value = Number(decoded.heartsToSend) || 0;
                             targetCandlesForOptimization.value = Number(decoded.targetCandlesForOptimization) || 20;
                             dailyBonusArea.value = Number(decoded.dailyBonusArea) || 0;
                             dailyShard.value = decoded.dailyShard || "none";
@@ -1515,7 +1529,13 @@ currentHearts: currentHearts.value,
                 return { candles, nextReq: 0 };
             });
 
-            const projectedCandles = computed(() => currentCandles.value + (calculated.value.candles * eventDays.value) - plannedUsage.value);
+            const dailyHeartCost = computed(() => (heartsToSend.value || 0) * 3);
+            const projectedCandles = computed(() =>
+                currentCandles.value
+                + (calculated.value.candles * eventDays.value)
+                - plannedUsage.value
+                - (dailyHeartCost.value * eventDays.value)
+            );
 
             const isAllSubSelected = (subArea) => {
                 const sMode = getSubMode(subArea);
@@ -1857,7 +1877,7 @@ currentHearts: currentHearts.value,
                 try {
                     stopAnyActiveTimer();
                     const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, currentAscendedCandles: currentAscendedCandles.value, // 💡 追加
-currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
+currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
                     const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
                     for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
@@ -2178,6 +2198,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
             watch(currentAscendedCandles, () => { save(); });
             watch(currentHearts, () => { save(); });
             watch(plannedUsage, () => { save(); });
+            watch(heartsToSend, () => { save(); });
             watch(targetCandlesForOptimization, () => { save(); });
             watch(candleMemo, () => { save(); });
             watch(dailyBonusArea, () => { save(); });
@@ -2192,6 +2213,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, targetCandl
                 showSettings, myRoutes, visibleSections, routeError,
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
+                heartsToSend, dailyHeartCost,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, getMainAreaSelectedCount, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 skillModal, openSkillModal, applySkillLevel,
                 generateRouteSpell, applyRouteSpell,
