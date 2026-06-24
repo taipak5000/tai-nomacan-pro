@@ -368,6 +368,128 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        /* ═══ サイドバーレイアウト ═══ */
+        .app-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 16px;
+            display: none;
+        }
+
+        @media (min-width: 850px) {
+            .sidebar {
+                display: block;
+            }
+        }
+
+        /* モバイル時のオーバーレイ表示 */
+        .sidebar.sidebar-open {
+            display: flex !important;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 240px;
+            z-index: 500;
+            overflow-y: auto;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 499;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar-section-label {
+            font-size: 11px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background 0.15s;
+            margin-bottom: 2px;
+            background: transparent;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .sidebar-nav-link:hover {
+            background: var(--tab-bg);
+            text-decoration: none;
+        }
+
+        .sidebar-nav-link.current-tool {
+            background: rgba(0, 122, 255, 0.1);
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        [data-theme="dark"] .sidebar-nav-link.current-tool {
+            background: rgba(0, 122, 255, 0.18);
+        }
+
+        .sidebar-toggle-btn {
+            background: var(--stat-box-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .sidebar-close-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--text-gray);
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 850px) {
+            .sidebar-toggle-btn { display: none; }
+            .sidebar-close-btn  { display: none; }
+        }
+
     </style>
 </head>
 <body>
@@ -382,17 +504,41 @@
         </button>
 
         <div class="header-actions">
-            <a href="companion.html" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color); margin-right: 4px;">
-                ✨ 精霊同行 ↗
-            </a>
-            <a href="share.html" target="_blank" class="btn-outline-blue" style="background: var(--bg-color); border-color: var(--border-color); color: var(--text-color);">
-                📍 創作物管理 ↗
-            </a>
+            <button class="sidebar-toggle-btn" @click="showSidebar = !showSidebar">
+                ☰ ツール
+            </button>
             <button class="btn-outline-blue" @click="showSettings = !showSettings">
                 ⚙️ 表示設定
             </button>
         </div>
     </header>
+
+    <!-- サイドバーオーバーレイ（モバイル） -->
+    <div v-if="showSidebar" class="sidebar-overlay" @click="showSidebar = false"></div>
+
+    <div class="app-layout">
+
+        <!-- ═══ サイドバー ═══ -->
+        <aside class="sidebar section-card" :class="{ 'sidebar-open': showSidebar }">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <div class="sidebar-section-label" style="margin-bottom: 0;">🔗 関連ツール</div>
+                <button class="sidebar-close-btn" @click="showSidebar = false">×</button>
+            </div>
+            <nav>
+                <a href="index.html" class="sidebar-nav-link current-tool">
+                    🕯️ キャンドル計算機
+                </a>
+                <a href="companion.html" class="sidebar-nav-link">
+                    ✨ 精霊同行ツール
+                </a>
+                <a href="share.html" class="sidebar-nav-link">
+                    📍 創作物管理ツール
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ═══ メインコンテンツ ═══ -->
+        <div class="main-content">
 
     <div v-if="showSettings" class="section-card settings-panel">
         <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">⚙️ 各窓の表示・非表示設定</div>
@@ -853,6 +999,9 @@
         </div>
     </div>
 
+        </div> <!-- /.main-content -->
+    </div> <!-- /.app-layout -->
+
     
     <!-- ═══ QR・URL共有モーダル ═══ -->
 
@@ -875,11 +1024,8 @@
     </div>
 
     <footer>
- © 2026 Sky キャンドル計算機 | 関連ツール: 
-        <a href="companion.html" style="font-weight: bold;">✨ 精霊同行ツール</a> | 
-        <a href="share.html" style="font-weight: bold;">📍 創作物管理ツール</a>
-        <br>作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
-
+        © 2026 Sky キャンドル計算機<br>
+        作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
         <span style="color: var(--text-gray); font-size: 12px; margin-top: 4px; display: inline-block;">
             参考文献: 
             <a href="https://sky-children-of-the-light.fandom.com/wiki/Pieces_of_Light" target="_blank" rel="noopener noreferrer">Pieces of Light (Sky Wiki)</a> | 
@@ -999,6 +1145,7 @@
             const candleMemo = ref("");
 
             const showSettings = ref(false);
+            const showSidebar = ref(false);
             const myRoutes = ref([]);
             const routeError = ref(""); 
             const visibleSections = ref({
@@ -2210,7 +2357,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 routeInputSpell, routeSpellMessage, routeSpellMessageType,
                 confirmModal, executeConfirm,
-                showSettings, myRoutes, visibleSections, routeError,
+                showSettings, showSidebar, myRoutes, visibleSections, routeError,
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 heartsToSend, dailyHeartCost,
