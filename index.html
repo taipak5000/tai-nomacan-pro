@@ -570,7 +570,7 @@
             <div class="section-card">
                 <div class="section-header">今日の精錬状況</div>
                 
-                <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                         <span style="font-weight: 500;">📅 本日の大キャンドル群:</span>
                         <select v-model.number="dailyBonusArea" style="width: 130px; padding: 4px 6px; font-size: 12px;">
@@ -581,12 +581,28 @@
                             <option :value="4">4個 (+200)</option>
                         </select>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                        <span style="font-weight: 500;">🌋 本日の闇の破片（黒）:</span>
-                        <select v-model="dailyShard" style="width: 130px; padding: 4px 6px; font-size: 12px;">
-                            <option value="none">なし</option>
-                            <option value="black">あり (+200)</option>
-                        </select>
+                </div>
+
+                <div style="background: var(--stat-box-bg); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-weight: 600; font-size: 16px;">🌋 本日の闇の破片（黒）</span>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:15px; font-weight:600;">
+                            <input type="checkbox" v-model="dailyShard" true-value="black" false-value="none" style="width:24px;height:24px;">
+                            <span :style="{ color: dailyShard === 'black' ? 'var(--accent-green)' : 'var(--text-gray)' }">{{ dailyShard === 'black' ? 'あり (+200)' : 'なし' }}</span>
+                        </label>
+                    </div>
+                    <div v-if="shardPrediction" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                            <span style="font-size:13px; color:var(--text-gray); font-weight:500;">🔮 黒シャード予測（{{ shardPrediction.realm }}・JST）</span>
+                            <span @click="syncDailyShardWithPrediction(true)" style="font-size:12px; color:var(--accent-blue); cursor:pointer; font-weight:600; white-space:nowrap;">🔄予測に合わせる</span>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <span v-for="(t, tIdx) in shardPrediction.times" :key="tIdx"
+                                  style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-size: 15px; font-weight: 700;">
+                                {{ t }}
+                            </span>
+                        </div>
+                        <div style="font-size:12px; color:var(--text-gray); margin-top:8px;">※受取はその日の初回のみ</div>
                     </div>
                 </div>
 
@@ -628,10 +644,6 @@
                 <div class="row">
     <div>所持キャンドル数:</div>
     <input type="number" v-model.number="currentCandles">
-</div>
-<div class="row">
-    <div>所持星キャンドル数:</div>
-    <input type="number" v-model.number="currentAscendedCandles">
 </div>
 <div class="row">
     <div>所持ハート数:</div>
@@ -1206,7 +1218,6 @@
             const targetDate = ref(defaultTarget.toISOString().split('T')[0]);
 
             const currentCandles = ref(0);
-const currentAscendedCandles = ref(0); // 💡 追加
 const currentHearts = ref(0);         // 💡 追加
 const plannedUsage = ref(0);
             const heartsToSend = ref(0);
@@ -1224,6 +1235,179 @@ const plannedUsage = ref(0);
 
             const dailyBonusArea = ref(0);
             const dailyShard = ref("none");
+
+            // ────────────────────────────────────────────────────
+            // 🌋 闇の破片(黒)の自動判定（非公式のコミュニティ観測ルールに基づく推測）
+            // ・レルムは5日周期、時刻と色は12日周期、いずれも毎月1日が起点
+            // ・時刻はSkyのサーバー基準とされる米国太平洋時間(PT)で判定する
+            // ・あくまで推測なので、自動セット後もチェックボックスは手動で変更できる
+            // ────────────────────────────────────────────────────
+            const SHARD_REALMS = ["草原", "雨林", "峡谷", "捨て地", "書庫"];
+            const SHARD_TIME_PATTERN = [
+                { time: "7:40", color: "red"   },
+                { time: "2:10", color: "black" },
+                { time: "2:20", color: "red"   },
+                { time: "1:50", color: "black" },
+                { time: "3:30", color: "red"   },
+                { time: "2:10", color: "black" },
+                { time: "7:40", color: "red"   },
+                { time: "1:50", color: "black" },
+                { time: "2:20", color: "red"   },
+                { time: "2:10", color: "black" },
+                { time: "3:30", color: "red"   },
+                { time: "1:50", color: "black" }
+            ];
+            const SHARD_REST_DAYS = {
+                "1:50": ["Sat", "Sun"],
+                "2:10": ["Sun", "Mon"],
+                "7:40": ["Mon", "Tue"],
+                "2:20": ["Tue", "Wed"],
+                "3:30": ["Wed", "Thu"]
+            };
+
+            const getPacificDateParts = () => {
+                const now = new Date();
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'America/Los_Angeles',
+                    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short'
+                }).formatToParts(now);
+                const get = (type) => parts.find(p => p.type === type)?.value;
+                return {
+                    day: parseInt(get('day'), 10),
+                    weekday: get('weekday'),
+                    dateKey: `${get('year')}-${get('month')}-${get('day')}`
+                };
+            };
+
+            const predictTodayShard = () => {
+                try {
+                    const { day, weekday } = getPacificDateParts();
+                    const realm = SHARD_REALMS[(day - 1) % 5];
+                    const pattern = SHARD_TIME_PATTERN[(day - 1) % 12];
+                    const restDays = SHARD_REST_DAYS[pattern.time] || [];
+                    const occurs = !restDays.includes(weekday);
+                    return { realm, time: pattern.time, color: pattern.color, occurs };
+                } catch (e) {
+                    console.error("Shard prediction error:", e);
+                    return null;
+                }
+            };
+
+            // ────────────────────────────────────────────────────
+            // 🔮 キャプション表示用：今日 or 次回の黒シャードをJST換算で表示する
+            // チェックボックス自体の自動判定(predictTodayShard/syncDailyShardWithPrediction)は
+            // 従来どおりPTの「今日」基準のまま変更しない。ここは表示専用の追加ロジック。
+            // ────────────────────────────────────────────────────
+            const SHARD_WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const SHARD_JP_WEEKDAY = ["日", "月", "火", "水", "木", "金", "土"];
+
+            // 指定したPT暦日のn日後を計算（正午UTC基準で加算するのでDSTの影響を受けない）
+            const addDaysToPacificDate = (year, month, day, n) => {
+                const d = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+                d.setUTCDate(d.getUTCDate() + n);
+                return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(), weekday: SHARD_WEEKDAY_NAMES[d.getUTCDay()] };
+            };
+
+            const getPacificNow = () => {
+                const now = new Date();
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'America/Los_Angeles',
+                    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short'
+                }).formatToParts(now);
+                const get = (t) => parts.find(p => p.type === t)?.value;
+                return { year: parseInt(get('year'), 10), month: parseInt(get('month'), 10), day: parseInt(get('day'), 10), weekday: get('weekday') };
+            };
+
+            const getJstNow = () => {
+                const now = new Date();
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Tokyo', year: 'numeric', month: 'numeric', day: 'numeric'
+                }).formatToParts(now);
+                const get = (t) => parts.find(p => p.type === t)?.value;
+                return { year: parseInt(get('year'), 10), month: parseInt(get('month'), 10), day: parseInt(get('day'), 10) };
+            };
+
+            const predictShardForPacificDate = (year, month, day, weekday) => {
+                const realm = SHARD_REALMS[(day - 1) % 5];
+                const pattern = SHARD_TIME_PATTERN[(day - 1) % 12];
+                const restDays = SHARD_REST_DAYS[pattern.time] || [];
+                return { year, month, day, weekday, realm, time: pattern.time, color: pattern.color, occurs: !restDays.includes(weekday) };
+            };
+
+            // 今日(PT)から最大31日先まで探索し、最初に見つかる「発生する黒シャード」の日を返す
+            const findTodayOrNextBlackShard = () => {
+                try {
+                    let cursor = getPacificNow();
+                    for (let i = 0; i <= 31; i++) {
+                        const pred = predictShardForPacificDate(cursor.year, cursor.month, cursor.day, cursor.weekday);
+                        if (pred.occurs && pred.color === 'black') return pred;
+                        cursor = addDaysToPacificDate(cursor.year, cursor.month, cursor.day, 1);
+                    }
+                    return null;
+                } catch (e) {
+                    console.error("Shard lookahead error:", e);
+                    return null;
+                }
+            };
+
+            // PTの暦日+時刻(壁時計)に対応するUTCミリ秒を求める（DSTを自動考慮／外部ライブラリ不要）
+            const pacificWallClockToUtcMs = (year, month, day, hour, minute) => {
+                let guessMs = Date.UTC(year, month - 1, day, hour + 8, minute, 0); // 初期推定 PST(-8)
+                for (let i = 0; i < 4; i++) {
+                    const parts = new Intl.DateTimeFormat('en-US', {
+                        timeZone: 'America/Los_Angeles',
+                        year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false
+                    }).formatToParts(new Date(guessMs));
+                    const get = (t) => parseInt(parts.find(p => p.type === t)?.value, 10);
+                    let gotHour = get('hour'); if (gotHour === 24) gotHour = 0;
+                    const gotMs = Date.UTC(get('year'), get('month') - 1, get('day'), gotHour, get('minute'), 0);
+                    const wantMs = Date.UTC(year, month - 1, day, hour, minute, 0);
+                    const diff = wantMs - gotMs;
+                    if (diff === 0) break;
+                    guessMs += diff;
+                }
+                return guessMs;
+            };
+
+            const SHARD_BLACK_REPEAT_HOURS = 8; // 黒シャードは初回発生から同日中8時間おきに再発生（受取は初回のみ）
+
+            // 指定したPT日付+基準時刻から、8時間おきに繰り返す発生時刻をJSTでcount回分求める
+            const getBlackShardOccurrencesInJst = (year, month, day, baseTimeStr, count) => {
+                const [h, min] = baseTimeStr.split(':').map(Number);
+                const baseUtcMs = pacificWallClockToUtcMs(year, month, day, h, min);
+                const nowJst = getJstNow();
+                const todayJstMs = Date.UTC(nowJst.year, nowJst.month - 1, nowJst.day);
+                const results = [];
+                for (let i = 0; i < count; i++) {
+                    const utcMs = baseUtcMs + i * SHARD_BLACK_REPEAT_HOURS * 3600 * 1000;
+                    const jst = new Date(utcMs + 9 * 3600 * 1000);
+                    const y = jst.getUTCFullYear(), m = jst.getUTCMonth() + 1, d = jst.getUTCDate();
+                    const timeLabel = `${jst.getUTCHours()}:${String(jst.getUTCMinutes()).padStart(2, '0')}`;
+                    const dayDiff = Math.round((Date.UTC(y, m - 1, d) - todayJstMs) / 86400000);
+                    let dayLabel;
+                    if (dayDiff === 0) dayLabel = "本日";
+                    else if (dayDiff === 1) dayLabel = "明日";
+                    else dayLabel = `${m}/${d}(${SHARD_JP_WEEKDAY[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]})`;
+                    results.push(`${dayLabel} ${timeLabel}`);
+                }
+                return results;
+            };
+
+            const shardPrediction = computed(() => {
+                const hit = findTodayOrNextBlackShard();
+                if (!hit) return null;
+                return { realm: hit.realm, times: getBlackShardOccurrencesInJst(hit.year, hit.month, hit.day, hit.time, 3) };
+            });
+
+            // force=false: 同じPT日付内では手動変更を尊重して上書きしない
+            // force=true : 各種リセット操作時など、予測値へ必ず合わせ直す
+            const syncDailyShardWithPrediction = (force = false) => {
+                const { dateKey } = getPacificDateParts();
+                if (!force && localStorage.getItem('sky_shard_sync_date') === dateKey) return;
+                const p = predictTodayShard();
+                dailyShard.value = (p && p.occurs && p.color === 'black') ? 'black' : 'none';
+                localStorage.setItem('sky_shard_sync_date', dateKey);
+            };
 
             const uuid = () => crypto.randomUUID();
 
@@ -1439,12 +1623,11 @@ const plannedUsage = ref(0);
                 carryOverPercent.value = 0;
                 candleMemo.value = "";
 currentCandles.value = 0;
-currentAscendedCandles.value = 0; // 💡 追加
 currentHearts.value = 0;         // 💡 追加
 plannedUsage.value = 0;
                 heartsToSend.value = 0;
                 dailyBonusArea.value = 0;
-                dailyShard.value = "none";
+                syncDailyShardWithPrediction(true);
             };
 
             const resetCalculatorData = () => {
@@ -1457,7 +1640,7 @@ plannedUsage.value = 0;
                         heartsToSend.value = 0;
                         carryOverPercent.value = 0;
                         dailyBonusArea.value = 0;
-                        dailyShard.value = "none";
+                        syncDailyShardWithPrediction(true);
                         candleMemo.value = "";
                         
                         if (Array.isArray(areas.value)) {
@@ -1536,7 +1719,7 @@ plannedUsage.value = 0;
                         placedItems: placedItems.value, 
                         carryOverPercent: carryOverPercent.value,
                         targetDate: targetDate.value,
-                        currentCandles: currentCandles.value,currentAscendedCandles: currentAscendedCandles.value, // 💡 追加
+                        currentCandles: currentCandles.value,
 currentHearts: currentHearts.value,
                         plannedUsage: plannedUsage.value,
                         heartsToSend: heartsToSend.value,
@@ -1597,7 +1780,6 @@ currentHearts: currentHearts.value,
                             candleMemo.value = decoded.candleMemo || "";
                             if (decoded.targetDate) targetDate.value = decoded.targetDate;
                             currentCandles.value = Number(decoded.currentCandles) || 0;
-                            currentAscendedCandles.value = Number(decoded.currentAscendedCandles) || 0;
                             currentHearts.value = Number(decoded.currentHearts) || 0;
                             plannedUsage.value = Number(decoded.plannedUsage) || 0;
                             heartsToSend.value = Number(decoded.heartsToSend) || 0;
@@ -2097,7 +2279,7 @@ currentHearts: currentHearts.value,
             const generateSpell = () => {
                 try {
                     stopAnyActiveTimer();
-                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value, currentAscendedCandles: currentAscendedCandles.value, // 💡 追加
+                    const dataToSave = { areas: areas.value, placedItems: placedItems.value, carryOverPercent: carryOverPercent.value, targetDate: targetDate.value, currentCandles: currentCandles.value,
 currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandlesForOptimization: targetCandlesForOptimization.value, candleMemo: candleMemo.value, myRoutes: myRoutes.value, visibleSections: visibleSections.value, dailyBonusArea: dailyBonusArea.value, dailyShard: dailyShard.value };
                     const uint8array = new TextEncoder().encode(JSON.stringify(dataToSave));
                     let binString = "";
@@ -2126,7 +2308,6 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                     if (decoded.candleMemo !== undefined) candleMemo.value = decoded.candleMemo;
                     if (decoded.targetDate) targetDate.value = decoded.targetDate;
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
-                    if (decoded.currentAscendedCandles !== undefined) currentAscendedCandles.value = decoded.currentAscendedCandles;
                     if (decoded.currentHearts !== undefined) currentHearts.value = decoded.currentHearts;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
@@ -2287,7 +2468,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                 }
                 currentCandles.value += res.candles;
                 carryOverPercent.value = Math.min(99, Math.max(0, leftoverPercent * 100));
-                dailyBonusArea.value = 0; dailyShard.value = "none";
+                dailyBonusArea.value = 0; syncDailyShardWithPrediction(true);
 
                 if (Array.isArray(areas.value)) {
                     areas.value.forEach(area => {
@@ -2413,6 +2594,8 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                 if (savedMult !== null && !isNaN(parseFloat(savedMult))) {
                     currentTimeMult.value = parseFloat(savedMult);
                 }
+                // 🌋 闇の破片(黒)を本日分まだ自動判定していなければ予測値を反映
+                syncDailyShardWithPrediction(false);
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
 
@@ -2422,7 +2605,6 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
             watch(carryOverPercent, () => { save(); });
             watch(targetDate, () => { save(); });
             watch(currentCandles, () => { save(); });
-            watch(currentAscendedCandles, () => { save(); });
             watch(currentHearts, () => { save(); });
             watch(plannedUsage, () => { save(); });
             watch(heartsToSend, () => { save(); });
@@ -2433,12 +2615,12 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
 
             return {
                 isDarkMode, toggleTheme,
-                areas, carryOverPercent, targetDate, eventDays, currentCandles, currentAscendedCandles, currentHearts, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
+                areas, carryOverPercent, targetDate, eventDays, currentCandles, currentHearts, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 routeInputSpell, routeSpellMessage, routeSpellMessageType,
                 confirmModal, executeConfirm,
                 showSettings, showSidebar, myRoutes, visibleSections, routeError, routeHintMessage,
-                dailyBonusArea, dailyShard, 
+                dailyBonusArea, dailyShard, shardPrediction, syncDailyShardWithPrediction,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 heartsToSend, dailyHeartCost,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, getMainAreaSelectedCount, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
