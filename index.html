@@ -692,6 +692,9 @@
                     <div style="min-width:0;">
                         <div style="font-size:15px;font-weight:bold;">{{ skillModal.lastLevel.label }}</div>
                         <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">{{ skillModal.lastLevel.desc }}</div>
+                        <div v-if="Math.abs(currentTimeMult - skillModal.lastLevel.mult) > 0.02" style="font-size:11px;color:var(--accent-green);margin-top:4px;font-weight:bold;">
+                            🎯 実測データにより現在 ×{{ currentTimeMult.toFixed(2) }} に補正済み
+                        </div>
                     </div>
                 </div>
                 <div v-else style="background:var(--bg-color);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-gray);text-align:center;border:1px dashed var(--border-color);">
@@ -756,6 +759,9 @@
                 <div v-if="routeError" class="inline-alert inline-alert-error" style="margin-top:0; margin-bottom:16px; text-align: center;">
                     {{ routeError }}
                 </div>
+                <div v-if="routeHintMessage" class="inline-alert inline-alert-success" style="margin-top:0; margin-bottom:16px; text-align: center;">
+                    {{ routeHintMessage }}
+                </div>
                 
                 <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px; line-height: 1.5;">
                     保存されたルートはありません。<br>下のエリア管理でスポットのチェックを入れて、お気に入りルートを保存してみましょう！
@@ -781,7 +787,13 @@
                     <div class="route-path-box" :title="getRouteAreaNames(route)">
                         🗺️ 経由: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
                     </div>
-                    
+
+                    <div v-if="!route.isExpanded && (route.actualSeconds || 0) === 0"
+                         @click="toggleRouteExpand(route)"
+                         style="font-size:11px;color:var(--accent-orange);margin-top:6px;cursor:pointer;font-weight:500;">
+                        💡 未計測 - タップして1回計測すると精度が上がります
+                    </div>
+
                     <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
                         <div class="timer-box">
                             <div style="font-size: 12px; font-weight: bold; color: var(--text-gray); display: flex; justify-content: space-between; align-items: center;">
@@ -1151,6 +1163,7 @@
             const showSidebar = ref(false);
             const myRoutes = ref([]);
             const routeError = ref(""); 
+            const routeHintMessage = ref(""); // 💡 実測を促す・補正結果を知らせるヒント表示
             const visibleSections = ref({
                 candleManage: true,
                 optimization: true,
@@ -1205,6 +1218,10 @@ const plannedUsage = ref(0);
             let timerId = null;
             let startTime = 0; 
 
+            // 🎯 実測タイマーによる自動補正で使う「現在の実効係数」
+            // 体感アンケートの値からスタートし、マイルートの実測結果で少しずつ補正される
+            const currentTimeMult = ref(1.7);
+
             const dailyBonusArea = ref(0);
             const dailyShard = ref("none");
 
@@ -1217,7 +1234,7 @@ const plannedUsage = ref(0);
             // ────────────────────────────────────────────────────
             // 🌟 プレイスタイル診断
             // スコア 0〜12点：高いほど熟練 → 倍率なし〜低い（速い）
-            // areas-data.js の time は「中級者（×1.0）」基準
+            // areas-data.js の time は「エキスパート（×1.0・倍率なし）」が基準
             // ────────────────────────────────────────────────────
             const SKILL_LEVELS = [
                 { key: "beginner",     label: "🌱 はじめたて",   desc: "基準の2.5倍（ゆっくり設定）",   mult: 2.5  },
@@ -1309,12 +1326,55 @@ const plannedUsage = ref(0);
                 const level = SKILL_LEVELS[levelIdx];
                 localStorage.setItem('sky_skill_answered', '1');
                 localStorage.setItem('sky_skill_level_key', level.key);
-                applyTimeMult(level.mult);
+                currentTimeMult.value = level.mult;
+                localStorage.setItem('sky_current_time_mult', String(level.mult));
+                applyTimeMult(currentTimeMult.value);
                 skillModal.value.lastLevel = level;
                 save();
                 skillModal.value.show = false;
                 const multStr = level.mult === 1.0 ? '倍率なし（基準値そのまま）' : `基準×${level.mult}`;
                 showInlineMessage(`${level.label} として所要時間を設定しました（${multStr}）`, 'success');
+            };
+
+            const showRouteHint = (msg) => {
+                routeHintMessage.value = msg;
+                setTimeout(() => { routeHintMessage.value = ""; }, 6000);
+            };
+
+            // ────────────────────────────────────────────────────
+            // 🎯 実測タイマー → 見積り時間への自動補正ループ
+            // ・マイルートの実測(actualSeconds)と、その時点の見積り(getRouteStats.time)を比較
+            // ・1回のブレに引っ張られすぎないよう、変化量を CALIBRATION_BLEND に抑えて緩やかに寄せる
+            // ・短すぎる計測はノイズとして無視し、係数が極端な値に飛ばないようクランプする
+            // ────────────────────────────────────────────────────
+            const CALIBRATION_MIN_SECONDS = 20;
+            const CALIBRATION_BLEND = 0.3;
+            const CALIBRATION_MIN_MULT = 0.6;
+            const CALIBRATION_MAX_MULT = 3.5;
+
+            const calibrateFromRoute = (route) => {
+                if (!route) return;
+                if (!(currentTimeMult.value > 0)) currentTimeMult.value = 1.7;
+
+                const estimated = getRouteStats(route).time;
+                const actual = route.actualSeconds || 0;
+                if (estimated <= 0 || actual < CALIBRATION_MIN_SECONDS) return;
+
+                const ratio = actual / estimated; // 1.0=見積り通り、0.8=2割速い
+                let newMult = currentTimeMult.value * (1 - CALIBRATION_BLEND) + currentTimeMult.value * ratio * CALIBRATION_BLEND;
+                newMult = Math.min(CALIBRATION_MAX_MULT, Math.max(CALIBRATION_MIN_MULT, newMult));
+                newMult = Math.round(newMult * 100) / 100;
+
+                const oldMult = currentTimeMult.value;
+                if (newMult === oldMult) return;
+
+                currentTimeMult.value = newMult;
+                localStorage.setItem('sky_current_time_mult', String(newMult));
+                applyTimeMult(newMult);
+
+                const diffPercent = Math.round((newMult / oldMult - 1) * 100);
+                const dirText = diffPercent < 0 ? `${Math.abs(diffPercent)}%短く` : `${diffPercent}%長く`;
+                showRouteHint(`🎯「${route.name}」の実測結果から所要時間を${dirText}補正しました（現在 ×${newMult.toFixed(2)}）`);
             };
 
             const getDefaultAreas = (timeMult = 1.0) => {
@@ -1846,11 +1906,12 @@ currentHearts: currentHearts.value,
                     name: `マイルート ${myRoutes.value.length + 1}`,
                     memo: "",
                     selectedSpotIds: selectedIds,
-                    isExpanded: false,
+                    isExpanded: true,
                     actualSeconds: 0,
                     generatedSpell: ""
                 });
                 save(); 
+                showRouteHint("✅ ルートを保存しました。1回だけ計測すると、次回からの見積もり精度が上がります👇");
             };
 
             const getRouteAreaNames = (route) => {
@@ -1912,9 +1973,16 @@ currentHearts: currentHearts.value,
                                 if (!sub) return;
                                 if (route.selectedSpotIds.includes(sub.id)) { light += sub.light || 0; time += sub.time || 0; return; }
                                 if (Array.isArray(sub.spots)) {
+                                    // スポット単位の秒数は廃止済みのため、選択スポットが1つでもあれば
+                                    // サブエリアのtimeを一度だけ加算する（totalSecondsと同じロジックに合わせる）
+                                    let subHasSelected = false;
                                     sub.spots.forEach(s => {
-                                        if (s && route.selectedSpotIds.includes(s.id)) { light += s.light; time += s.time; }
+                                        if (s && route.selectedSpotIds.includes(s.id)) {
+                                            light += s.light || 0;
+                                            subHasSelected = true;
+                                        }
                                     });
+                                    if (subHasSelected) time += (sub.time || 0);
                                 }
                             });
                         }
@@ -1991,7 +2059,10 @@ currentHearts: currentHearts.value,
 
             const saveActiveTimerValue = (route) => {
                 if (timerId) { clearInterval(timerId); timerId = null; }
-                if (route) route.actualSeconds = (Date.now() - startTime) / 1000;
+                if (route) {
+                    route.actualSeconds = (Date.now() - startTime) / 1000;
+                    calibrateFromRoute(route);
+                }
                 runningRouteId.value = null;
                 runningSeconds.value = 0;
                 save(); 
@@ -2335,6 +2406,12 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                 const savedLevelKey = localStorage.getItem('sky_skill_level_key');
                 if (savedLevelKey) {
                     skillModal.value.lastLevel = SKILL_LEVELS.find(l => l.key === savedLevelKey) || null;
+                    currentTimeMult.value = skillModal.value.lastLevel ? skillModal.value.lastLevel.mult : 1.7;
+                }
+                // 🎯 実測による補正済みの係数があれば、アンケート由来の初期値より優先して復元
+                const savedMult = localStorage.getItem('sky_current_time_mult');
+                if (savedMult !== null && !isNaN(parseFloat(savedMult))) {
+                    currentTimeMult.value = parseFloat(savedMult);
                 }
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
             });
@@ -2360,7 +2437,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 routeInputSpell, routeSpellMessage, routeSpellMessageType,
                 confirmModal, executeConfirm,
-                showSettings, showSidebar, myRoutes, visibleSections, routeError,
+                showSettings, showSidebar, myRoutes, visibleSections, routeError, routeHintMessage,
                 dailyBonusArea, dailyShard, 
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 heartsToSend, dailyHeartCost,
@@ -2371,7 +2448,7 @@ currentHearts: currentHearts.value,plannedUsage: plannedUsage.value, heartsToSen
                 handleSpotChange,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
-                runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand,
+                runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand, currentTimeMult,
                 getAreaMode, getSubMode,
 
             };
