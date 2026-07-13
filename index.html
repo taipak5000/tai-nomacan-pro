@@ -537,6 +537,9 @@
                 <a href="https://taipak5000.github.io/item/" class="sidebar-nav-link">
                     📁 アイテム所持管理
                 </a>
+                <a :href="RTA_TIMER_URL" class="sidebar-nav-link">
+                    ⏱️ RTAタイマー
+                </a>
             </nav>
         </aside>
 
@@ -815,6 +818,7 @@
                             
                             <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
                             <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">📤 共有</button>
+                            <button class="btn-outline-blue" @click="runRouteInTimer(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-green); color: white; border: none; border-radius: 6px; font-weight: bold; white-space: nowrap;">⏱️ RTAで計測</button>
                             <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
                                 {{ route.isExpanded ? '▼' : '▶' }}
                             </button>
@@ -1178,6 +1182,10 @@
 
     createApp({
         setup() {
+            // ⏱️ RTAタイマー（分けて公開している別サイト）のURL。
+            // 実際に公開したリポジトリのURLに書き換えてください。
+            const RTA_TIMER_URL = "https://taipak5000.github.io/timer/";
+
             const thresholds = [94, 188, 282, 376, 470, 609, 748, 887, 1026, 1165, 1343, 1521, 1699, 1877, 2055, 2268, 2481, 2719, 3207, 4195, 6195, 10195, 18195];
             const isDarkMode = ref(false);
 
@@ -2505,6 +2513,34 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 }
             };
 
+            // ⏱️ このルートをRTAタイマーに渡して実測を開始する
+            // 既存の「ルート呪文」と全く同じ形式で渡すので、RTAタイマー側は
+            // 手貼り付けでも、このURL経由の自動読込でもどちらでも受け取れる
+            const runRouteInTimer = (route) => {
+                generateRouteSpell(route); // route.generatedSpell を最新化
+                if (!route.generatedSpell) {
+                    routeSpellMessage.value = "⚠️ 呪文の生成に失敗したため、RTAタイマーに渡せませんでした。";
+                    routeSpellMessageType.value = "error";
+                    return;
+                }
+                save();
+                const spell = route.generatedSpell;
+                // スポット数が多いルートはURLが長くなりすぎる可能性があるため、
+                // その場合はクリップボードにコピーして貼り付け読込に切り替える
+                if (spell.length > 6000) {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(spell).catch(() => {});
+                    }
+                    routeSpellMessage.value = "📋 ルートが大きいため呪文をコピーしました。開いたRTAタイマーの「計算機のルートを読込」欄に貼り付けてください。";
+                    routeSpellMessageType.value = "success";
+                    setTimeout(() => { routeSpellMessage.value = ""; }, 6000);
+                    window.open(RTA_TIMER_URL, "_blank", "noopener");
+                    return;
+                }
+                const url = `${RTA_TIMER_URL}?spell=${encodeURIComponent(spell)}`;
+                window.open(url, "_blank", "noopener");
+            };
+
             const showInlineMessage = (msg, type) => {
                 spellMessage.value = msg; spellMessageType.value = type;
                 if (type === 'success') setTimeout(() => { spellMessage.value = ""; }, 5000);
@@ -2676,7 +2712,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 heartsToSend, dailyHeartCost,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, getMainAreaSelectedCount, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 skillModal, openSkillModal, applySkillLevel,
-                generateRouteSpell, applyRouteSpell,
+                generateRouteSpell, applyRouteSpell, runRouteInTimer, RTA_TIMER_URL,
                 addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot,
                 handleSpotChange,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
