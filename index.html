@@ -313,27 +313,34 @@
         }
         .realm-map-stats b { color: var(--accent-orange); }
 
-        .realm-map-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        /* ── サブエリア別ミニマップ ── */
+        .mini-map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .mini-map-card {
+            border: 1px solid var(--border-color);
             border-radius: 10px;
+            background: var(--card-bg);
+            padding: 8px 8px 4px;
         }
-        .realm-map-svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-        .realm-map-route { fill: none; stroke-width: 3; stroke-dasharray: 2 9; stroke-linecap: round; opacity: 0.5; }
+        .mini-map-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 6px; flex-wrap: wrap; margin-bottom: 6px;
+        }
+        .mini-map-name {
+            display: flex; align-items: center; gap: 6px; font-size: 12.5px;
+            cursor: pointer; min-width: 0;
+        }
+        .mini-map-name input { width: 16px; height: 16px; flex-shrink: 0; }
+        .mini-map-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mini-map-stats { font-size: 10.5px; color: var(--text-gray); flex-shrink: 0; }
+        .mini-map-svg { display: block; width: 100%; height: auto; border-radius: 10px; }
 
-        /* 地形（サブエリア）ブロブ */
+        /* 地形ブロブ */
         .map-region-blob { stroke-width: 2.5; }
-        .map-region-inner { opacity: 0.5; pointer-events: none; }
-        .map-region-label {
-            font-size: 11.5px; font-weight: 800; text-anchor: middle;
-            paint-order: stroke; stroke-width: 3.5px; stroke-linejoin: round;
-            cursor: pointer; user-select: none;
-        }
-        .map-region-sublabel {
-            font-size: 9px; font-weight: 600; text-anchor: middle;
-            paint-order: stroke; stroke-width: 3px; stroke-linejoin: round;
-            pointer-events: none; opacity: 0.8;
-        }
 
         /* 🔴 火種スポットマーカー（赤丸＋赤数字。選択すると塗りつぶし） */
         .map-marker { cursor: pointer; }
@@ -343,12 +350,18 @@
             transform-origin: center; transform-box: fill-box;
         }
         .map-marker:hover circle { transform: scale(1.12); }
-        .map-marker text {
-            fill: #D93025; font-weight: 800; text-anchor: middle; dominant-baseline: central;
-            pointer-events: none;
+        .map-marker text { text-anchor: middle; pointer-events: none; }
+        .map-marker text.map-marker-num {
+            fill: #D93025; font-weight: 800; dominant-baseline: central;
         }
         .map-marker.sel circle { fill: #D93025; }
-        .map-marker.sel text { fill: #fff; }
+        .map-marker.sel text.map-marker-num { fill: #fff; }
+        /* スポット名（fillはテーマ色をSVG属性で指定するため、ここでは指定しない） */
+        .map-marker text.map-marker-name {
+            font-size: 10px; font-weight: 700;
+            paint-order: stroke; stroke-width: 3px; stroke-linejoin: round;
+        }
+
         .map-legend {
             font-size: 11px; color: var(--text-gray); margin-top: 8px;
             display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -358,30 +371,6 @@
             border: 2.5px solid #D93025; background: #fff; box-sizing: border-box;
         }
         .map-legend-dot.sel { background: #D93025; }
-
-        .map-spot-panel {
-            margin-top: 10px;
-            border: 1px dashed var(--border-color);
-            border-radius: 10px;
-            padding: 10px;
-            background: var(--card-bg);
-            animation: fadeIn 0.15s ease-out;
-        }
-        .map-spot-panel-title {
-            font-size: 12.5px; font-weight: 800; margin-bottom: 8px;
-            display: flex; align-items: center; justify-content: space-between; gap: 8px;
-        }
-        .map-spot-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-        .map-spot-chip {
-            display: flex; align-items: center; gap: 5px;
-            padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
-            border: 1.5px solid var(--border-color); background: var(--stat-box-bg); color: var(--text-color);
-            cursor: pointer; user-select: none;
-        }
-        .map-spot-chip.selected {
-            background: var(--accent-blue); border-color: var(--accent-blue); color: #fff;
-        }
-        .map-spot-chip .chip-light { opacity: 0.85; font-weight: 700; }
 
         .realm-map-empty {
             font-size: 12px; color: var(--text-gray); text-align: center; padding: 18px 0;
@@ -1015,16 +1004,16 @@
                 </div>
 
                 <!-- ══════════════════ 🗺️ 地図ビュー ══════════════════
-                     完全オリジナルの手描き風模式地形図（既存サイト・攻略画像の地図データは不使用）。
+                     サブエリアごとの「デフォルメした個別ミニマップ」。1枚に詰め込まず、
+                     スポット名をマップ上に直接表示して見やすさを優先（描画は完全オリジナル）。
                      赤丸＋赤数字＝火種スポット。タップで選択トグル。 -->
                 <div v-if="areaViewMode === 'map'">
                     <div class="map-legend" style="margin:0 0 10px;">
                         <span class="map-legend-dot"></span><span>火種スポット（数字＝火種量）</span>
                         <span class="map-legend-dot sel"></span><span>選択中</span>
-                        <span style="opacity:0.8;">／ エリア名タップで一覧表示</span>
+                        <span style="opacity:0.8;">／ チェックで一括選択</span>
                     </div>
                     <div v-for="(mainArea, mIdx) in areas" :key="'map_'+mainArea.id" class="realm-map-card">
-                        <template v-for="model in [getMapModel(mainArea)]" :key="'mm_'+mainArea.id">
                         <div class="realm-map-header">
                             <div class="realm-map-title">
                                 <span>{{ mainArea.name }}</span>
@@ -1038,117 +1027,69 @@
                             </div>
                         </div>
 
-                        <div v-if="model.regions.length === 0" class="realm-map-empty">サブエリアがまだありません</div>
+                        <div v-if="!mainArea.subAreas || mainArea.subAreas.length === 0" class="realm-map-empty">サブエリアがまだありません</div>
 
-                        <div v-else class="realm-map-scroll">
-                            <svg class="realm-map-svg"
-                                 :view-box.camel="`0 0 ${model.w} ${model.h}`"
-                                 :width="model.w" :height="model.h">
+                        <div v-else class="mini-map-grid">
+                            <div v-for="mini in getMiniMaps(mainArea)" :key="'mini_'+mini.sub.id" class="mini-map-card">
+                                <div class="mini-map-head">
+                                    <label class="mini-map-name">
+                                        <input type="checkbox" :checked="isAllSubSelected(mini.sub)" @change="toggleSubArea(mini.sub)">
+                                        <b>{{ mini.sub.name }}</b>
+                                    </label>
+                                    <span class="mini-map-stats">⏱️{{ mini.sub.time || 0 }}秒 ⚡{{ getSubAreaStats(mini.sub).eff.toFixed(1) }}/s</span>
+                                </div>
+                                <svg class="mini-map-svg" :view-box.camel="`0 0 340 ${mini.h}`">
+                                    <!-- 背景と地形ブロブ -->
+                                    <rect x="0" y="0" width="340" :height="mini.h" rx="12" :fill="mini.theme.sky"></rect>
+                                    <path class="map-region-blob" :d="mini.path" :fill="mini.theme.blob" :stroke="mini.theme.blobLine"></path>
+                                    <path :d="mini.innerPath" fill="#ffffff" opacity="0.25" style="pointer-events:none;"></path>
 
-                                <!-- 背景: 空と、うねる稜線の地面 -->
-                                <rect x="0" y="0" :width="model.w" :height="model.h" rx="14" :fill="model.theme.sky"></rect>
-                                <path :d="`M0 ${model.h*0.24} Q ${model.w*0.25} ${model.h*0.19} ${model.w*0.5} ${model.h*0.24} T ${model.w} ${model.h*0.24} L ${model.w} ${model.h-14} Q ${model.w} ${model.h} ${model.w-14} ${model.h} L 14 ${model.h} Q 0 ${model.h} 0 ${model.h-14} Z`"
-                                      :fill="model.theme.ground"></path>
+                                    <!-- テーマごとのささやかな飾り（隅に1つだけ） -->
+                                    <g :transform="`translate(314,30)`" style="pointer-events:none;" opacity="0.9">
+                                        <template v-if="mini.theme.deco === 'tree'">
+                                            <rect x="-1.6" y="2" width="3.2" height="9" rx="1" fill="#8a6d4b"></rect>
+                                            <circle cx="0" cy="-3" r="7" fill="#7CAF6E"></circle>
+                                            <circle cx="-5" cy="1" r="4.6" fill="#8DBB7C"></circle>
+                                            <circle cx="5" cy="1" r="4.6" fill="#8DBB7C"></circle>
+                                        </template>
+                                        <template v-else-if="mini.theme.deco === 'wave'">
+                                            <path d="M-12 0 Q -6 -5 0 0 T 12 0" fill="none" stroke="#7FB4D8" stroke-width="2" stroke-linecap="round"></path>
+                                            <path d="M-8 6 Q -2 1 4 6 T 16 6" fill="none" stroke="#9FC8E4" stroke-width="1.6" stroke-linecap="round"></path>
+                                        </template>
+                                        <template v-else-if="mini.theme.deco === 'rain'">
+                                            <path d="M-6 -4 L-9 4 M0 -4 L-3 4 M6 -4 L3 4" stroke="#7FB4D8" stroke-width="1.6" stroke-linecap="round"></path>
+                                        </template>
+                                        <template v-else-if="mini.theme.deco === 'mtn'">
+                                            <path d="M-14 9 L0 -11 L14 9 Z" fill="#A8B6C6"></path>
+                                            <path d="M-4 4 L0 -11 L4 4 L1.6 1.6 L0 4 L-1.6 1.6 Z" fill="#E8EEF4"></path>
+                                        </template>
+                                        <template v-else-if="mini.theme.deco === 'book'">
+                                            <rect x="-9" y="0" width="18" height="4" rx="1" fill="#B08FD8"></rect>
+                                            <rect x="-7" y="-4.6" width="15" height="4" rx="1" fill="#9C86CC"></rect>
+                                            <rect x="-8" y="-9.2" width="16" height="4" rx="1" fill="#C4A9E8"></rect>
+                                        </template>
+                                        <template v-else-if="mini.theme.deco === 'moon'">
+                                            <path d="M4 -8 A 9 9 0 1 0 4 8 A 7 7 0 1 1 4 -8 Z" fill="#F6E58D"></path>
+                                        </template>
+                                        <template v-else>
+                                            <path d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z" fill="#F2C14E" opacity="0.9"></path>
+                                        </template>
+                                    </g>
 
-                                <!-- 装飾（雲・木・山・星など。すべて独自描画） -->
-                                <g v-for="(d, di) in model.deco" :key="'deco'+di"
-                                   :transform="`translate(${d.x},${d.y}) scale(${d.s || 1})`" style="pointer-events:none;">
-                                    <template v-if="d.t === 'cloud'">
-                                        <ellipse cx="0" cy="0" rx="20" ry="9" fill="#fff" opacity="0.8"></ellipse>
-                                        <ellipse cx="-13" cy="4" rx="13" ry="7" fill="#fff" opacity="0.7"></ellipse>
-                                        <ellipse cx="14" cy="4" rx="12" ry="6" fill="#fff" opacity="0.7"></ellipse>
-                                    </template>
-                                    <template v-else-if="d.t === 'tree'">
-                                        <rect x="-1.6" y="2" width="3.2" height="9" rx="1" fill="#8a6d4b"></rect>
-                                        <circle cx="0" cy="-3" r="7" fill="#7CAF6E"></circle>
-                                        <circle cx="-5" cy="1" r="4.6" fill="#8DBB7C"></circle>
-                                        <circle cx="5" cy="1" r="4.6" fill="#8DBB7C"></circle>
-                                    </template>
-                                    <template v-else-if="d.t === 'mtn'">
-                                        <path d="M-18 12 L0 -14 L18 12 Z" fill="#A8B6C6"></path>
-                                        <path d="M-5 5 L0 -14 L5 5 L2 2 L0 5 L-2 2 Z" fill="#E8EEF4"></path>
-                                    </template>
-                                    <template v-else-if="d.t === 'star'">
-                                        <path d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z" fill="#F2C14E" opacity="0.9"></path>
-                                    </template>
-                                    <template v-else-if="d.t === 'wave'">
-                                        <path d="M-12 0 Q -6 -5 0 0 T 12 0" fill="none" stroke="#7FB4D8" stroke-width="2" stroke-linecap="round"></path>
-                                        <path d="M-8 6 Q -2 1 4 6 T 16 6" fill="none" stroke="#9FC8E4" stroke-width="1.6" stroke-linecap="round"></path>
-                                    </template>
-                                    <template v-else-if="d.t === 'rain'">
-                                        <path d="M-6 -4 L-9 4 M0 -4 L-3 4 M6 -4 L3 4" stroke="#7FB4D8" stroke-width="1.6" stroke-linecap="round"></path>
-                                    </template>
-                                    <template v-else-if="d.t === 'torii'">
-                                        <rect x="-13" y="-9" width="26" height="3.4" rx="1.4" fill="#C0554A"></rect>
-                                        <rect x="-9.5" y="-3.5" width="19" height="2.6" fill="#C0554A"></rect>
-                                        <rect x="-8.5" y="-9" width="3" height="14" fill="#B04A40"></rect>
-                                        <rect x="5.5" y="-9" width="3" height="14" fill="#B04A40"></rect>
-                                    </template>
-                                    <template v-else-if="d.t === 'moon'">
-                                        <path d="M5 -10 A 11 11 0 1 0 5 10 A 8.5 8.5 0 1 1 5 -10 Z" fill="#F6E58D"></path>
-                                    </template>
-                                    <template v-else-if="d.t === 'tower'">
-                                        <rect x="-122" y="-300" width="244" height="600" rx="26" fill="rgba(255,255,255,0.30)" stroke="#B4A2DC" stroke-width="2"></rect>
-                                        <path d="M-122 -300 L0 -345 L122 -300 Z" fill="rgba(255,255,255,0.35)" stroke="#B4A2DC" stroke-width="2"></path>
-                                    </template>
-                                    <template v-else-if="d.t === 'book'">
-                                        <rect x="-9" y="0" width="18" height="4" rx="1" fill="#B08FD8"></rect>
-                                        <rect x="-7" y="-4.6" width="15" height="4" rx="1" fill="#9C86CC"></rect>
-                                        <rect x="-8" y="-9.2" width="16" height="4" rx="1" fill="#C4A9E8"></rect>
-                                    </template>
-                                    <template v-else-if="d.t === 'start'">
-                                        <path d="M0 8 L0 -8 M-6 -2 L0 -10 L6 -2" stroke="#D93025" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-                                        <text y="24" font-size="11" font-weight="800" fill="#D93025" text-anchor="middle" style="paint-order:stroke; stroke:rgba(255,255,255,0.8); stroke-width:3px;">スタート</text>
-                                    </template>
-                                </g>
-
-                                <!-- 移動ルートの点線（データ並び順） -->
-                                <polyline class="realm-map-route" :points="model.route" :stroke="model.theme.route"></polyline>
-
-                                <!-- 地形（サブエリア）ブロブ -->
-                                <g v-for="region in model.regions" :key="'rg_'+region.sub.id">
-                                    <path class="map-region-blob" :d="region.path" :fill="model.theme.blob" :stroke="model.theme.blobLine"></path>
-                                    <path class="map-region-inner" :d="region.innerPath" fill="#ffffff" opacity="0.22"></path>
-                                </g>
-
-                                <!-- 地名ラベル＋🔴火種マーカー（ブロブより前面） -->
-                                <template v-for="region in model.regions" :key="'fg_'+region.sub.id">
-                                    <text class="map-region-label" :x="region.labelX" :y="region.labelY"
-                                          :fill="model.theme.label" :stroke="model.theme.halo"
-                                          @click="onMapLabelClick(region.sub)">{{ region.sub.name }}</text>
-                                    <text v-if="region.totalCount > 1" class="map-region-sublabel"
-                                          :x="region.labelX" :y="region.labelY + 12"
-                                          :fill="model.theme.label" :stroke="model.theme.halo">{{ region.selCount }}/{{ region.totalCount }} 選択中</text>
-                                    <g v-for="m in region.markers" :key="region.sub.id + '_mk' + m.spIdx"
+                                    <!-- 🔴 火種マーカー＋スポット名 -->
+                                    <g v-for="m in mini.markers" :key="mini.sub.id + '_mk' + m.spIdx"
                                        class="map-marker" :class="{sel: m.selected}"
                                        :transform="`translate(${m.x},${m.y})`"
                                        @click="onMapMarkerClick(mIdx, m)">
                                         <title>{{ m.name }}（🔥{{ m.light }}）</title>
                                         <circle :r="m.r"></circle>
-                                        <text :font-size="m.fs">{{ m.light }}</text>
+                                        <text class="map-marker-num" :font-size="m.fs">{{ m.light }}</text>
+                                        <text class="map-marker-name" :y="m.r + 13"
+                                              :fill="mini.theme.label" :stroke="mini.theme.halo">{{ m.short }}</text>
                                     </g>
-                                </template>
-                            </svg>
-                        </div>
-
-                        <!-- スポット一覧パネル（地名タップで開閉。名前で確認しながら選びたい時用） -->
-                        <template v-for="(subArea, sIdx) in mainArea.subAreas" :key="'panel_'+subArea.id">
-                            <div v-if="subArea.isExpanded && getSubMode(subArea) === 'spot'" class="map-spot-panel">
-                                <div class="map-spot-panel-title">
-                                    <span>📍 {{ subArea.name }}</span>
-                                    <span style="color:var(--text-gray); font-weight:600;">⏱️ {{ subArea.time || 0 }}秒 ／ ⚡ {{ getSubAreaStats(subArea).eff.toFixed(1) }}/s</span>
-                                </div>
-                                <div class="map-spot-chips">
-                                    <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id"
-                                         class="map-spot-chip" :class="{selected: spot.isSelected}"
-                                         @click="toggleMapSpot(mIdx, sIdx, spIdx)">
-                                        <span>{{ spot.isSelected ? '✅' : '⬜' }} {{ spot.name }}</span>
-                                        <span class="chip-light">🔥{{ spot.light }}</span>
-                                    </div>
-                                </div>
+                                </svg>
                             </div>
-                        </template>
-                        </template>
+                        </div>
                     </div>
                 </div>
 
@@ -2349,92 +2290,87 @@ plannedUsage.value = 0;
             };
 
             /* ═══ 🗺️ 地図で選ぶビュー ═══
-               maps-data.js の SKY_MAP_LAYOUTS（完全オリジナルの地形レイアウト）をもとに、
-               手描き風の地形ブロブ＋赤丸数字マーカー（＝火種）で構成した模式地図を描画する。
-               レイアウトに無いエリア/スポット名は自動配置にフォールバックするため、
-               ユーザーが独自に追加したエリアも地図上に表示される。 */
+               サブエリアごとの「デフォルメした個別ミニマップ」を並べて表示する方式。
+               1枚に全部を詰め込まず、スポット名をマップ上に直接書くことで見やすさを優先。
+               手作業レイアウト（maps-data.js の SKY_DETAIL_LAYOUTS）が無いサブエリアは
+               整列＋ゆらぎの自動配置になるため、ユーザー追加のエリアもそのまま表示される。 */
             const areaViewMode = ref(localStorage.getItem('sky_area_view_mode') || 'list');
             const setAreaViewMode = (mode) => {
                 areaViewMode.value = mode;
                 localStorage.setItem('sky_area_view_mode', mode);
             };
 
-            const DEFAULT_MAP_THEME = { sky: '#EAF2F8', ground: '#E4EEE0', blob: '#EDF4E4', blobLine: '#95AF7E', route: '#7A9367', label: '#4a5c3a', halo: 'rgba(250,253,246,0.9)' };
+            const DEFAULT_MAP_THEME = { sky: '#EAF2F8', blob: '#EDF4E4', blobLine: '#95AF7E', label: '#4a5c3a', halo: 'rgba(250,253,246,0.9)', deco: 'tree' };
+            const MINI_W = 340;      // ミニマップの論理幅
+            const MINI_ROW_H = 88;   // 自動配置の行間
 
-            // メインエリア1つ分の地図描画モデル（サイズ・テーマ・装飾・地形・マーカー）を組み立てる
-            const getMapModel = (mainArea) => {
-                const layouts = window.SKY_MAP_LAYOUTS || {};
+            // メインエリア1つ分の「サブエリア別ミニマップ」モデル一覧を組み立てる
+            const getMiniMaps = (mainArea) => {
                 const geo = window.SkyMapGeo;
-                const layout = layouts[mainArea.name] || null;
+                const theme = (window.SKY_MAP_THEMES || {})[mainArea.name] || DEFAULT_MAP_THEME;
+                const details = ((window.SKY_DETAIL_LAYOUTS || {})[mainArea.name]) || {};
                 const subs = Array.isArray(mainArea.subAreas) ? mainArea.subAreas : [];
-                const theme = layout ? layout.theme : DEFAULT_MAP_THEME;
-                const w = layout ? layout.w : 480;
 
-                // レイアウト定義に無いサブエリアの数（自動配置の行数ぶん高さを追加する）
-                const extras = subs.filter(s => !(layout && layout.regions[s.name]));
-                const baseH = layout ? layout.h : 60;
-                const h = baseH + (extras.length > 0 ? 40 + Math.ceil(extras.length / 3) * 150 : 0);
-
-                const regions = [];
-                let extraIdx = 0;
-                subs.forEach((sub, sIdx) => {
-                    if (!sub) return;
-                    const def = layout && layout.regions[sub.name];
-                    let cx, cy, rx, ry;
-                    if (def) {
-                        cx = def.cx; cy = def.cy;
-                        rx = def.rx || def.r || 60; ry = def.ry || def.r || 55;
-                    } else {
-                        // 未知のサブエリア: 地図下部に3列で自動配置
-                        const col = extraIdx % 3, row = Math.floor(extraIdx / 3);
-                        cx = 90 + col * 150; cy = baseH + 90 + row * 150;
-                        rx = 62; ry = 55; extraIdx++;
-                    }
-                    const seed = geo.hashStr(mainArea.name + '/' + sub.name);
-                    const path = geo.blobPath(cx, cy, rx, ry, seed);
-                    const innerPath = geo.blobPath(cx, cy + ry * 0.1, rx * 0.68, ry * 0.6, seed + 7);
-
+                return subs.map((sub, sIdx) => {
+                    if (!sub) return null;
                     const sMode = getSubMode(sub);
-                    const spots = Array.isArray(sub.spots) ? sub.spots : [];
+                    const spots = sMode === 'spot' ? sub.spots : [];
+                    const def = details[sub.name];
+
+                    // ── マーカー配置 ──
                     const markers = [];
+                    let h;
                     if (sMode === 'sub') {
-                        // スポットを持たない（サブエリア自体に火種値）: サブエリア全体を1マーカーで表す
-                        markers.push({ x: cx, y: cy - 4, light: sub.light || 0, selected: !!sub.isSelected, name: sub.name, kind: 'sub', sIdx, spIdx: -1 });
-                    } else {
+                        // サブエリア自体に火種値がある場合は1マーカーで表す
+                        h = 170;
+                        markers.push({ x: MINI_W / 2, y: 86, light: sub.light || 0, selected: !!sub.isSelected, name: sub.name, label: 'エリア全体', kind: 'sub', sIdx, spIdx: -1 });
+                    } else if (def) {
+                        // 手作業レイアウト
+                        h = def.h;
                         spots.forEach((spot, spIdx) => {
-                            if (!spot) return;
-                            const pos = def && def.spots && def.spots[spot.name];
-                            let x, y;
-                            if (pos) { x = pos[0]; y = pos[1]; }
-                            else if (spots.length === 1) { x = cx; y = cy - 4; }
-                            else {
-                                // 定義の無い複数スポット: 地形内に環状に自動配置
-                                const ang = -Math.PI / 2 + (Math.PI * 2 * spIdx) / spots.length;
-                                x = cx + Math.cos(ang) * rx * 0.55;
-                                y = cy + Math.sin(ang) * ry * 0.55;
-                            }
-                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, kind: 'spot', sIdx, spIdx });
+                            const pos = def.spots[spot.name];
+                            const x = pos ? pos[0] : MINI_W / 2;
+                            const y = pos ? pos[1] : h / 2;
+                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, label: spot.name, kind: 'spot', sIdx, spIdx });
+                        });
+                    } else if (spots.length === 1) {
+                        h = 170;
+                        markers.push({ x: MINI_W / 2, y: 86, light: spots[0].light || 0, selected: !!spots[0].isSelected, name: spots[0].name, label: spots[0].name, kind: 'spot', sIdx, spIdx: 0 });
+                    } else {
+                        // 自動配置: 2〜4個は2列、それ以外は3列で、列ごとに少し上下をずらして地図らしく
+                        const n = spots.length;
+                        const cols = (n === 2 || n === 4) ? 2 : 3;
+                        const rows = Math.ceil(n / cols);
+                        h = 70 + rows * MINI_ROW_H + 40;
+                        const cellW = (MINI_W - 40) / cols;
+                        spots.forEach((spot, spIdx) => {
+                            const col = spIdx % cols, row = Math.floor(spIdx / cols);
+                            const x = 20 + cellW * (col + 0.5);
+                            const y = 96 + row * MINI_ROW_H + (cols > 1 ? (col % 2) * 10 : 0);
+                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, label: spot.name, kind: 'spot', sIdx, spIdx });
                         });
                     }
-                    // マーカー半径・フォントは桁数に応じて拡大
+
+                    // マーカー半径・数字フォント（桁数に応じて拡大）と、名前ラベルの省略
+                    const cols = markers.length >= 5 ? 3 : 2;
+                    const maxChars = def ? 12 : (cols === 3 ? 10 : 14);
                     markers.forEach(m => {
-                        const n = Math.round(m.light);
-                        if (n >= 1000)     { m.r = 17; m.fs = 8;  }
-                        else if (n >= 100) { m.r = 15; m.fs = 9;  }
-                        else               { m.r = 13; m.fs = 10.5; }
+                        const num = Math.round(m.light);
+                        if (num >= 1000)     { m.r = 17; m.fs = 8.5; }
+                        else if (num >= 100) { m.r = 15; m.fs = 9.5; }
+                        else                 { m.r = 13; m.fs = 11;  }
+                        m.short = m.label.length > maxChars ? m.label.slice(0, maxChars - 1) + '…' : m.label;
                     });
+
+                    // ── 地形ブロブ ──
+                    const seed = geo.hashStr(mainArea.name + '/' + sub.name);
+                    const cy = h / 2 + 6, ry = Math.max(40, h / 2 - 34);
+                    const path = geo.blobPath(MINI_W / 2, cy, 150, ry, seed);
+                    const innerPath = geo.blobPath(MINI_W / 2, cy + ry * 0.08, 102, ry * 0.62, seed + 7);
 
                     const selCount = markers.filter(m => m.selected).length;
-                    regions.push({
-                        sub, sIdx, cx, cy, rx, ry, path, innerPath, markers, selCount,
-                        totalCount: markers.length,
-                        labelX: def && def.labelX != null ? def.labelX : cx,
-                        labelY: def && def.labelY != null ? def.labelY : cy + ry + 13
-                    });
-                });
-
-                const route = regions.map(r => `${r.cx},${r.cy}`).join(' ');
-                return { w, h, theme, deco: (layout && layout.deco) || [], regions, route };
+                    return { sub, sIdx, h, theme, path, innerPath, markers, selCount, totalCount: markers.length };
+                }).filter(Boolean);
             };
 
             const toggleMapSpot = (mIdx, sIdx, spIdx) => {
@@ -2452,11 +2388,6 @@ plannedUsage.value = 0;
                 } else {
                     toggleMapSpot(mIdx, marker.sIdx, marker.spIdx);
                 }
-            };
-            // サブエリア名をタップ: スポット一覧パネル（チップ）を開閉して名前で選べるようにする
-            const onMapLabelClick = (subArea) => {
-                if (getSubMode(subArea) === 'spot') subArea.isExpanded = !subArea.isExpanded;
-                else toggleSubArea(subArea);
             };
 
             const moveMainArea = (index, direction) => {
@@ -3079,7 +3010,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand, currentTimeMult,
                 getAreaMode, getSubMode,
-                areaViewMode, setAreaViewMode, getMapModel, toggleMapSpot, onMapMarkerClick, onMapLabelClick,
+                areaViewMode, setAreaViewMode, getMiniMaps, toggleMapSpot, onMapMarkerClick,
 
             };
         }
