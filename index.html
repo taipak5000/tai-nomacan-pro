@@ -362,6 +362,74 @@
             paint-order: stroke; stroke-width: 3px; stroke-linejoin: round;
         }
 
+        /* ── 🧭 精密マップ（実座標アトラス） ── */
+        .atlas-tab-row {
+            display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+        }
+        .atlas-tab {
+            padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: 700;
+            border: 1px solid var(--border-color); background: var(--stat-box-bg);
+            color: var(--text-gray); cursor: pointer;
+        }
+        .atlas-tab.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+        .atlas-frame {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--stat-box-bg);
+            touch-action: none;
+        }
+        .atlas-svg { display: block; width: 100%; height: auto; cursor: grab; user-select: none; }
+        .atlas-svg.dragging { cursor: grabbing; }
+        .atlas-zoom-controls {
+            position: absolute; right: 10px; top: 10px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 5;
+        }
+        .atlas-zoom-btn {
+            width: 34px; height: 34px; border-radius: 9px; font-size: 17px; font-weight: 800;
+            background: var(--card-bg); color: var(--text-color);
+            border: 1px solid var(--border-color); cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+        .atlas-area-label {
+            font-size: 34px; font-weight: 800; text-anchor: middle;
+            paint-order: stroke; stroke-width: 9px; stroke-linejoin: round;
+            pointer-events: none; opacity: 0.85;
+        }
+        .atlas-marker { cursor: pointer; }
+        .atlas-marker text {
+            font-weight: 800; text-anchor: middle; dominant-baseline: central;
+            pointer-events: none;
+        }
+        .atlas-sub-panel {
+            margin-top: 10px;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            background: var(--card-bg);
+            animation: fadeIn 0.15s ease-out;
+        }
+        .atlas-sub-panel-title {
+            font-size: 12.5px; font-weight: 800; margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+        }
+        .atlas-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .atlas-chip {
+            display: flex; align-items: center; gap: 5px;
+            padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+            border: 1.5px solid var(--border-color); background: var(--stat-box-bg); color: var(--text-color);
+            cursor: pointer; user-select: none;
+        }
+        .atlas-chip.selected { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+        .atlas-chip .chip-light { opacity: 0.85; font-weight: 700; }
+        .atlas-legend {
+            font-size: 11px; color: var(--text-gray); margin-top: 8px;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .atlas-legend span { display: inline-flex; align-items: center; gap: 4px; }
+        .atlas-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; box-sizing: border-box; }
+
         .map-legend {
             font-size: 11px; color: var(--text-gray); margin-top: 8px;
             display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -999,8 +1067,98 @@
                 <div class="section-header">🗺️ エリア管理</div>
 
                 <div class="view-toggle-row">
-                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'list'}" @click="setAreaViewMode('list')">📋 リストで選ぶ</button>
-                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'map'}" @click="setAreaViewMode('map')">🗺️ 地図で選ぶ</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'list'}" @click="setAreaViewMode('list')">📋 リスト</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'map'}" @click="setAreaViewMode('map')">🗺️ ミニマップ</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'atlas'}" @click="setAreaViewMode('atlas')">🧭 精密マップ</button>
+                </div>
+
+                <!-- ══════════════════ 🧭 精密マップビュー ══════════════════
+                     Fandom Interactive Maps のマーカー座標データ(CC-BY-SA)に基づく、火種の実位置マップ。
+                     地図の描画自体はオリジナル（地図画像は使用していない）。
+                     マーカーをタップすると、その場所が属するサブエリアの選択パネルが開く。 -->
+                <div v-if="areaViewMode === 'atlas'">
+                    <div class="atlas-tab-row">
+                        <button v-for="name in atlasMapNames" :key="'at_'+name" type="button"
+                                class="atlas-tab" :class="{active: atlasMapName === name}"
+                                @click="setAtlasMap(name)">{{ name }}</button>
+                    </div>
+
+                    <div class="atlas-frame">
+                        <div class="atlas-zoom-controls">
+                            <button type="button" class="atlas-zoom-btn" @click="atlasZoomBy(1.5)">＋</button>
+                            <button type="button" class="atlas-zoom-btn" @click="atlasZoomBy(1/1.5)">−</button>
+                            <button type="button" class="atlas-zoom-btn" @click="atlasResetView()" style="font-size:13px;">⟳</button>
+                        </div>
+                        <svg class="atlas-svg" :class="{dragging: atlasDrag.active}"
+                             :view-box.camel="atlasViewBox"
+                             preserveAspectRatio="xMidYMid meet"
+                             style="aspect-ratio: 2480 / 3508; height: auto; max-height: 78vh;"
+                             @pointerdown="atlasPointerDown($event)"
+                             @pointermove="atlasPointerMove($event)"
+                             @pointerup="atlasPointerUp($event)"
+                             @pointercancel="atlasPointerUp($event)"
+                             @wheel.prevent="atlasWheel($event)">
+                            <!-- 背景（紙面） -->
+                            <rect x="0" y="0" width="2480" height="3508" :fill="atlasTheme.sky"></rect>
+                            <!-- サブエリア区画（タップでも選択パネルを開ける） -->
+                            <g v-for="(rg, ri) in atlasModel.regions" :key="'rg'+ri" style="cursor:pointer;"
+                               @click="onAtlasRegionClick(rg)">
+                                <rect v-for="(rc, rci) in rg.rects" :key="'rc'+rci"
+                                      :x="rc[0]" :y="rc[1]" :width="rc[2]-rc[0]" :height="rc[3]-rc[1]"
+                                      rx="26" :fill="atlasTheme.blob" opacity="0.5"
+                                      :stroke="atlasTheme.blobLine" stroke-width="4" stroke-dasharray="16 12"></rect>
+                                <text class="atlas-area-label" :x="rg.labelX" :y="rg.labelY"
+                                      style="font-size:46px;"
+                                      :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ rg.name }}</text>
+                            </g>
+                            <!-- 通路・ポイント名ラベル -->
+                            <text v-for="(lb, li) in atlasModel.labels" :key="'lb'+li"
+                                  class="atlas-area-label" :x="lb.x" :y="lb.y"
+                                  :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ lb.name }}</text>
+                            <!-- 🔴 火種マーカー（実座標） -->
+                            <g v-for="(m, mi) in atlasModel.markers" :key="'am'+mi"
+                               class="atlas-marker"
+                               :transform="`translate(${m.x},${m.y})`"
+                               @click="onAtlasMarkerClick(m)">
+                                <title>{{ m.tip }}</title>
+                                <circle :r="m.r" :fill="m.fill" :stroke="m.stroke" :stroke-width="m.r * 0.18" :stroke-dasharray="m.dash"></circle>
+                                <text v-if="m.text" :font-size="m.fs" :fill="m.textFill">{{ m.text }}</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="atlas-legend">
+                        <span><span class="atlas-dot" style="background:#fff; border:2.5px solid #D93025;"></span>キャンドル</span>
+                        <span><span class="atlas-dot" style="background:#F6C445; border:2.5px solid #B8860B;"></span>宝キャンドル</span>
+                        <span><span class="atlas-dot" style="background:#E6D9F7; border:2.5px solid #7B4FC9;"></span>闇植物</span>
+                        <span><span class="atlas-dot" style="background:#fff; border:2.5px dashed #7B4FC9;"></span>闇植物(曜日限定)</span>
+                        <span><span class="atlas-dot" style="background:#FFE2B0; border:2.5px solid #E08A00;"></span>ソーシャル</span>
+                        <span style="opacity:0.8;">／ ドラッグ移動・ホイール/±でズーム・マーカータップで選択パネル</span>
+                    </div>
+
+                    <!-- 選択パネル: タップしたマーカーが属するサブエリアのスポットを選択できる -->
+                    <div v-if="atlasActiveSub" class="atlas-sub-panel">
+                        <div class="atlas-sub-panel-title">
+                            <span>📍 {{ atlasActiveSub.area.name }} ／ {{ atlasActiveSub.sub.name }}</span>
+                            <span style="display:flex; align-items:center; gap:10px;">
+                                <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:600;">
+                                    <input type="checkbox" :checked="isAllSubSelected(atlasActiveSub.sub)" @change="toggleSubArea(atlasActiveSub.sub)">
+                                    全選択
+                                </label>
+                                <span style="color:var(--text-gray); font-weight:600;">⏱️{{ atlasActiveSub.sub.time || 0 }}秒 ⚡{{ getSubAreaStats(atlasActiveSub.sub).eff.toFixed(1) }}/s</span>
+                                <button type="button" class="modal-closeish" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-gray);" @click="atlasActiveSubKey = ''">✕</button>
+                            </span>
+                        </div>
+                        <div class="atlas-chips">
+                            <div v-for="(spot, spIdx) in atlasActiveSub.sub.spots" :key="spot.id"
+                                 class="atlas-chip" :class="{selected: spot.isSelected}"
+                                 @click="toggleMapSpot(atlasActiveSub.mIdx, atlasActiveSub.sIdx, spIdx)">
+                                <span>{{ spot.isSelected ? '✅' : '⬜' }} {{ spot.name }}</span>
+                                <span class="chip-light">🔥{{ spot.light }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="realm-map-empty" style="margin-top:8px;">マーカーをタップすると、その場所のスポットを選択できます</div>
                 </div>
 
                 <!-- ══════════════════ 🗺️ 地図ビュー ══════════════════
@@ -1365,6 +1523,7 @@
 
 <script src="areas-data.js"></script>
 <script src="maps-data.js"></script>
+<script src="atlas-data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
 <script>
     if (typeof Vue === 'undefined') {
@@ -2415,6 +2574,259 @@ plannedUsage.value = 0;
                 }
             };
 
+            /* ═══ 🧭 精密マップ（実座標アトラス）ビュー ═══
+               atlas-data.js（Fandom Interactive Maps 由来のマーカー座標・CC-BY-SA）を
+               2480x3508 の実座標のまま描画する。ズーム/パン対応。
+               マーカーをタップすると、その位置が属するサブエリアの選択パネルを開く。 */
+
+            // マップ名 → このツールのメインエリア名
+            const ATLAS_MAP_REALM = {
+                '孤島': '孤島', '草原': '草原', '雨林': '雨林', '峡谷': '峡谷',
+                '捨て地': '捨て地', '書庫': '書庫',
+                '花鳥郷': 'ホーム', 'アリスカフェ': 'ホーム', '三日月オアシス': 'コラボルーム'
+            };
+
+            // マーカー座標 → サブエリア判定用の区画（上から順に最初に当たった矩形を採用）。
+            // 座標はソルとシュガ様の各シート構図(2480x3508)に対応。fallback は区画外のときの帰属先。
+            const ATLAS_REGIONS = {
+                '孤島': {
+                    fallback: '孤島台地',
+                    list: [
+                        { sub: '孤島の見晴らし台', rects: [[1800, 300, 2480, 1350]] },
+                        { sub: '孤島の神殿',       rects: [[850, 250, 1800, 1050]] },
+                        { sub: '預言者の石窟',     rects: [[0, 2650, 2480, 3508]] },
+                        { sub: '孤島台地',         rects: [[0, 1050, 2480, 2650]] }
+                    ]
+                },
+                '草原': {
+                    fallback: 'ロビー・蝶々の住処',
+                    list: [
+                        { sub: '草原の神殿',         rects: [[600, 200, 1950, 780]] },
+                        { sub: '楽園',               rects: [[1300, 780, 2480, 2250]] },
+                        { sub: '草原の村',           rects: [[0, 780, 1300, 1450]] },
+                        { sub: '草原の洞窟',         rects: [[0, 1450, 1300, 2450]] },
+                        { sub: '鳥の巣',             rects: [[1300, 2250, 2480, 3000]] },
+                        { sub: 'ロビー・蝶々の住処', rects: [[0, 2450, 2480, 3508]] }
+                    ]
+                },
+                '雨林': {
+                    fallback: '小川',
+                    list: [
+                        { sub: '雨林の神殿',         rects: [[1250, 200, 2010, 760]] },
+                        { sub: '墓場（神殿前）',     rects: [[1050, 760, 2480, 1800]] },
+                        { sub: '小川',               rects: [[0, 200, 1050, 1350]] },
+                        { sub: '高台広場（晴れ間）', rects: [[0, 1350, 650, 2100]] },
+                        { sub: 'ツリーハウス',       rects: [[650, 1350, 1500, 2200]] },
+                        { sub: '大空洞',             rects: [[1500, 1800, 2480, 2600]] },
+                        { sub: '風の街道',           rects: [[650, 2200, 1500, 3050], [1500, 2600, 2480, 3508]] },
+                        { sub: '前庭',               rects: [[0, 2100, 650, 3508]] }
+                    ]
+                },
+                '峡谷': {
+                    fallback: 'ロビー',
+                    list: [
+                        { sub: '空通り（空レ）',           rects: [[0, 200, 1450, 850]] },
+                        { sub: '峡谷の神殿',               rects: [[1450, 200, 2480, 750]] },
+                        { sub: '城塞都市',                 rects: [[0, 850, 1250, 1550]] },
+                        { sub: '円形劇場',                 rects: [[1450, 750, 2480, 1350]] },
+                        { sub: '凍った湖（アイスリンク）', rects: [[0, 1550, 1100, 2400]] },
+                        { sub: '陸通り（陸レ）',           rects: [[1100, 1500, 1550, 2700]] },
+                        { sub: '隠者の峠',                 rects: [[1450, 1350, 2480, 2100]] },
+                        { sub: '夢見の町',                 rects: [[1350, 2100, 2480, 3508]] },
+                        { sub: 'ロビー',                   rects: [[0, 2400, 1350, 3508]] }
+                    ]
+                },
+                '捨て地': {
+                    fallback: '外郭（倒壊した祠）',
+                    list: [
+                        { sub: '捨て地神殿',         rects: [[900, 200, 1500, 800], [1600, 200, 2480, 560]] },
+                        { sub: '戦場',               rects: [[1500, 560, 2480, 1300]] },
+                        { sub: '墓所',               rects: [[0, 800, 1500, 1900]] },
+                        { sub: '蟹の沼地（座礁船）', rects: [[1500, 1300, 2480, 2100]] },
+                        { sub: '墓所の入り口',       rects: [[0, 1900, 900, 2500]] },
+                        { sub: '忘れられた方舟',     rects: [[1200, 2100, 2480, 3100]] },
+                        { sub: '秘宝の岩礁',         rects: [[1500, 3100, 2480, 3508]] },
+                        { sub: '外郭（倒壊した祠）', rects: [[0, 2500, 1500, 3508]] }
+                    ]
+                },
+                '書庫': {
+                    fallback: '4階',
+                    list: [
+                        { sub: '書庫の神殿',   rects: [[700, 200, 1700, 600]] },
+                        { sub: '4階',          rects: [[0, 600, 1500, 1900]] },
+                        { sub: '秘密のエリア', rects: [[1950, 2350, 2480, 3050]] },
+                        { sub: '3階',          rects: [[1300, 1500, 2480, 1950]] },
+                        { sub: '2階',          rects: [[1300, 1950, 2480, 2500]] },
+                        { sub: '1階',          rects: [[1300, 2500, 1950, 3050]] },
+                        { sub: '星月夜の砂漠', rects: [[0, 1900, 1300, 3200]] },
+                        { sub: 'ロビー',       rects: [[1300, 3050, 2480, 3508]] }
+                    ]
+                },
+                '花鳥郷':       { fallback: '花鳥郷',         list: [] },
+                'アリスカフェ': { fallback: 'アリスカフェ',   list: [] },
+                '三日月オアシス': { fallback: '三日月オアシス', list: [] }
+            };
+
+            // エリア名ラベルの日本語対訳（未定義はそのまま英語表示）
+            const ATLAS_LABEL_JA = {
+                'Wind Paths': '風の街道', 'The Wind Paths': '風の街道',
+                'Cave of Prophecies': '預言者の石窟', 'The Cave of Prophecies ': '預言者の石窟',
+                'The Trial of Water': '水の試練', 'The Trial of Earth': '地の試練',
+                'The Trial of Air': '風の試練', 'The Trial of Fire': '火の試練',
+                'Butterfly Fields': '蝶々の住処', 'Bird Nest': '鳥の巣', 'Prairie Temple': '草原の神殿',
+                '8-Player Puzzle Area': '8人パズル', 'Villages': '草原の村', 'Caves': '草原の洞窟',
+                'Sanctuary Island': '楽園', 'Prairie Peaks Entrance': '草原高地入口',
+                'The Treehouse': 'ツリーハウス', 'Valley of Triumph': '峡谷へ',
+                'Village Theater': '夢見の劇場', 'Village of Dreams': '夢見の町', 'Harmony Hall': '奏の音楽堂',
+                'Coliseum': '円形劇場', 'Hermit Valley': '隠者の峠', 'Sliding Race': '陸通り（陸レ）',
+                'Citadel': '城塞都市', 'Flying Race': '空通り（空レ）', 'Frozen Lake': '凍った湖',
+                'The Treasure Reef': '秘宝の岩礁', 'Forgotten Ark': '忘れられた方舟', 'Crab Fields': '蟹の沼地',
+                'Battlefield': '戦場', 'Wasteland Temple': '捨て地神殿', 'Graveyard': '墓所', 'Broken Temple': '外郭（倒壊した祠）',
+                'First Floor': '1階', 'Second Floor': '2階', 'Third Floor': '3階', 'Fourth Floor': '4階',
+                'Fifth Floor': '5階', 'The Summit': '書庫の神殿', 'The Archives': '資料庫',
+                'Starlight Desert': '星月夜の砂漠', 'Secret Area': '秘密のエリア',
+                'Repository of Refuge': '君憶う保存庫', 'Fractured Lantern Storage': '壊れし燈の保管庫',
+                'Wandering Carnival': 'カーニバル', 'Tranquil Garden': '静かの庭', 'Concert Hall': 'コンサートホール',
+                'Home': 'ホーム', 'Nests': '巣', 'Aviary Village Cafe': 'カフェ', 'Crescent Oasis': '三日月オアシス'
+            };
+            const ATLAS_DAYS_JA = { 'M/W/F/Sun': '月水金日', 'T/T/Sat': '火木土', 'T/T/Sat/Sun': '火木土日', 'Everyday': '毎日' };
+
+            const atlasMapNames = Object.keys(ATLAS_MAP_REALM).filter(n => (window.SKY_ATLAS_RAW || {})[n] && (window.SKY_ATLAS_RAW[n].markers || []).length > 0);
+            const atlasMapName = ref(atlasMapNames[0] || '孤島');
+            const atlasActiveSubKey = ref('');
+            const atlasView = ref({ x: 0, y: 0, w: 2480, h: 3508 });
+            const atlasDrag = ref({ active: false, moved: false, px: 0, py: 0 });
+
+            const setAtlasMap = (name) => {
+                atlasMapName.value = name;
+                atlasActiveSubKey.value = '';
+                atlasResetView();
+            };
+            const atlasResetView = () => { atlasView.value = { x: 0, y: 0, w: 2480, h: 3508 }; };
+            const atlasViewBox = computed(() => `${atlasView.value.x} ${atlasView.value.y} ${atlasView.value.w} ${atlasView.value.h}`);
+            const atlasTheme = computed(() => (window.SKY_MAP_THEMES || {})[ATLAS_MAP_REALM[atlasMapName.value]] || { sky: '#EAF2F8', label: '#4a5c3a', halo: 'rgba(250,253,246,0.9)' });
+
+            const atlasClampView = () => {
+                const v = atlasView.value;
+                v.w = Math.max(310, Math.min(2480, v.w));
+                v.h = v.w * (3508 / 2480);
+                v.x = Math.max(0, Math.min(2480 - v.w, v.x));
+                v.y = Math.max(0, Math.min(3508 - v.h, v.y));
+            };
+            const atlasZoomBy = (factor, cx, cy) => {
+                const v = atlasView.value;
+                const centerX = cx != null ? cx : v.x + v.w / 2;
+                const centerY = cy != null ? cy : v.y + v.h / 2;
+                const nw = v.w / factor;
+                v.x = centerX - (centerX - v.x) / factor;
+                v.y = centerY - (centerY - v.y) / factor;
+                v.w = nw;
+                atlasClampView();
+            };
+            const atlasWheel = (e) => {
+                const svg = e.currentTarget;
+                const rect = svg.getBoundingClientRect();
+                const v = atlasView.value;
+                const cx = v.x + (e.clientX - rect.left) / rect.width * v.w;
+                const cy = v.y + (e.clientY - rect.top) / rect.height * v.h;
+                atlasZoomBy(e.deltaY < 0 ? 1.25 : 1 / 1.25, cx, cy);
+            };
+            const atlasPointerDown = (e) => {
+                atlasDrag.value = { active: true, moved: false, px: e.clientX, py: e.clientY };
+                try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
+            };
+            const atlasPointerMove = (e) => {
+                const d = atlasDrag.value;
+                if (!d.active) return;
+                const dx = e.clientX - d.px, dy = e.clientY - d.py;
+                if (!d.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
+                d.moved = true;
+                const svg = e.currentTarget;
+                const rect = svg.getBoundingClientRect();
+                const v = atlasView.value;
+                v.x -= dx * (v.w / rect.width);
+                v.y -= dy * (v.h / rect.height);
+                d.px = e.clientX; d.py = e.clientY;
+                atlasClampView();
+            };
+            const atlasPointerUp = () => {
+                // moved フラグはクリック抑止判定に使うため、少し残してから倒す
+                const d = atlasDrag.value;
+                d.active = false;
+                setTimeout(() => { d.moved = false; }, 50);
+            };
+
+            // マーカーがどのサブエリアに属するかを区画定義から判定
+            const atlasSubForPoint = (mapName, x, y) => {
+                const def = ATLAS_REGIONS[mapName];
+                if (!def) return null;
+                for (const region of def.list) {
+                    for (const r of region.rects) {
+                        if (x >= r[0] && y >= r[1] && x <= r[2] && y <= r[3]) return region.sub;
+                    }
+                }
+                return def.fallback;
+            };
+
+            // 描画用モデル: マーカーの表示値・色・所属サブエリア、日本語ラベル
+            const atlasModel = computed(() => {
+                const raw = (window.SKY_ATLAS_RAW || {})[atlasMapName.value];
+                if (!raw) return { markers: [], labels: [] };
+                const isCafe = atlasMapName.value === 'アリスカフェ';
+                const markers = (raw.markers || []).map(mk => {
+                    let value = mk.n, fill = '#fff', stroke = '#D93025', textFill = '#D93025', dash = '', kind = 'キャンドル';
+                    if (mk.t === 't') {
+                        value = (mk.n / 50 || 1) * 50;
+                        fill = '#F6C445'; stroke = '#B8860B'; textFill = '#6b4a00'; kind = '宝キャンドル';
+                    } else if (mk.t === 'd') {
+                        fill = '#E6D9F7'; stroke = '#7B4FC9'; textFill = '#5b3a99'; kind = '闇植物';
+                        if (mk.days && mk.days !== 'Everyday') { fill = '#fff'; dash = '7 5'; }
+                    } else if (mk.t === 's') {
+                        fill = '#FFE2B0'; stroke = '#E08A00'; textFill = '#8a5500'; kind = 'ソーシャル';
+                    } else if (isCafe) {
+                        value = mk.n * 5; // アリスカフェの大キャンドルは1本=火種5
+                    }
+                    const daysJa = mk.days ? (ATLAS_DAYS_JA[mk.days] || mk.days) : '';
+                    const r = value >= 100 ? 48 : 40;
+                    return {
+                        x: mk.x, y: mk.y, r, fs: r * 0.78, fill, stroke, textFill, dash,
+                        text: value > 0 ? String(value) : '',
+                        sub: atlasSubForPoint(atlasMapName.value, mk.x, mk.y),
+                        tip: `${kind}${value > 0 ? ' 火種' + value : ''}${daysJa ? '（' + daysJa + '）' : ''}`
+                    };
+                });
+                const labels = (raw.areaLabels || []).map(lb => ({ x: lb.x, y: lb.y, name: ATLAS_LABEL_JA[lb.name] || lb.name }));
+                // サブエリア区画（塗り＋名前）。ラベルは最初の矩形の中心に置く
+                const regionDefs = (ATLAS_REGIONS[atlasMapName.value] || { list: [] }).list;
+                const regions = regionDefs.map(rg => {
+                    const r0 = rg.rects[0];
+                    return { name: rg.sub, rects: rg.rects, labelX: (r0[0] + r0[2]) / 2, labelY: r0[1] + 64 };
+                });
+                return { markers, labels, regions };
+            });
+
+            // 区画タップ → そのサブエリアの選択パネルを開く
+            const onAtlasRegionClick = (rg) => {
+                if (atlasDrag.value.moved) return;
+                atlasActiveSubKey.value = ATLAS_MAP_REALM[atlasMapName.value] + '/' + rg.name;
+            };
+
+            // マーカータップ → 属するサブエリアの選択パネルを開く
+            const onAtlasMarkerClick = (m) => {
+                if (atlasDrag.value.moved) return; // ドラッグ直後の誤タップを無視
+                if (!m.sub) return;
+                atlasActiveSubKey.value = ATLAS_MAP_REALM[atlasMapName.value] + '/' + m.sub;
+            };
+            const atlasActiveSub = computed(() => {
+                if (!atlasActiveSubKey.value) return null;
+                const [areaName, subName] = atlasActiveSubKey.value.split('/');
+                const mIdx = areas.value.findIndex(a => a && a.name === areaName);
+                if (mIdx < 0) return null;
+                const sIdx = (areas.value[mIdx].subAreas || []).findIndex(s => s && s.name === subName);
+                if (sIdx < 0) return null;
+                return { area: areas.value[mIdx], sub: areas.value[mIdx].subAreas[sIdx], mIdx, sIdx };
+            });
+
             const moveMainArea = (index, direction) => {
                 const targetIndex = index + direction;
                 if (targetIndex >= 0 && targetIndex < areas.value.length) {
@@ -3036,6 +3448,9 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand, currentTimeMult,
                 getAreaMode, getSubMode,
                 areaViewMode, setAreaViewMode, getMiniMaps, toggleMapSpot, onMapMarkerClick,
+                atlasMapNames, atlasMapName, setAtlasMap, atlasViewBox, atlasTheme, atlasModel,
+                atlasZoomBy, atlasResetView, atlasWheel, atlasPointerDown, atlasPointerMove, atlasPointerUp,
+                atlasDrag, onAtlasMarkerClick, onAtlasRegionClick, atlasActiveSub, atlasActiveSubKey,
 
             };
         }
