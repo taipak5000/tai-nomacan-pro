@@ -1083,6 +1083,25 @@
                                 @click="setAtlasMap(name)">{{ name }}</button>
                     </div>
 
+                    <!-- 🖼️ 背景画像（この端末にのみ保存。サイトへは公開されない） -->
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; font-size:12px;">
+                        <label class="btn-outline-blue" style="cursor:pointer;">
+                            🖼️ この地図の背景画像を設定
+                            <input type="file" accept="image/*" style="display:none;" @change="onAtlasBgSelected($event)">
+                        </label>
+                        <template v-if="atlasBgUrl">
+                            <button type="button" class="btn-outline-red" @click="clearAtlasBg()">背景を削除</button>
+                            <label style="display:flex; align-items:center; gap:6px; color:var(--text-gray);">
+                                濃さ
+                                <input type="range" min="0.2" max="1" step="0.05" v-model.number="atlasBgOpacity" style="width:90px; margin:0;">
+                            </label>
+                        </template>
+                        <span style="color:var(--text-gray); font-size:11px;">
+                            ※画像はこの端末のブラウザ内にのみ保存されます（サイトには公開されません）。
+                            ソルとシュガ様(@sky_solsuga)の地図(2480×3508)を読み込むとマーカーがそのまま重なります
+                        </span>
+                    </div>
+
                     <div class="atlas-frame">
                         <div class="atlas-zoom-controls">
                             <button type="button" class="atlas-zoom-btn" @click="atlasZoomBy(1.5)">＋</button>
@@ -1100,21 +1119,28 @@
                              @wheel.prevent="atlasWheel($event)">
                             <!-- 背景（紙面） -->
                             <rect x="0" y="0" width="2480" height="3508" :fill="atlasTheme.sky"></rect>
-                            <!-- サブエリア区画（タップでも選択パネルを開ける） -->
+                            <!-- 🖼️ ローカル読み込みの背景画像（端末内のみ・非公開） -->
+                            <image v-if="atlasBgUrl" :href="atlasBgUrl" x="0" y="0" width="2480" height="3508"
+                                   :opacity="atlasBgOpacity" preserveAspectRatio="xMidYMid slice"></image>
+                            <!-- サブエリア区画（タップでも選択パネルを開ける）。背景画像があるときは控えめに表示 -->
                             <g v-for="(rg, ri) in atlasModel.regions" :key="'rg'+ri" style="cursor:pointer;"
                                @click="onAtlasRegionClick(rg)">
                                 <rect v-for="(rc, rci) in rg.rects" :key="'rc'+rci"
                                       :x="rc[0]" :y="rc[1]" :width="rc[2]-rc[0]" :height="rc[3]-rc[1]"
-                                      rx="26" :fill="atlasTheme.blob" opacity="0.5"
-                                      :stroke="atlasTheme.blobLine" stroke-width="4" stroke-dasharray="16 12"></rect>
-                                <text class="atlas-area-label" :x="rg.labelX" :y="rg.labelY"
+                                      rx="26" :fill="atlasBgUrl ? 'transparent' : atlasTheme.blob"
+                                      :opacity="atlasBgUrl ? 1 : 0.5" pointer-events="all"
+                                      :stroke="atlasTheme.blobLine" :stroke-opacity="atlasBgUrl ? 0.35 : 1"
+                                      stroke-width="4" stroke-dasharray="16 12"></rect>
+                                <text v-if="!atlasBgUrl" class="atlas-area-label" :x="rg.labelX" :y="rg.labelY"
                                       style="font-size:46px;"
                                       :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ rg.name }}</text>
                             </g>
-                            <!-- 通路・ポイント名ラベル -->
-                            <text v-for="(lb, li) in atlasModel.labels" :key="'lb'+li"
-                                  class="atlas-area-label" :x="lb.x" :y="lb.y"
-                                  :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ lb.name }}</text>
+                            <!-- 通路・ポイント名ラベル（背景画像があるときは画像側の表記に任せて非表示） -->
+                            <template v-if="!atlasBgUrl">
+                                <text v-for="(lb, li) in atlasModel.labels" :key="'lb'+li"
+                                      class="atlas-area-label" :x="lb.x" :y="lb.y"
+                                      :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ lb.name }}</text>
+                            </template>
                             <!-- 🔴 火種マーカー（実座標） -->
                             <g v-for="(m, mi) in atlasModel.markers" :key="'am'+mi"
                                class="atlas-marker"
@@ -2827,6 +2853,56 @@ plannedUsage.value = 0;
                 return { area: areas.value[mIdx], sub: areas.value[mIdx].subAreas[sIdx], mIdx, sIdx };
             });
 
+            /* ── 🖼️ 精密マップの背景画像（ローカル読み込み） ──
+               ユーザーが自分の端末に保存した地図画像（例: ソルとシュガ様が公開されている地図）を
+               ブラウザの IndexedDB に保存して背景表示する。画像は端末内にのみ保存され、
+               サイトへのアップロード・公開は一切行わない（権利保護のため同梱もしない）。
+               マーカー座標は同じ 2480x3508 基準のため、読み込むだけで位置が一致する。 */
+            const atlasBgUrl = ref('');
+            const atlasBgOpacity = ref(parseFloat(localStorage.getItem('sky_atlas_bg_opacity')) || 0.9);
+            watch(atlasBgOpacity, v => { try { localStorage.setItem('sky_atlas_bg_opacity', String(v)); } catch (e) { /* noop */ } });
+
+            const atlasBgDb = () => new Promise((resolve, reject) => {
+                const req = indexedDB.open('sky_atlas_bg', 1);
+                req.onupgradeneeded = () => { req.result.createObjectStore('images'); };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+            const atlasBgStore = async (mode, key, value) => {
+                const db = await atlasBgDb();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('images', mode === 'get' ? 'readonly' : 'readwrite');
+                    const st = tx.objectStore('images');
+                    const req = mode === 'get' ? st.get(key) : (mode === 'put' ? st.put(value, key) : st.delete(key));
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            };
+            const loadAtlasBg = async () => {
+                try {
+                    if (atlasBgUrl.value) { URL.revokeObjectURL(atlasBgUrl.value); atlasBgUrl.value = ''; }
+                    const blob = await atlasBgStore('get', atlasMapName.value);
+                    if (blob) atlasBgUrl.value = URL.createObjectURL(blob);
+                } catch (e) { console.error(e); }
+            };
+            const onAtlasBgSelected = async (event) => {
+                const file = event.target.files && event.target.files[0];
+                event.target.value = '';
+                if (!file) return;
+                try {
+                    await atlasBgStore('put', atlasMapName.value, file);
+                    await loadAtlasBg();
+                } catch (e) { console.error(e); }
+            };
+            const clearAtlasBg = async () => {
+                try {
+                    await atlasBgStore('delete', atlasMapName.value);
+                    if (atlasBgUrl.value) { URL.revokeObjectURL(atlasBgUrl.value); }
+                    atlasBgUrl.value = '';
+                } catch (e) { console.error(e); }
+            };
+            watch(atlasMapName, loadAtlasBg, { immediate: true });
+
             const moveMainArea = (index, direction) => {
                 const targetIndex = index + direction;
                 if (targetIndex >= 0 && targetIndex < areas.value.length) {
@@ -3451,6 +3527,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 atlasMapNames, atlasMapName, setAtlasMap, atlasViewBox, atlasTheme, atlasModel,
                 atlasZoomBy, atlasResetView, atlasWheel, atlasPointerDown, atlasPointerMove, atlasPointerUp,
                 atlasDrag, onAtlasMarkerClick, onAtlasRegionClick, atlasActiveSub, atlasActiveSubKey,
+                atlasBgUrl, atlasBgOpacity, onAtlasBgSelected, clearAtlasBg,
 
             };
         }
