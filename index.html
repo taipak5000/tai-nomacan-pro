@@ -1971,8 +1971,9 @@ plannedUsage.value = 0;
             const save = () => {
                 try {
                     const dataToSave = {
+                        areasDataVersion: Number(window.SKY_AREAS_DATA_VERSION) || 1,
                         areas: areas.value,
-                        placedItems: placedItems.value, 
+                        placedItems: placedItems.value,
                         carryOverPercent: carryOverPercent.value,
                         targetDate: targetDate.value,
                         currentCandles: currentCandles.value,
@@ -2031,25 +2032,28 @@ plannedUsage.value = 0;
                                 };
                             });
 
-                            // 🧩 スポット詳細化マイグレーション:
-                            // 保存データが「エリア全体」など1スポット集約のままで、既定データ(areas-data.js)側が
-                            // 複数スポットに細分化されたサブエリアは、新しい詳細スポットに置き換える。
-                            // （細分化後の合計は従来の合計と一致させてあるため、集計結果は変わらない）
+                            // 🧩 スポット構成マイグレーション:
+                            // areas-data.js の SKY_AREAS_DATA_VERSION が保存時より新しい場合、
+                            // 既定データに存在する同名メイン/サブエリアのスポット一覧を新構成へ置き換える
+                            // （Wiki準拠の正確な火種データへの更新など）。
+                            // サブエリアの所要時間(time)・ユーザー独自のエリア/サブエリアはそのまま保持される。
                             {
-                                const defaultsForMigration = getDefaultAreas(0);
-                                areas.value.forEach(area => {
-                                    if (!area) return;
-                                    const defArea = defaultsForMigration.find(d => d.name === area.name);
-                                    if (!defArea) return;
-                                    (area.subAreas || []).forEach(sub => {
-                                        if (!sub) return;
-                                        const defSub = (defArea.subAreas || []).find(d => d.name === sub.name);
-                                        if (!defSub) return;
-                                        if (Array.isArray(sub.spots) && sub.spots.length === 1 && defSub.spots.length >= 2) {
+                                const currentDataVersion = Number(window.SKY_AREAS_DATA_VERSION) || 1;
+                                const savedDataVersion = Number(decoded.areasDataVersion) || 1;
+                                if (savedDataVersion < currentDataVersion) {
+                                    const defaultsForMigration = getDefaultAreas(0);
+                                    areas.value.forEach(area => {
+                                        if (!area) return;
+                                        const defArea = defaultsForMigration.find(d => d.name === area.name);
+                                        if (!defArea) return;
+                                        (area.subAreas || []).forEach(sub => {
+                                            if (!sub) return;
+                                            const defSub = (defArea.subAreas || []).find(d => d.name === sub.name);
+                                            if (!defSub || !Array.isArray(defSub.spots) || defSub.spots.length === 0) return;
                                             sub.spots = defSub.spots.map(sp => ({ ...sp, id: uuid(), isSelected: false }));
-                                        }
+                                        });
                                     });
-                                });
+                                }
                             }
                             placedItems.value = Array.isArray(decoded.placedItems) ? decoded.placedItems : [];
                             carryOverPercent.value = decoded.carryOverPercent || 0;
