@@ -2030,6 +2030,27 @@ plannedUsage.value = 0;
                                     })
                                 };
                             });
+
+                            // 🧩 スポット詳細化マイグレーション:
+                            // 保存データが「エリア全体」など1スポット集約のままで、既定データ(areas-data.js)側が
+                            // 複数スポットに細分化されたサブエリアは、新しい詳細スポットに置き換える。
+                            // （細分化後の合計は従来の合計と一致させてあるため、集計結果は変わらない）
+                            {
+                                const defaultsForMigration = getDefaultAreas(0);
+                                areas.value.forEach(area => {
+                                    if (!area) return;
+                                    const defArea = defaultsForMigration.find(d => d.name === area.name);
+                                    if (!defArea) return;
+                                    (area.subAreas || []).forEach(sub => {
+                                        if (!sub) return;
+                                        const defSub = (defArea.subAreas || []).find(d => d.name === sub.name);
+                                        if (!defSub) return;
+                                        if (Array.isArray(sub.spots) && sub.spots.length === 1 && defSub.spots.length >= 2) {
+                                            sub.spots = defSub.spots.map(sp => ({ ...sp, id: uuid(), isSelected: false }));
+                                        }
+                                    });
+                                });
+                            }
                             placedItems.value = Array.isArray(decoded.placedItems) ? decoded.placedItems : [];
                             carryOverPercent.value = decoded.carryOverPercent || 0;
                             candleMemo.value = decoded.candleMemo || "";

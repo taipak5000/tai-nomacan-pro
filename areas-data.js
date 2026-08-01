@@ -78,10 +78,44 @@ const SKY_DEFAULT_AREAS = [
         isExpanded: false,
         subAreas: [
             // 孤島は各エリアが離れており飛行必須
-            { name: "孤島台地",        isExpanded: false, time: 120, spots: [{ name: "エリア全体", light: 98,  time: 0, isSelected: false }] },
-            { name: "孤島の神殿",      isExpanded: false, time: 90,  spots: [{ name: "エリア全体", light: 37,  time: 0, isSelected: false }] },
-            { name: "孤島の見晴らし台", isExpanded: false, time: 150, spots: [{ name: "エリア全体", light: 89,  time: 0, isSelected: false }] },
-            { name: "預言者の石窟",    isExpanded: false, time: 300, spots: [{ name: "エリア全体", light: 673, time: 0, isSelected: false }] }
+            // ※各スポットの火種量は「エリア全体」の従来合計を、地図上の火種の分布を参考に按分した目安値
+            {
+                name: "孤島台地", isExpanded: false, time: 120,
+                spots: [
+                    { name: "スタート洞窟", light: 18, time: 0, isSelected: false },
+                    { name: "左手の遺跡",   light: 20, time: 0, isSelected: false },
+                    { name: "中央の一枚岩", light: 22, time: 0, isSelected: false },
+                    { name: "右手の洞窟",   light: 20, time: 0, isSelected: false },
+                    { name: "波打ち際",     light: 18, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "孤島の神殿", isExpanded: false, time: 90,
+                spots: [
+                    { name: "神殿内部",     light: 17, time: 0, isSelected: false },
+                    { name: "神殿前テラス", light: 12, time: 0, isSelected: false },
+                    { name: "崖沿いの燭台", light: 8,  time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "孤島の見晴らし台", isExpanded: false, time: 150,
+                spots: [
+                    { name: "塔内の部屋",   light: 29, time: 0, isSelected: false },
+                    { name: "見晴らし広場", light: 32, time: 0, isSelected: false },
+                    { name: "崖沿いの小道", light: 28, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "預言者の石窟", isExpanded: false, time: 300,
+                spots: [
+                    { name: "石窟ホール", light: 88,  time: 0, isSelected: false },
+                    { name: "風の道",     light: 65,  time: 0, isSelected: false },
+                    { name: "水の試練",   light: 120, time: 0, isSelected: false },
+                    { name: "地の試練",   light: 130, time: 0, isSelected: false },
+                    { name: "風の試練",   light: 130, time: 0, isSelected: false },
+                    { name: "火の試練",   light: 140, time: 0, isSelected: false }
+                ]
+            }
         ]
     },
     {
@@ -89,13 +123,63 @@ const SKY_DEFAULT_AREAS = [
         isExpanded: false,
         subAreas: [
             // 草原：比較的広い、飛行で短縮しやすい
-            { name: "ロビー・蝶々の住処",    isExpanded: false, time: 90,  spots: [{ name: "エリア全体", light: 55,  time: 0, isSelected: false }] },
-            { name: "草原の村",              isExpanded: false, time: 150, spots: [{ name: "エリア全体", light: 104, time: 0, isSelected: false }] },
-            { name: "草原高地（オレオ）",    isExpanded: false, time: 180, spots: [{ name: "エリア全体", light: 99,  time: 0, isSelected: false }] },
-            { name: "草原の神殿",            isExpanded: false, time: 120, spots: [{ name: "エリア全体", light: 85,  time: 0, isSelected: false }] },
-            { name: "草原の洞窟",            isExpanded: false, time: 90,  spots: [{ name: "エリア全体", light: 45,  time: 0, isSelected: false }] },
-            { name: "鳥の巣",               isExpanded: false, time: 90,  spots: [{ name: "エリア全体", light: 50,  time: 0, isSelected: false }] },
-            { name: "楽園",                 isExpanded: false, time: 240, spots: [{ name: "エリア全体", light: 349, time: 0, isSelected: false }] }
+            {
+                name: "ロビー・蝶々の住処", isExpanded: false, time: 90,
+                spots: [
+                    { name: "蝶々の草原",   light: 20, time: 0, isSelected: false },
+                    { name: "洞窟前の祠",   light: 15, time: 0, isSelected: false },
+                    { name: "ロビー奥",     light: 20, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原の村", isExpanded: false, time: 150,
+                spots: [
+                    { name: "村の広場",     light: 30, time: 0, isSelected: false },
+                    { name: "民家まわり",   light: 28, time: 0, isSelected: false },
+                    { name: "村はずれの祠", light: 26, time: 0, isSelected: false },
+                    { name: "高台への道",   light: 20, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原高地（オレオ）", isExpanded: false, time: 180,
+                spots: [
+                    { name: "山道",     light: 30, time: 0, isSelected: false },
+                    { name: "頂上の池", light: 39, time: 0, isSelected: false },
+                    { name: "峰の祠",   light: 30, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原の神殿", isExpanded: false, time: 120,
+                spots: [
+                    { name: "神殿内部",   light: 24, time: 0, isSelected: false },
+                    { name: "神殿前",     light: 31, time: 0, isSelected: false },
+                    { name: "八人エリア", light: 30, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "草原の洞窟", isExpanded: false, time: 90,
+                spots: [
+                    { name: "洞窟内の池", light: 25, time: 0, isSelected: false },
+                    { name: "奥の燭台",   light: 20, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "鳥の巣", isExpanded: false, time: 90,
+                spots: [
+                    { name: "巣の島",     light: 26, time: 0, isSelected: false },
+                    { name: "周辺の小島", light: 24, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "楽園", isExpanded: false, time: 240,
+                spots: [
+                    { name: "楽園の島々", light: 120, time: 0, isSelected: false },
+                    { name: "隠者の島",   light: 60,  time: 0, isSelected: false },
+                    { name: "泉エリア",   light: 60,  time: 0, isSelected: false },
+                    { name: "上空の島",   light: 60,  time: 0, isSelected: false },
+                    { name: "ワープ周辺", light: 49,  time: 0, isSelected: false }
+                ]
+            }
         ]
     },
     {
@@ -112,14 +196,69 @@ const SKY_DEFAULT_AREAS = [
                     { name: "火・木・土 エリア全体",     light: 45, time: 0, isSelected: false, group: "曜日" }
                 ]
             },
-            { name: "小川",           isExpanded: false, time: 240, spots: [{ name: "エリア全体", light: 227, time: 0, isSelected: false }] },
-            { name: "墓場（神殿前）", isExpanded: false, time: 210, spots: [{ name: "エリア全体", light: 175, time: 0, isSelected: false }] },
-            { name: "高台広場（晴れ間）", isExpanded: false, time: 90, spots: [{ name: "エリア全体", light: 42, time: 0, isSelected: false }] },
-            { name: "大空洞",         isExpanded: false, time: 120, spots: [{ name: "エリア全体", light: 57,  time: 0, isSelected: false }] },
-            { name: "雨林の神殿",     isExpanded: false, time: 120, spots: [{ name: "エリア全体", light: 59,  time: 0, isSelected: false }] },
-            { name: "聖なる池",       isExpanded: false, time: 60,  spots: [{ name: "エリア全体", light: 24,  time: 0, isSelected: false }] },
-            { name: "ツリーハウス",   isExpanded: false, time: 150, spots: [{ name: "エリア全体", light: 55,  time: 0, isSelected: false }] },
-            { name: "風の街道",       isExpanded: false, time: 300, spots: [{ name: "エリア全体", light: 198, time: 0, isSelected: false }] }
+            {
+                name: "小川", isExpanded: false, time: 240,
+                spots: [
+                    { name: "入口の川辺", light: 45, time: 0, isSelected: false },
+                    { name: "中流の巣",   light: 50, time: 0, isSelected: false },
+                    { name: "東屋まわり", light: 47, time: 0, isSelected: false },
+                    { name: "上流の岩場", light: 45, time: 0, isSelected: false },
+                    { name: "出口付近",   light: 40, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "墓場（神殿前）", isExpanded: false, time: 210,
+                spots: [
+                    { name: "骨の原",     light: 60, time: 0, isSelected: false },
+                    { name: "神殿への道", light: 55, time: 0, isSelected: false },
+                    { name: "川沿い",     light: 60, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "高台広場（晴れ間）", isExpanded: false, time: 90,
+                spots: [
+                    { name: "広場中央",     light: 22, time: 0, isSelected: false },
+                    { name: "ベンチまわり", light: 20, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "大空洞", isExpanded: false, time: 120,
+                spots: [
+                    { name: "空洞内部",   light: 30, time: 0, isSelected: false },
+                    { name: "崖の燭台",   light: 27, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "雨林の神殿", isExpanded: false, time: 120,
+                spots: [
+                    { name: "神殿内部", light: 30, time: 0, isSelected: false },
+                    { name: "神殿前",   light: 29, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "聖なる池", isExpanded: false, time: 60,
+                spots: [
+                    { name: "池のほとり", light: 13, time: 0, isSelected: false },
+                    { name: "岩の上",     light: 11, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "ツリーハウス", isExpanded: false, time: 150,
+                spots: [
+                    { name: "家の中",   light: 20, time: 0, isSelected: false },
+                    { name: "テラス",   light: 18, time: 0, isSelected: false },
+                    { name: "下の池",   light: 17, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "風の街道", isExpanded: false, time: 300,
+                spots: [
+                    { name: "街道入り口", light: 50, time: 0, isSelected: false },
+                    { name: "中間の岩場", light: 50, time: 0, isSelected: false },
+                    { name: "出口の崖",   light: 50, time: 0, isSelected: false },
+                    { name: "隠し部屋",   light: 48, time: 0, isSelected: false }
+                ]
+            }
         ]
     },
     {
@@ -127,13 +266,60 @@ const SKY_DEFAULT_AREAS = [
         isExpanded: false,
         subAreas: [
             // 峡谷：陸レ・空レで大きく変わる。レース系は長い
-            { name: "ロビー",                isExpanded: false, time: 90,  spots: [{ name: "エリア合計", light: 55,  time: 0, isSelected: false }] },
-            { name: "凍った湖（アイスリンク）", isExpanded: false, time: 120, spots: [{ name: "エリア合計", light: 64,  time: 0, isSelected: false }] },
-            { name: "陸通り（陸レ）",        isExpanded: false, time: 360, spots: [{ name: "エリア合計", light: 160, time: 0, isSelected: false }] },
-            { name: "城塞都市",              isExpanded: false, time: 150, spots: [{ name: "エリア合計", light: 79,  time: 0, isSelected: false }] },
-            { name: "空通り（空レ）",        isExpanded: false, time: 300, spots: [{ name: "エリア合計", light: 170, time: 0, isSelected: false }] },
-            { name: "円形劇場",              isExpanded: false, time: 60,  spots: [{ name: "エリア合計", light: 22,  time: 0, isSelected: false }] },
-            { name: "峡谷の神殿",            isExpanded: false, time: 150, spots: [{ name: "エリア合計", light: 93,  time: 0, isSelected: false }] },
+            {
+                name: "ロビー", isExpanded: false, time: 90,
+                spots: [
+                    { name: "坂の途中", light: 28, time: 0, isSelected: false },
+                    { name: "売店前",   light: 27, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "凍った湖（アイスリンク）", isExpanded: false, time: 120,
+                spots: [
+                    { name: "リンク中央", light: 22, time: 0, isSelected: false },
+                    { name: "観客席側",   light: 21, time: 0, isSelected: false },
+                    { name: "祠まわり",   light: 21, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "陸通り（陸レ）", isExpanded: false, time: 360,
+                spots: [
+                    { name: "スタート地点", light: 40, time: 0, isSelected: false },
+                    { name: "中間コース",   light: 60, time: 0, isSelected: false },
+                    { name: "ゴール手前",   light: 60, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "城塞都市", isExpanded: false, time: 150,
+                spots: [
+                    { name: "城塞前広場", light: 27, time: 0, isSelected: false },
+                    { name: "城壁沿い",   light: 26, time: 0, isSelected: false },
+                    { name: "塔の上",     light: 26, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "空通り（空レ）", isExpanded: false, time: 300,
+                spots: [
+                    { name: "スタート台",   light: 40, time: 0, isSelected: false },
+                    { name: "空中リング",   light: 65, time: 0, isSelected: false },
+                    { name: "ゴールエリア", light: 65, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "円形劇場", isExpanded: false, time: 60,
+                spots: [
+                    { name: "客席",     light: 12, time: 0, isSelected: false },
+                    { name: "中央舞台", light: 10, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "峡谷の神殿", isExpanded: false, time: 150,
+                spots: [
+                    { name: "神殿内部", light: 33, time: 0, isSelected: false },
+                    { name: "神殿前",   light: 30, time: 0, isSelected: false },
+                    { name: "神殿裏手", light: 30, time: 0, isSelected: false }
+                ]
+            },
             {
                 name: "夢見の町",
                 isExpanded: false,
@@ -143,7 +329,14 @@ const SKY_DEFAULT_AREAS = [
                     { name: "温泉DC",         light: 50, time: 0, isSelected: false }
                 ]
             },
-            { name: "隠者の峠",     isExpanded: false, time: 180, spots: [{ name: "エリア合計", light: 102, time: 0, isSelected: false }] },
+            {
+                name: "隠者の峠", isExpanded: false, time: 180,
+                spots: [
+                    { name: "谷の入り口", light: 34, time: 0, isSelected: false },
+                    { name: "隠者の家",   light: 34, time: 0, isSelected: false },
+                    { name: "奥の崖",     light: 34, time: 0, isSelected: false }
+                ]
+            },
             { name: "奏の音楽堂",   isExpanded: false, time: 120, spots: [{ name: "演奏8割成功", light: 100, time: 0, isSelected: false }] }
         ]
     },
@@ -202,9 +395,29 @@ const SKY_DEFAULT_AREAS = [
                     { name: "日曜日エリア合計", light: 101, time: 0, isSelected: false, group: "日曜日" }
                 ]
             },
-            { name: "捨て地神殿",        isExpanded: false, time: 90,  spots: [{ name: "エリア合計", light: 40,  time: 0, isSelected: false }] },
-            { name: "忘れられた方舟",     isExpanded: false, time: 240, spots: [{ name: "エリア合計", light: 109, time: 0, isSelected: false }] },
-            { name: "秘宝の岩礁",         isExpanded: false, time: 300, spots: [{ name: "エリア合計", light: 188, time: 0, isSelected: false }] }
+            {
+                name: "捨て地神殿", isExpanded: false, time: 90,
+                spots: [
+                    { name: "神殿内部",   light: 22, time: 0, isSelected: false },
+                    { name: "入口の廊下", light: 18, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "忘れられた方舟", isExpanded: false, time: 240,
+                spots: [
+                    { name: "方舟の甲板", light: 40, time: 0, isSelected: false },
+                    { name: "沼地まわり", light: 35, time: 0, isSelected: false },
+                    { name: "裏の岩場",   light: 34, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "秘宝の岩礁", isExpanded: false, time: 300,
+                spots: [
+                    { name: "岩礁の浅瀬",     light: 65, time: 0, isSelected: false },
+                    { name: "沈没船まわり",   light: 63, time: 0, isSelected: false },
+                    { name: "外洋の岩",       light: 60, time: 0, isSelected: false }
+                ]
+            }
         ]
     },
     {
@@ -213,24 +426,90 @@ const SKY_DEFAULT_AREAS = [
         subAreas: [
             // 書庫：縦に長い・各階の移動。4階と保管庫は火種が多い
             { name: "ロビー",                   isExpanded: false, time: 30,  spots: [{ name: "エリア合計", light: 5,   time: 0, isSelected: false }] },
-            { name: "1階",                      isExpanded: false, time: 120, spots: [{ name: "エリア合計", light: 63,  time: 0, isSelected: false }] },
-            { name: "2階",                      isExpanded: false, time: 180, spots: [{ name: "エリア合計", light: 106, time: 0, isSelected: false }] },
+            {
+                name: "1階", isExpanded: false, time: 120,
+                spots: [
+                    { name: "中央の祭壇", light: 33, time: 0, isSelected: false },
+                    { name: "両脇の書架", light: 30, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "2階", isExpanded: false, time: 180,
+                spots: [
+                    { name: "フロア中央", light: 40, time: 0, isSelected: false },
+                    { name: "蝶の間",     light: 33, time: 0, isSelected: false },
+                    { name: "隠し部屋",   light: 33, time: 0, isSelected: false }
+                ]
+            },
             { name: "3階",                      isExpanded: false, time: 60,  spots: [{ name: "エリア合計", light: 12,  time: 0, isSelected: false }] },
-            { name: "4階",                      isExpanded: false, time: 300, spots: [{ name: "エリア合計", light: 222, time: 0, isSelected: false }] },
-            { name: "書庫の神殿",               isExpanded: false, time: 120, spots: [{ name: "エリア合計", light: 64,  time: 0, isSelected: false }] },
-            { name: "資料庫",                   isExpanded: false, time: 90,  spots: [{ name: "エリア合計", light: 50,  time: 0, isSelected: false }] },
+            {
+                name: "4階", isExpanded: false, time: 300,
+                spots: [
+                    { name: "浮島・下層",   light: 60, time: 0, isSelected: false },
+                    { name: "浮島・中層",   light: 60, time: 0, isSelected: false },
+                    { name: "浮島・上層",   light: 52, time: 0, isSelected: false },
+                    { name: "隠者側の島",   light: 50, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "書庫の神殿", isExpanded: false, time: 120,
+                spots: [
+                    { name: "最上階の祭壇", light: 34, time: 0, isSelected: false },
+                    { name: "天窓テラス",   light: 30, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "資料庫", isExpanded: false, time: 90,
+                spots: [
+                    { name: "資料室の机", light: 26, time: 0, isSelected: false },
+                    { name: "奥の棚",     light: 24, time: 0, isSelected: false }
+                ]
+            },
             { name: "君憶う保存庫",             isExpanded: false, time: 90,  spots: [{ name: "エリア合計", light: 31,  time: 0, isSelected: false }] },
-            { name: "壊れし燈の保管庫（修繕）", isExpanded: false, time: 360, spots: [{ name: "エリア合計", light: 402, time: 0, isSelected: false }] },
-            { name: "秘密のエリア",             isExpanded: false, time: 120, spots: [{ name: "エリア合計", light: 57,  time: 0, isSelected: false }] }
+            {
+                name: "壊れし燈の保管庫（修繕）", isExpanded: false, time: 360,
+                spots: [
+                    { name: "前半エリア", light: 140, time: 0, isSelected: false },
+                    { name: "大広間",     light: 132, time: 0, isSelected: false },
+                    { name: "最奥エリア", light: 130, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "秘密のエリア", isExpanded: false, time: 120,
+                spots: [
+                    { name: "オフィスの部屋", light: 30, time: 0, isSelected: false },
+                    { name: "廊下",           light: 27, time: 0, isSelected: false }
+                ]
+            }
         ]
     },
     {
         name: "コラボルーム",
         isExpanded: false,
         subAreas: [
-            { name: "星月夜の砂漠",             isExpanded: false, time: 240, spots: [{ name: "エリア合計", light: 140, time: 0, isSelected: false }] },
-            { name: "三日月オアシス",           isExpanded: false, time: 120, spots: [{ name: "エリア合計", light: 43,  time: 0, isSelected: false }] },
-            { name: "最後の街（ふたつの灯火）", isExpanded: false, time: 300, spots: [{ name: "ミニゲーム3種合計", light: 150, time: 0, isSelected: false }] }
+            {
+                name: "星月夜の砂漠", isExpanded: false, time: 240,
+                spots: [
+                    { name: "星の砂丘", light: 50, time: 0, isSelected: false },
+                    { name: "月の泉",   light: 45, time: 0, isSelected: false },
+                    { name: "大星屑",   light: 45, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "三日月オアシス", isExpanded: false, time: 120,
+                spots: [
+                    { name: "泉のほとり", light: 23, time: 0, isSelected: false },
+                    { name: "ヤシの木陰", light: 20, time: 0, isSelected: false }
+                ]
+            },
+            {
+                name: "最後の街（ふたつの灯火）", isExpanded: false, time: 300,
+                spots: [
+                    { name: "ミニゲーム①", light: 50, time: 0, isSelected: false },
+                    { name: "ミニゲーム②", light: 50, time: 0, isSelected: false },
+                    { name: "ミニゲーム③", light: 50, time: 0, isSelected: false }
+                ]
+            }
         ]
     },
     {
