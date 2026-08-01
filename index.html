@@ -281,6 +281,93 @@
         .flex-group { display: flex; align-items: center; gap: 4px; }
         .flex-group input { width: 65px !important; }
 
+        /* ═══ 🗺️ 地図で選ぶビュー（オリジナル模式図） ═══ */
+        .view-toggle-row {
+            display: flex; gap: 8px; margin-bottom: 14px;
+        }
+        .view-toggle-btn {
+            flex: 1; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 700;
+            border: 1px solid var(--border-color); background: var(--stat-box-bg); color: var(--text-gray);
+            cursor: pointer; text-align: center;
+        }
+        .view-toggle-btn.active {
+            background: var(--accent-blue); border-color: var(--accent-blue); color: #fff;
+        }
+
+        .realm-map-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 14px;
+            background: var(--stat-box-bg);
+        }
+        .realm-map-header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; flex-wrap: wrap; margin-bottom: 6px;
+        }
+        .realm-map-title {
+            font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px;
+        }
+        .realm-map-stats {
+            font-size: 12.5px; color: var(--text-gray); display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        .realm-map-stats b { color: var(--accent-orange); }
+
+        .realm-map-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+        }
+        .realm-map-svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        .realm-map-path { fill: none; stroke-width: 3; stroke-dasharray: 2 8; stroke-linecap: round; opacity: 0.55; }
+        .realm-node { cursor: pointer; }
+        .realm-node-circle {
+            stroke-width: 3;
+            transition: transform 0.12s ease;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+        .realm-node:hover .realm-node-circle { transform: scale(1.07); }
+        .realm-node-circle.is-active { stroke-width: 4.5; }
+        .realm-node-icon { font-size: 17px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+        .realm-node-label {
+            font-size: 10.5px; font-weight: 700; text-anchor: middle;
+            fill: var(--text-color); pointer-events: none;
+        }
+        .realm-node-badge-bg { pointer-events: none; }
+        .realm-node-badge-text {
+            font-size: 9.5px; font-weight: 800; fill: #fff; text-anchor: middle; dominant-baseline: central;
+            pointer-events: none;
+        }
+
+        .map-spot-panel {
+            margin-top: 10px;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            background: var(--card-bg);
+            animation: fadeIn 0.15s ease-out;
+        }
+        .map-spot-panel-title {
+            font-size: 12.5px; font-weight: 800; margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .map-spot-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .map-spot-chip {
+            display: flex; align-items: center; gap: 5px;
+            padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+            border: 1.5px solid var(--border-color); background: var(--stat-box-bg); color: var(--text-color);
+            cursor: pointer; user-select: none;
+        }
+        .map-spot-chip.selected {
+            background: var(--accent-blue); border-color: var(--accent-blue); color: #fff;
+        }
+        .map-spot-chip .chip-light { opacity: 0.85; font-weight: 700; }
+
+        .realm-map-empty {
+            font-size: 12px; color: var(--text-gray); text-align: center; padding: 18px 0;
+        }
+
         .route-path-box {
             font-size: 11px;
             color: var(--text-gray);
@@ -902,7 +989,76 @@
 
             <div class="section-card">
                 <div class="section-header">🗺️ エリア管理</div>
-                
+
+                <div class="view-toggle-row">
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'list'}" @click="setAreaViewMode('list')">📋 リストで選ぶ</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'map'}" @click="setAreaViewMode('map')">🗺️ 地図で選ぶ</button>
+                </div>
+
+                <!-- ══════════════════ 🗺️ 地図ビュー（オリジナル模式図。実在の地図画像は使用していません） ══════════════════ -->
+                <div v-if="areaViewMode === 'map'">
+                    <div v-for="(mainArea, mIdx) in areas" :key="'map_'+mainArea.id" class="realm-map-card">
+                        <div class="realm-map-header">
+                            <div class="realm-map-title">
+                                <span>{{ getRealmTheme(mainArea).icon }}</span>
+                                <span>{{ mainArea.name }}</span>
+                                <span v-if="getMainAreaSelectedCount(mainArea) > 0" style="background:var(--accent-blue); color:#fff; font-size:11px; font-weight:bold; padding:2px 7px; border-radius:10px;">
+                                    {{ getMainAreaSelectedCount(mainArea) }}件選択中
+                                </span>
+                            </div>
+                            <div class="realm-map-stats">
+                                <span>🔥 <b>{{ getMainAreaStats(mainArea).light }}</b></span>
+                                <span>⚡ <b>{{ getMainAreaStats(mainArea).eff.toFixed(1) }}</b>/s</span>
+                            </div>
+                        </div>
+
+                        <div v-if="!mainArea.subAreas || mainArea.subAreas.length === 0" class="realm-map-empty">サブエリアがまだありません</div>
+
+                        <div v-else class="realm-map-scroll">
+                            <svg class="realm-map-svg"
+                                 :view-box.camel="`0 0 ${getRealmMapSize(mainArea).width} ${getRealmMapSize(mainArea).height}`"
+                                 :width="getRealmMapSize(mainArea).width" :height="getRealmMapSize(mainArea).height">
+                                <polyline class="realm-map-path" :points="getRealmMapPathPoints(mainArea)" :stroke="getRealmTheme(mainArea).b"></polyline>
+                                <g v-for="node in getRealmNodes(mainArea)" :key="node.sub.id" class="realm-node"
+                                   :transform="`translate(${node.x},${node.y})`" @click="onRealmNodeClick(node.sub)">
+                                    <circle class="realm-node-circle" :class="{'is-active': node.selectedCount > 0}"
+                                            r="27"
+                                            :fill="node.selectedCount > 0 ? getRealmTheme(mainArea).a : 'var(--card-bg)'"
+                                            :stroke="getRealmTheme(mainArea).a"></circle>
+                                    <text class="realm-node-icon" y="-1" :fill="node.selectedCount > 0 ? '#fff' : 'var(--text-color)'">
+                                        {{ node.selectedCount > 0 ? '🔥' : (node.sMode === 'spot' ? '📍' : '⬤') }}
+                                    </text>
+                                    <text class="realm-node-label" y="42">{{ node.sub.name }}</text>
+                                    <g v-if="node.totalCount > 1" :transform="`translate(20,-20)`">
+                                        <circle class="realm-node-badge-bg" r="11" :fill="getRealmTheme(mainArea).b"></circle>
+                                        <text class="realm-node-badge-text">{{ node.selectedCount }}/{{ node.totalCount }}</text>
+                                    </g>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- スポットを持つサブエリアの詳細パネル（タップで開閉） -->
+                        <template v-for="(subArea, sIdx) in mainArea.subAreas" :key="'panel_'+subArea.id">
+                            <div v-if="subArea.isExpanded && getSubMode(subArea) === 'spot'" class="map-spot-panel">
+                                <div class="map-spot-panel-title">
+                                    <span>📍 {{ subArea.name }}</span>
+                                    <span style="color:var(--text-gray); font-weight:600;">⏱️ {{ subArea.time || 0 }}秒 ／ ⚡ {{ getSubAreaStats(subArea).eff.toFixed(1) }}/s</span>
+                                </div>
+                                <div class="map-spot-chips">
+                                    <div v-for="(spot, spIdx) in subArea.spots" :key="spot.id"
+                                         class="map-spot-chip" :class="{selected: spot.isSelected}"
+                                         @click="toggleMapSpot(mIdx, sIdx, spIdx)">
+                                        <span>{{ spot.isSelected ? '✅' : '⬜' }} {{ spot.name }}</span>
+                                        <span class="chip-light">🔥{{ spot.light }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- ══════════════════ 📋 リストビュー（従来のアコーディオン） ══════════════════ -->
+                <template v-if="areaViewMode === 'list'">
                 <div v-for="(mainArea, mIdx) in areas" :key="mainArea.id" class="area-accordion">
 
                     <!-- ══ メインエリア ヘッダー行 ══ -->
@@ -1050,6 +1206,7 @@
                         <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
                     </div>
                 </div>
+                </template>
 
                 <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">➕ 新規メインエリアを追加</button>
             </div>
@@ -1866,10 +2023,6 @@ plannedUsage.value = 0;
                 
                 localStorage.removeItem('sky_tracker_storage_v3');
                 loadInitialData();
-                // 初回のみアンケートを表示（localStorage未回答フラグで判定）
-                if (!localStorage.getItem('sky_skill_answered')) {
-                    setTimeout(() => openSkillModal(true), 300);
-                }
             };
 
             const eventDays = computed(() => {
@@ -2097,6 +2250,84 @@ plannedUsage.value = 0;
                     }
                 }
                 return { light, eff: time > 0 ? (light / time) : 0.0 };
+            };
+
+            /* ═══ 🗺️ 地図で選ぶビュー（sky-planner等の実画像は使用せず、独自の模式図として生成） ═══ */
+            const areaViewMode = ref(localStorage.getItem('sky_area_view_mode') || 'list');
+            const setAreaViewMode = (mode) => {
+                areaViewMode.value = mode;
+                localStorage.setItem('sky_area_view_mode', mode);
+            };
+
+            // エリア名からテーマカラーを決める（見つからない場合は名前のハッシュ値から機械的に選ぶ）
+            const REALM_THEMES = {
+                'ホーム':   { a: '#FFB74D', b: '#FF8A65', icon: '🏠' },
+                '孤島':     { a: '#F48FB1', b: '#B39DDB', icon: '🌅' },
+                '草原':     { a: '#FFD54F', b: '#AED581', icon: '🌾' },
+                '雨林':     { a: '#4DB6AC', b: '#81C784', icon: '🌳' },
+                '峡谷':     { a: '#4FC3F7', b: '#90CAF9', icon: '⛰️' },
+                '捨て地':   { a: '#FF8A65', b: '#E57373', icon: '🏜️' },
+                '書庫':     { a: '#9575CD', b: '#7986CB', icon: '📚' },
+            };
+            const FALLBACK_THEMES = [
+                { a: '#4FC3F7', b: '#4DD0E1', icon: '✨' },
+                { a: '#BA68C8', b: '#F06292', icon: '🎐' },
+                { a: '#81C784', b: '#AED581', icon: '🍃' },
+            ];
+            const getRealmTheme = (mainArea) => {
+                if (!mainArea) return FALLBACK_THEMES[0];
+                if (REALM_THEMES[mainArea.name]) return REALM_THEMES[mainArea.name];
+                let hash = 0;
+                for (const ch of (mainArea.name || '')) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+                return FALLBACK_THEMES[hash % FALLBACK_THEMES.length];
+            };
+
+            // サブエリアを「スネーク状」に並べたノード座標を計算する（実際の地形とは無関係の、独自のオリジナル模式図レイアウト）
+            const REALM_MAP_COLS = 4, REALM_MAP_SPACING_X = 108, REALM_MAP_SPACING_Y = 96,
+                  REALM_MAP_WAVE = 15, REALM_MAP_PAD_X = 56, REALM_MAP_PAD_Y = 54;
+            const getRealmNodes = (mainArea) => {
+                if (!mainArea || !Array.isArray(mainArea.subAreas)) return [];
+                return mainArea.subAreas.map((sub, idx) => {
+                    const row = Math.floor(idx / REALM_MAP_COLS);
+                    let col = idx % REALM_MAP_COLS;
+                    if (row % 2 === 1) col = REALM_MAP_COLS - 1 - col;
+                    const x = REALM_MAP_PAD_X + col * REALM_MAP_SPACING_X;
+                    const y = REALM_MAP_PAD_Y + row * REALM_MAP_SPACING_Y + Math.sin(idx * 1.15) * REALM_MAP_WAVE;
+                    const sMode = getSubMode(sub);
+                    const stats = getSubAreaStats(sub);
+                    const selectedCount = sMode === 'spot'
+                        ? (sub.spots || []).filter(s => s && s.isSelected).length
+                        : (sub.isSelected ? 1 : 0);
+                    const totalCount = sMode === 'spot' ? (sub.spots || []).length : 1;
+                    return { sub, idx, x, y, sMode, stats, selectedCount, totalCount };
+                });
+            };
+            const getRealmMapSize = (mainArea) => {
+                const count = (mainArea && mainArea.subAreas) ? mainArea.subAreas.length : 0;
+                const rows = Math.max(1, Math.ceil(count / REALM_MAP_COLS));
+                const cols = Math.max(1, Math.min(REALM_MAP_COLS, count));
+                return {
+                    width: REALM_MAP_PAD_X * 2 + (cols - 1) * REALM_MAP_SPACING_X,
+                    height: REALM_MAP_PAD_Y * 2 + (rows - 1) * REALM_MAP_SPACING_Y
+                };
+            };
+            const getRealmMapPathPoints = (mainArea) => getRealmNodes(mainArea).map(n => `${n.x},${n.y}`).join(' ');
+
+            // ノードをタップしたとき：スポットがあるサブエリアは詳細パネルの開閉、無いサブエリアは直接選択トグル
+            const onRealmNodeClick = (subArea) => {
+                const sMode = getSubMode(subArea);
+                if (sMode === 'sub') {
+                    toggleSubArea(subArea);
+                } else {
+                    subArea.isExpanded = !subArea.isExpanded;
+                }
+            };
+            const toggleMapSpot = (mIdx, sIdx, spIdx) => {
+                const spot = areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx];
+                if (!spot) return;
+                spot.isSelected = !spot.isSelected;
+                handleSpotChange(mIdx, sIdx, spIdx);
+                save();
             };
 
             const moveMainArea = (index, direction) => {
@@ -2719,6 +2950,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 moveRouteCard, getSpotNameById, moveRouteSpot, removeSpotFromRoute,
                 runningRouteId, runningSeconds, formatSeconds, startTimer, pauseTimer, resetTimer, toggleRouteExpand, currentTimeMult,
                 getAreaMode, getSubMode,
+                areaViewMode, setAreaViewMode, getRealmTheme, getRealmNodes, getRealmMapSize, getRealmMapPathPoints, onRealmNodeClick, toggleMapSpot,
 
             };
         }
