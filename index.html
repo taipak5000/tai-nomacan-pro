@@ -1096,6 +1096,10 @@
                                         <rect x="-7" y="-4.6" width="15" height="4" rx="1" fill="#9C86CC"></rect>
                                         <rect x="-8" y="-9.2" width="16" height="4" rx="1" fill="#C4A9E8"></rect>
                                     </template>
+                                    <template v-else-if="d.t === 'start'">
+                                        <path d="M0 8 L0 -8 M-6 -2 L0 -10 L6 -2" stroke="#D93025" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        <text y="24" font-size="11" font-weight="800" fill="#D93025" text-anchor="middle" style="paint-order:stroke; stroke:rgba(255,255,255,0.8); stroke-width:3px;">スタート</text>
+                                    </template>
                                 </g>
 
                                 <!-- 移動ルートの点線（データ並び順） -->
