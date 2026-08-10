@@ -1,4 +1,4 @@
-# [キャンドル計算機プロ](https://taipak5000.github.io/tai-tools/)
+# [ノマキャン計算機プロ](https://taipak5000.github.io/tai-tools/)
 
 「Sky　星を紡ぐ子どもたち」の通常キャンドル収集の計算や、リアルム・エリア情報の閲覧ができるサイトです。
 
