@@ -683,6 +683,9 @@
             <button class="btn-outline-blue" @click="showSettings = !showSettings">
                 {{ t('settings.displaySettingsBtn') }}
             </button>
+            <button class="btn-outline-blue" @click="showAppSettingsModal = true">
+                {{ t('settings.appSettingsBtn') }}
+            </button>
         </div>
     </header>
 
@@ -1470,6 +1473,50 @@
         </div>
     </div>
 
+    <!-- ═══ ⚙️ 環境設定モーダル（ダークモード・キーボードショートカット） ═══ -->
+    <div v-if="showAppSettingsModal" class="app-modal-overlay" @click.self="showAppSettingsModal = false">
+        <div class="app-modal-content" style="max-width: 420px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <div style="font-size: 16px; font-weight: bold;">{{ t('settings.appSettingsBtn') }}</div>
+                <button @click="showAppSettingsModal = false" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-gray);line-height:1;padding:0 4px;">×</button>
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.displaySectionHeader') }}</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--stat-box-bg); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px;">
+                    <span style="font-size:14px;">{{ t('settings.darkModeLabel') }}</span>
+                    <button class="btn-outline-blue" @click="toggleTheme" style="padding:6px 12px; font-size:13px;">
+                        <span v-if="isDarkMode">{{ t('themeDark') }}</span>
+                        <span v-else>{{ t('themeLight') }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.shortcutsSectionHeader') }}</div>
+                <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; background:var(--stat-box-bg); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+                    <span style="font-size:14px;">{{ t('settings.shortcutsEnableLabel') }}</span>
+                    <input type="checkbox" v-model="shortcutsEnabled" style="width:20px;height:20px;">
+                </label>
+
+                <div style="font-size:12px; color:var(--text-gray); display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; gap:10px; align-items:baseline;">
+                        <code style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:1px 7px; font-weight:bold; color:var(--text-color); min-width:18px; text-align:center; display:inline-block;">?</code>
+                        <span>{{ t('settings.shortcutOpenDesc') }}</span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:baseline;">
+                        <code style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:1px 7px; font-weight:bold; color:var(--text-color); min-width:18px; text-align:center; display:inline-block;">D</code>
+                        <span>{{ t('settings.shortcutThemeDesc') }}</span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:baseline;">
+                        <code style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:1px 7px; font-weight:bold; color:var(--text-color); min-width:18px; text-align:center; display:inline-block;">Esc</code>
+                        <span>{{ t('settings.shortcutEscDesc') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer>
         {{ t('footer.copyright') }}<br>
         {{ t('footer.creditLabel') }} <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
@@ -1595,6 +1642,53 @@
             };
 
             watch(isDarkMode, () => { applyThemeToDOM(); });
+
+            // ════════════════════════════════════════════════════
+            // ⚙️ 環境設定モーダル（ダークモード切替は上のtoggleThemeを流用／
+            // キーボードショートカットの有効・無効のみここで新規管理）
+            // 'sky_shortcuts_enabled' は taipak5000.github.io 系ツール共通のグローバル設定
+            // （'1'=有効 / '0'=無効。未設定時は有効として扱う）。sky_app_themeと同じ扱い。
+            // ════════════════════════════════════════════════════
+            const showAppSettingsModal = ref(false);
+
+            // shortcutsEnabled は素の ref にする（localStorage を直接読むだけの computed だと
+            // Vueの依存追跡が効かずキャッシュされた値のまま更新されなくなるため、
+            // isDarkMode/lang と同じ「refを単一の真実の情報源にしてwatchで永続化する」方式にする）
+            const shortcutsEnabled = ref(true);
+            watch(shortcutsEnabled, (val) => {
+                try { localStorage.setItem('sky_shortcuts_enabled', val ? '1' : '0'); } catch (e) { /* noop */ }
+            });
+
+            // Escで閉じるべき「現在開いている中で最前面のモーダル」を閉じる。
+            // このアプリのモーダルが同時に複数開くことは通常ないが、念のため優先順位をつけて判定する。
+            // 診断モーダル（skillModal）は初回実施時のみ、背景クリックと同様にEscでの
+            // 閉じるも無効化する（@click.self="!skillModal.isFirst && ..." と同じ条件）。
+            const closeTopmostOpenModal = () => {
+                if (confirmModal.value.show) { confirmModal.value.show = false; return; }
+                if (showAppSettingsModal.value) { showAppSettingsModal.value = false; return; }
+                if (skillModal.value.show && !skillModal.value.isFirst) { skillModal.value.show = false; return; }
+            };
+
+            // ⌨️ グローバルショートカット: ? = 環境設定を開く／D = ダークモード切替／Esc = 開いているモーダルを閉じる
+            const handleGlobalKeydown = (e) => {
+                if (e.repeat) return;
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                const tgt = e.target;
+                const isTyping = tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
+
+                if (e.key === 'Escape') {
+                    // Escapeは入力欄フォーカス中でもダイアログを閉じられるべきなので isTyping では
+                    // ガードしない。ショートカット無効設定（shortcutsEnabled）の対象外でもある。
+                    closeTopmostOpenModal();
+                    return;
+                }
+
+                if (isTyping) return; // '?' と 'd' はすべてのテキスト入力欄で通常通り入力できるようにする
+                if (!shortcutsEnabled.value) return;
+
+                if (e.key === '?') { e.preventDefault(); showAppSettingsModal.value = true; return; }
+                if (e.key === 'd' || e.key === 'D') { e.preventDefault(); toggleTheme(); return; }
+            };
 
             // ════════════════════════════════════════════════════
             // 🌐 UI言語（日本語 / English）
@@ -3523,6 +3617,8 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); }
                 else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
                 applyThemeToDOM();
+                const savedShortcutsEnabled = localStorage.getItem('sky_shortcuts_enabled');
+                shortcutsEnabled.value = (savedShortcutsEnabled === null) ? true : (savedShortcutsEnabled === '1');
                 applyLangToDOM();
                 load();
                 // 前回の診断結果を復元
@@ -3539,6 +3635,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 // 🌋 闇の破片(黒)を本日分まだ自動判定していなければ予測値を反映
                 syncDailyShardWithPrediction(false);
                 window.addEventListener('resize', () => { isWideScreen.value = window.innerWidth >= 850; });
+                document.addEventListener('keydown', handleGlobalKeydown);
             });
 
             watch(areas, () => { save(); }, { deep: true });
@@ -3556,6 +3653,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
 
             return {
                 isDarkMode, toggleTheme,
+                showAppSettingsModal, shortcutsEnabled,
                 lang, toggleLang, t, displayAreaName,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 isDraggingCarryGauge, startCarryDrag, moveCarryDrag, endCarryDrag, handleCarryGaugeKeydown, carryFillPercent,

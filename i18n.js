@@ -38,6 +38,16 @@ window.SKY_TRANSLATIONS = {
         "settings.spellShare": "データの共有",
         "settings.resetInputBtn": "🧹 入力数値をリセット",
 
+        // ── ⚙️ 環境設定モーダル（ダークモード・キーボードショートカット） ──
+        "settings.appSettingsBtn": "⚙️ 環境設定",
+        "settings.displaySectionHeader": "🌙 表示",
+        "settings.darkModeLabel": "ダークモード",
+        "settings.shortcutsSectionHeader": "⌨️ キーボードショートカット",
+        "settings.shortcutsEnableLabel": "ショートカットを有効にする",
+        "settings.shortcutOpenDesc": "この設定を開く",
+        "settings.shortcutThemeDesc": "ダークモード切替",
+        "settings.shortcutEscDesc": "開いているウィンドウを閉じる",
+
         // ── 今日の精錬状況カード ──
         "refine.sectionHeader": "今日の精錬状況",
         "refine.dailyBonusLabel": "📅 本日の大キャンドル群:",
@@ -291,6 +301,16 @@ window.SKY_TRANSLATIONS = {
         "settings.myRoutes": "My Routes",
         "settings.spellShare": "Data Sharing",
         "settings.resetInputBtn": "🧹 Reset Entered Values",
+
+        // ── ⚙️ Preferences modal (dark mode & keyboard shortcuts) ──
+        "settings.appSettingsBtn": "⚙️ Preferences",
+        "settings.displaySectionHeader": "🌙 Display",
+        "settings.darkModeLabel": "Dark Mode",
+        "settings.shortcutsSectionHeader": "⌨️ Keyboard Shortcuts",
+        "settings.shortcutsEnableLabel": "Enable keyboard shortcuts",
+        "settings.shortcutOpenDesc": "Open this settings panel",
+        "settings.shortcutThemeDesc": "Toggle dark mode",
+        "settings.shortcutEscDesc": "Close the open window",
 
         "refine.sectionHeader": "Today's Refining Status",
         "refine.dailyBonusLabel": "📅 Today's Grand Candles:",
