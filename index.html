@@ -666,19 +666,22 @@
 
 <div class="container" id="app">
     <header>
-        <h1 v-if="isWideScreen">ノマキャン計算機プロ (Web版)</h1>
-        <h1 v-else>ノマキャン計算機プロ</h1>
+        <h1 v-if="isWideScreen">{{ t('pageTitleWide') }}</h1>
+        <h1 v-else>{{ t('pageTitle') }}</h1>
         <button class="theme-toggle-btn" @click="toggleTheme">
-            <span v-if="isDarkMode">🌙 ダーク</span>
-            <span v-else>☀️ ライト</span>
+            <span v-if="isDarkMode">{{ t('themeDark') }}</span>
+            <span v-else>{{ t('themeLight') }}</span>
+        </button>
+        <button class="theme-toggle-btn" @click="toggleLang">
+            {{ t('langToggleBtn') }}
         </button>
 
         <div class="header-actions">
             <button class="sidebar-toggle-btn" @click="showSidebar = !showSidebar">
-                ☰ ツール
+                {{ t('sidebar.hamburgerToggle') }}
             </button>
             <button class="btn-outline-blue" @click="showSettings = !showSettings">
-                ⚙️ 表示設定
+                {{ t('settings.displaySettingsBtn') }}
             </button>
         </div>
     </header>
@@ -691,30 +694,30 @@
         <!-- ═══ サイドバー ═══ -->
         <aside class="sidebar section-card" :class="{ 'sidebar-open': showSidebar }">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                <div class="sidebar-section-label" style="margin-bottom: 0;">🔗 関連ツール</div>
+                <div class="sidebar-section-label" style="margin-bottom: 0;">{{ t('sidebar.relatedToolsLabel') }}</div>
                 <button class="sidebar-close-btn" @click="showSidebar = false">×</button>
             </div>
             <nav>
                 <a href="https://taipak5000.github.io/tai-nomacan-pro/" class="sidebar-nav-link current-tool">
-                    🕯️ ノマキャン計算機プロ
+                    {{ t('tools.taiNomacanPro') }}
                 </a>
                 <a href="https://taipak5000.github.io/tai-nomacan/" class="sidebar-nav-link">
-                    🕯️ ノマキャン計算機
+                    {{ t('tools.taiNomacan') }}
                 </a>
                 <a href="https://taipak5000.github.io/companion/" class="sidebar-nav-link">
-                    ✨ 精霊同行ツール
+                    {{ t('tools.companion') }}
                 </a>
                 <a href="https://taipak5000.github.io/share/" class="sidebar-nav-link">
-                    📍 創作物管理ツール
+                    {{ t('tools.share') }}
                 </a>
                 <a href="https://taipak5000.github.io/tai-item/" class="sidebar-nav-link">
-                    📁 アイテム所持管理
+                    {{ t('tools.item') }}
                 </a>
                 <a href="https://taipak5000.github.io/tai-transfer/" class="sidebar-nav-link">
-                    🔄 データ引継ぎ
+                    {{ t('tools.dataTransfer') }}
                 </a>
                 <a :href="RTA_TIMER_URL" class="sidebar-nav-link">
-                    ⏱️ RTAタイマー
+                    {{ t('tools.rtaTimer') }}
                 </a>
             </nav>
         </aside>
@@ -723,23 +726,23 @@
         <div class="main-content">
 
     <div v-if="showSettings" class="section-card settings-panel">
-        <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">⚙️ 各窓の表示・非表示設定</div>
+        <div class="section-header" style="color: var(--accent-blue); margin-bottom: 8px;">{{ t('settings.panelHeader') }}</div>
         <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0; align-items: center; width:100%;">
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.candleManage" style="width:18px; height:18px;"> キャンドル管理
+                <input type="checkbox" v-model="visibleSections.candleManage" style="width:18px; height:18px;"> {{ t('settings.candleManage') }}
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.optimization" style="width:18px; height:18px;"> 効率自動最適化
+                <input type="checkbox" v-model="visibleSections.optimization" style="width:18px; height:18px;"> {{ t('settings.optimization') }}
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.myRoutes" style="width:18px; height:18px;"> マイルート管理
+                <input type="checkbox" v-model="visibleSections.myRoutes" style="width:18px; height:18px;"> {{ t('settings.myRoutes') }}
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
-                <input type="checkbox" v-model="visibleSections.spellShare" style="width:18px; height:18px;"> データの共有
+                <input type="checkbox" v-model="visibleSections.spellShare" style="width:18px; height:18px;"> {{ t('settings.spellShare') }}
             </label>
-            
+
             <button class="btn-outline-red" @click="resetCalculatorData" style="padding: 4px 10px; font-size: 12px; margin-left: auto; font-weight: bold; border-radius: 6px;">
-                🧹 入力数値をリセット
+                {{ t('settings.resetInputBtn') }}
             </button>
         </div>
     </div>
@@ -747,81 +750,81 @@
     <div class="layout-grid">
         <div>
             <div class="section-card">
-                <div class="section-header">今日の精錬状況</div>
-                
+                <div class="section-header">{{ t('refine.sectionHeader') }}</div>
+
                 <div style="background: var(--stat-box-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                        <span style="font-weight: 500;">📅 本日の大キャンドル群:</span>
+                        <span style="font-weight: 500;">{{ t('refine.dailyBonusLabel') }}</span>
                         <select v-model.number="dailyBonusArea" style="width: 130px; padding: 4px 6px; font-size: 12px;">
-                            <option :value="0">なし</option>
-                            <option :value="1">1個 (+50)</option>
-                            <option :value="2">2個 (+100)</option>
-                            <option :value="3">3個 (+150)</option>
-                            <option :value="4">4個 (+200)</option>
+                            <option :value="0">{{ t('refine.dailyBonusNone') }}</option>
+                            <option :value="1">{{ t('refine.dailyBonus1') }}</option>
+                            <option :value="2">{{ t('refine.dailyBonus2') }}</option>
+                            <option :value="3">{{ t('refine.dailyBonus3') }}</option>
+                            <option :value="4">{{ t('refine.dailyBonus4') }}</option>
                         </select>
                     </div>
                 </div>
 
                 <div style="background: var(--stat-box-bg); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span style="font-weight: 600; font-size: 16px;">🌋 本日の闇の破片（黒）</span>
+                        <span style="font-weight: 600; font-size: 16px;">{{ t('refine.shardLabel') }}</span>
                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:15px; font-weight:600;">
                             <input type="checkbox" v-model="dailyShard" true-value="black" false-value="none" style="width:24px;height:24px;">
-                            <span :style="{ color: dailyShard === 'black' ? 'var(--accent-green)' : 'var(--text-gray)' }">{{ dailyShard === 'black' ? 'あり (+200)' : 'なし' }}</span>
+                            <span :style="{ color: dailyShard === 'black' ? 'var(--accent-green)' : 'var(--text-gray)' }">{{ dailyShard === 'black' ? t('refine.shardYes') : t('refine.shardNo') }}</span>
                         </label>
                     </div>
                     <div v-if="shardPrediction" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-                            <span style="font-size:13px; color:var(--text-gray); font-weight:500;">🔮 黒シャード予測（{{ shardPrediction.realm }}・JST）</span>
-                            <span @click="syncDailyShardWithPrediction(true)" style="font-size:12px; color:var(--accent-blue); cursor:pointer; font-weight:600; white-space:nowrap;">🔄予測に合わせる</span>
+                            <span style="font-size:13px; color:var(--text-gray); font-weight:500;">{{ t('refine.shardPredictionLabel', { realm: displayAreaName(shardPrediction.realm) }) }}</span>
+                            <span @click="syncDailyShardWithPrediction(true)" style="font-size:12px; color:var(--accent-blue); cursor:pointer; font-weight:600; white-space:nowrap;">{{ t('refine.syncPrediction') }}</span>
                         </div>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <span v-for="(t, tIdx) in shardPrediction.times" :key="tIdx"
+                            <span v-for="(tm, tIdx) in shardPrediction.times" :key="tIdx"
                                   style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-size: 15px; font-weight: 700;">
-                                {{ t }}
+                                {{ tm }}
                             </span>
                         </div>
-                        <div style="font-size:12px; color:var(--text-gray); margin-top:8px;">※受取はその日の初回のみ</div>
+                        <div style="font-size:12px; color:var(--text-gray); margin-top:8px;">{{ t('refine.receiveOnceNote') }}</div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div>精錬予定:</div>
-                    <div class="bold-text" style="color: var(--accent-orange);">{{ calculated.candles }} 本</div>
+                    <div>{{ t('refine.expectedCandles') }}</div>
+                    <div class="bold-text" style="color: var(--accent-orange);">{{ calculated.candles }} {{ t('refine.candlesUnit') }}</div>
                 </div>
                 <div class="row">
-                    <div>火種合計:</div>
+                    <div>{{ t('refine.totalLight') }}</div>
                     <div>{{ totalLight }}</div>
                 </div>
                 <div class="row">
-                    <div style="font-weight: bold;">選択全体の総合効率:</div>
+                    <div style="font-weight: bold;">{{ t('refine.totalEfficiency') }}</div>
                     <div class="bold-text" style="color: var(--accent-blue);">{{ totalEfficiency.toFixed(2) }} <span style="font-size:12px; font-weight:normal; color:var(--text-gray);">/s</span></div>
                 </div>
                 <div class="row">
-                    <div style="font-weight: bold;">総所要時間:</div>
+                    <div style="font-weight: bold;">{{ t('refine.totalTime') }}</div>
                     <div class="bold-text" style="color: var(--accent-blue);">{{ formattedTotalTime }}</div>
                 </div>
                 <div class="row" v-if="calculated.candles < thresholds.length">
-                    <div>次まで:</div>
+                    <div>{{ t('refine.nextThreshold') }}</div>
                     <div style="color: var(--text-gray);">{{ calculated.nextReq }}</div>
                 </div>
-                <button class="btn btn-blue" @click="dailyReset">デイリーリセット</button>
+                <button class="btn btn-blue" @click="dailyReset">{{ t('refine.dailyResetBtn') }}</button>
             </div>
 
             <div v-if="visibleSections.candleManage" class="section-card">
                 <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>📅 キャンドル管理</span>
-                    <span style="font-size: 11px; text-transform: none; font-weight: normal; color: var(--text-gray);">※大キャンドル＝DC</span>
+                    <span>{{ t('candle.sectionHeader') }}</span>
+                    <span style="font-size: 11px; text-transform: none; font-weight: normal; color: var(--text-gray);">{{ t('candle.dcNote') }}</span>
                 </div>
                 <div class="row" style="flex-direction: column; align-items: center;">
                     <div style="display: flex; justify-content: space-between; width: 100%;">
-                        <div>繰越:</div>
+                        <div>{{ t('candle.carryOver') }}</div>
                         <div>{{ Math.floor(carryOverPercent) }}%</div>
                     </div>
                     <div style="display:flex; align-items:flex-end; gap:16px; margin-top:10px; touch-action:none; user-select:none; outline:none;"
                         @pointerdown="startCarryDrag" @pointermove="moveCarryDrag" @pointerup="endCarryDrag" @pointercancel="endCarryDrag"
                         @keydown="handleCarryGaugeKeydown"
-                        role="slider" tabindex="0" aria-label="繰越ゲージ" aria-valuemin="0" aria-valuemax="99" :aria-valuenow="Math.floor(carryOverPercent)"
+                        role="slider" tabindex="0" :aria-label="t('candle.carryGaugeAria')" aria-valuemin="0" aria-valuemax="99" :aria-valuenow="Math.floor(carryOverPercent)"
                         :style="{ cursor: isDraggingCarryGauge ? 'grabbing' : 'grab' }">
                         <div style="position:relative; width:36px; height:148px; pointer-events:none;">
                             <div style="position:absolute; left:50%; top:0; bottom:0; width:10px; margin-left:-5px; background:var(--input-bg); border:1px solid var(--border-color); border-radius:5px; overflow:hidden;">
@@ -848,104 +851,103 @@
                             </svg>
                         </div>
                     </div>
-                    <div style="font-size:11px; color:var(--text-gray); margin-top:6px;">↕ スライドして調整</div>
+                    <div style="font-size:11px; color:var(--text-gray); margin-top:6px;">{{ t('candle.slideHint') }}</div>
                 </div>
                 <div class="row">
-    <div>所持キャンドル数:</div>
+    <div>{{ t('candle.currentCandles') }}</div>
     <input type="number" v-model.number="currentCandles">
 </div>
 <div class="row">
-    <div>使用予定数:</div>
+    <div>{{ t('candle.plannedUsage') }}</div>
     <input type="number" v-model.number="plannedUsage">
 </div>
                 <div class="row" style="align-items:flex-start; flex-wrap:wrap; gap:4px;">
-                    <div style="white-space:nowrap;">💛 毎日送るハート数:</div>
+                    <div style="white-space:nowrap;">{{ t('candle.dailyHearts') }}</div>
                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                         <input type="number" v-model.number="heartsToSend" min="0" style="width:70px;">
                         <span v-if="heartsToSend > 0" style="font-size:12px; color:var(--text-gray); white-space:nowrap;">
-                            = 1日 <b style="color:var(--accent-orange);">-{{ dailyHeartCost }}本</b>
-                            <span v-if="eventDays > 0">／ {{ eventDays }}日間で <b style="color:var(--accent-red);">-{{ dailyHeartCost * eventDays }}本</b></span>
+                            {{ t('candle.perDayCost') }} <b style="color:var(--accent-orange);">-{{ dailyHeartCost }} {{ t('refine.candlesUnit') }}</b>
+                            <span v-if="eventDays > 0">{{ t('candle.overDaysCost', { days: eventDays }) }} <b style="color:var(--accent-red);">-{{ dailyHeartCost * eventDays }} {{ t('refine.candlesUnit') }}</b></span>
                         </span>
                     </div>
                 </div>
                 <div class="row">
-                    <div>イベント終了日:</div>
+                    <div>{{ t('candle.eventEndDate') }}</div>
                     <input type="date" v-model="targetDate" style="width: 130px; text-align: left;">
                 </div>
                 <div class="row">
-                    <div>稼げる残日数:</div>
-                    <div style="font-weight: bold;">{{ eventDays }} 日</div>
+                    <div>{{ t('candle.remainingDays') }}</div>
+                    <div style="font-weight: bold;">{{ eventDays }} {{ t('candle.remainingDaysUnit') }}</div>
                 </div>
                 <div class="row">
-                    <div>予想残数:</div>
+                    <div>{{ t('candle.projectedRemaining') }}</div>
                     <div class="bold-text" :style="{ color: projectedCandles >= 0 ? 'inherit' : 'var(--accent-red)' }">
-                        {{ projectedCandles }} 本
+                        {{ projectedCandles }} {{ t('refine.candlesUnit') }}
                     </div>
                 </div>
                 <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0; margin-top: 10px;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">キャンドル管理メモ:</div>
-                    <textarea v-model="candleMemo" placeholder="交換・使用予定のアイテム、今後のイベント予定など自由に記載…" style="width: 100%; height: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">{{ t('candle.memoLabel') }}</div>
+                    <textarea v-model="candleMemo" :placeholder="t('candle.memoPlaceholder')" style="width: 100%; height: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
                 </div>
             </div>
 
             <div v-if="visibleSections.optimization" class="section-card">
-                <div class="section-header">効率自動最適化</div>
+                <div class="section-header">{{ t('optimize.sectionHeader') }}</div>
                 <div class="row">
-                    <div>目標本数:</div>
+                    <div>{{ t('optimize.targetLabel') }}</div>
                     <input type="number" v-model.number="targetCandlesForOptimization">
                 </div>
-                <button class="btn btn-orange" @click="optimize">高効率エリアを自動選択</button>
+                <button class="btn btn-orange" @click="optimize">{{ t('optimize.autoSelectBtn') }}</button>
             </div>
 
             <!-- ══ プレイスタイル診断カード ══ -->
             <div class="section-card" style="border:2px solid var(--accent-purple);background:linear-gradient(135deg,rgba(147,51,234,0.06) 0%,var(--card-bg) 60%);">
-                <div class="section-header" style="color:var(--accent-purple);">🌟 プレイスタイル診断</div>
-                <div style="font-size:12px;color:var(--text-gray);margin-bottom:12px;line-height:1.6;">
-                    あなたのプレイスタイルに合わせて、各エリアの<b>所要時間の初期値</b>を自動設定します。
+                <div class="section-header" style="color:var(--accent-purple);">{{ t('skill.cardHeader') }}</div>
+                <div style="font-size:12px;color:var(--text-gray);margin-bottom:12px;line-height:1.6;" v-html="t('skill.cardDesc')">
                 </div>
                 <!-- 現在のレベル表示 -->
                 <div v-if="skillModal.lastLevel" style="display:flex;align-items:center;gap:12px;background:var(--bg-color);border-radius:12px;padding:12px 16px;margin-bottom:12px;border:1px solid var(--border-color);">
-                    <span style="font-size:32px;line-height:1;">{{ skillModal.lastLevel.label.split(' ')[0] }}</span>
+                    <span style="font-size:32px;line-height:1;">{{ skillModal.lastLevel.emoji }}</span>
                     <div style="min-width:0;">
-                        <div style="font-size:15px;font-weight:bold;">{{ skillModal.lastLevel.label }}</div>
-                        <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">{{ skillModal.lastLevel.desc }}</div>
+                        <div style="font-size:15px;font-weight:bold;">{{ t(skillModal.lastLevel.labelKey) }}</div>
+                        <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">{{ t(skillModal.lastLevel.descKey) }}</div>
                         <div v-if="Math.abs(currentTimeMult - skillModal.lastLevel.mult) > 0.02" style="font-size:11px;color:var(--accent-green);margin-top:4px;font-weight:bold;">
-                            🎯 実測データにより現在 ×{{ currentTimeMult.toFixed(2) }} に補正済み
+                            {{ t('skill.autoCorrected', { mult: currentTimeMult.toFixed(2) }) }}
                         </div>
                     </div>
                 </div>
                 <div v-else style="background:var(--bg-color);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text-gray);text-align:center;border:1px dashed var(--border-color);">
-                    まだ診断していません。下のボタンから始めてください。
+                    {{ t('skill.notYet') }}
                 </div>
                 <button @click="openSkillModal(false)"
                     style="width:100%;padding:13px;background:var(--accent-purple);color:white;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;letter-spacing:0.03em;">
-                    {{ skillModal.lastLevel ? '🔄 プレイスタイルを再診断する' : '▶ 診断スタート' }}
+                    {{ skillModal.lastLevel ? t('skill.retryBtn') : t('skill.startBtn') }}
                 </button>
             </div>
 
             <div v-if="visibleSections.spellShare" class="section-card">
-                <div class="section-header">🧙‍♂️ データの共有（復活の呪文）</div>
+                <div class="section-header">{{ t('spell.sectionHeader') }}</div>
                 <div class="row" style="flex-direction: column; align-items: flex-start;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">この端末のデータを呪文にする：</div>
-                    <button class="btn btn-blue" @click="generateSpell" style="margin-top: 0; padding: 8px; font-size:14px;">✨ 復活の呪文を生成</button>
-                    <textarea v-model="generatedSpell" readonly placeholder="ボタンを押すとここに呪文が生成されます..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: #f9f9f9;" @click="$event.target.select()"></textarea>
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">{{ t('spell.exportLabel') }}</div>
+                    <button class="btn btn-blue" @click="generateSpell" style="margin-top: 0; padding: 8px; font-size:14px;">{{ t('spell.generateBtn') }}</button>
+                    <textarea v-model="generatedSpell" readonly :placeholder="t('spell.generatedPlaceholder')" style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; margin-top: 8px; background: #f9f9f9;" @click="$event.target.select()"></textarea>
                 </div>
-                
+
                 <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
-                
+
                 <div class="row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
-                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">他の端末の呪文から復元する：</div>
-                    <textarea v-model="inputSpell" placeholder="他端末で生成した呪文をここに貼り付けてください..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
-                    
+                    <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">{{ t('spell.importLabel') }}</div>
+                    <textarea v-model="inputSpell" :placeholder="t('spell.importPlaceholder')" style="width: 100%; height: 60px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none;"></textarea>
+
                     <div v-if="isConfirming" class="inline-alert inline-alert-confirm" style="width:100%; box-sizing:border-box;">
-                        ⚠️ 呪文を唱えると現在のデータが上書きされます。よろしいですか？
+                        {{ t('spell.confirmOverwrite') }}
                         <div style="display:flex; gap:10px; margin-top:8px;">
-                            <button class="btn-outline-blue" @click="confirmApplySpell" style="background:var(--accent-orange); color:white; border:none; padding:6px 12px; font-weight:bold;">はい、唱えます</button>
-                            <button class="btn-outline-blue" @click="isConfirming = false" style="background:#ccc; color:#333; border:none; padding:6px 12px;">やめる</button>
+                            <button class="btn-outline-blue" @click="confirmApplySpell" style="background:var(--accent-orange); color:white; border:none; padding:6px 12px; font-weight:bold;">{{ t('spell.confirmYes') }}</button>
+                            <button class="btn-outline-blue" @click="isConfirming = false" style="background:#ccc; color:#333; border:none; padding:6px 12px;">{{ t('spell.confirmCancel') }}</button>
                         </div>
                     </div>
-                    
-                    <button v-else class="btn btn-orange" @click="requestApplySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">🔮 呪文を唱える</button>
+
+                    <button v-else class="btn btn-orange" @click="requestApplySpell" style="margin-top: 8px; padding: 8px; font-size:14px;">{{ t('spell.applyBtn') }}</button>
 
                     <div v-if="spellMessage" :class="['inline-alert', spellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="width:100%; box-sizing:border-box;">
                         {{ spellMessage }}
@@ -956,88 +958,87 @@
           
         <div>
             <div v-if="visibleSections.myRoutes" class="section-card" style="margin-bottom: 20px;">
-                <div class="section-header">📍 マイルート管理（ルート比較・メモ・タイマー）</div>
-                
+                <div class="section-header">{{ t('route.sectionHeader') }}</div>
+
                 <button class="btn btn-blue" @click="saveCurrentRoute" style="margin-top: 0; margin-bottom: 4px; font-size: 14px; padding: 10px;">
-                    💾 現在の選択をルートとして保存
+                    {{ t('route.saveCurrentBtn') }}
                 </button>
 
                 <div style="margin-top: 10px; margin-bottom: 14px; border: 1px dashed var(--border-color); padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.01);">
-                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px;">📥 他人のルート呪文を読み込む</div>
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px;">{{ t('route.importLabel') }}</div>
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" v-model="routeInputSpell" placeholder="ここにルート共有用の呪文を貼り付け..." style="flex-grow: 1; text-align: left; font-size: 12px; padding: 6px;">
-                        <button class="btn-outline-blue" @click="applyRouteSpell" style="padding: 6px 12px; font-size: 12px; background: var(--accent-orange); color: white; border: none; font-weight: bold; white-space: nowrap;">読み込み</button>
+                        <input type="text" v-model="routeInputSpell" :placeholder="t('route.importPlaceholder')" style="flex-grow: 1; text-align: left; font-size: 12px; padding: 6px;">
+                        <button class="btn-outline-blue" @click="applyRouteSpell" style="padding: 6px 12px; font-size: 12px; background: var(--accent-orange); color: white; border: none; font-weight: bold; white-space: nowrap;">{{ t('route.importBtn') }}</button>
                     </div>
                     <div v-if="routeSpellMessage" :class="['inline-alert', routeSpellMessageType === 'success' ? 'inline-alert-success' : 'inline-alert-error']" style="margin-top: 6px; font-size: 12px; padding: 6px;">
                         {{ routeSpellMessage }}
                     </div>
                 </div>
-                
+
                 <div v-if="routeError" class="inline-alert inline-alert-error" style="margin-top:0; margin-bottom:16px; text-align: center;">
                     {{ routeError }}
                 </div>
                 <div v-if="routeHintMessage" class="inline-alert inline-alert-success" style="margin-top:0; margin-bottom:16px; text-align: center;">
                     {{ routeHintMessage }}
                 </div>
-                
-                <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px; line-height: 1.5;">
-                    保存されたルートはありません。<br>下のエリア管理でスポットのチェックを入れて、お気に入りルートを保存してみましょう！
+
+                <div v-if="myRoutes.length === 0" style="text-align: center; color: var(--text-gray); padding: 20px 0; font-size: 13px; line-height: 1.5;" v-html="t('route.emptyState')">
                 </div>
-                
+
                 <div v-for="(route, rIdx) in myRoutes" :key="route.id" style="background: var(--stat-box-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px; width: 100%; box-sizing: border-box;">
                     <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; width: 100%;">
-                        <input type="text" v-model="route.name" placeholder="ルート名" style="font-weight: bold; font-size: 15px; flex-grow: 1; min-width: 0; border: none; background: transparent; padding: 2px 0; text-align: left;">
-                        
+                        <input type="text" v-model="route.name" :placeholder="t('route.namePlaceholder')" style="font-weight: bold; font-size: 15px; flex-grow: 1; min-width: 0; border: none; background: transparent; padding: 2px 0; text-align: left;">
+
                         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                            <button class="btn-outline-blue" @click="moveRouteCard(rIdx, -1)" :disabled="rIdx === 0" style="padding: 4px 6px; font-size: 11px;">↑</button>
-                            <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">↓</button>
-                            
-                            <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">適用</button>
-                            <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">📤 共有</button>
-                            <button class="btn-outline-blue" @click="runRouteInTimer(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-green); color: white; border: none; border-radius: 6px; font-weight: bold; white-space: nowrap;">⏱️ RTAで計測</button>
+                            <button class="btn-outline-blue" @click="moveRouteCard(rIdx, -1)" :disabled="rIdx === 0" style="padding: 4px 6px; font-size: 11px;">{{ t('route.moveUp') }}</button>
+                            <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">{{ t('route.moveDown') }}</button>
+
+                            <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">{{ t('route.apply') }}</button>
+                            <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">{{ t('route.share') }}</button>
+                            <button class="btn-outline-blue" @click="runRouteInTimer(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-green); color: white; border: none; border-radius: 6px; font-weight: bold; white-space: nowrap;">{{ t('route.rtaBtn') }}</button>
                             <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
                                 {{ route.isExpanded ? '▼' : '▶' }}
                             </button>
                         </div>
                     </div>
-                    
-                    
+
+
                     <div class="route-path-box" :title="getRouteAreaNames(route)">
-                        🗺️ 経由: <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || '選択なし' }}</span>
+                        {{ t('route.via') }} <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || t('route.viaNone') }}</span>
                     </div>
 
                     <div v-if="!route.isExpanded && (route.actualSeconds || 0) === 0"
                          @click="toggleRouteExpand(route)"
                          style="font-size:11px;color:var(--accent-orange);margin-top:6px;cursor:pointer;font-weight:500;">
-                        💡 未計測 - タップして1回計測すると精度が上がります
+                        {{ t('route.unmeasuredHint') }}
                     </div>
 
                     <div v-if="route.isExpanded" style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
                         <div class="timer-box">
                             <div style="font-size: 12px; font-weight: bold; color: var(--text-gray); display: flex; justify-content: space-between; align-items: center;">
-                                <span>⏱️ 実測タイマー</span>
-                                <span v-if="runningRouteId === route.id" style="color: var(--accent-green); font-size: 11px; animation: fadeIn 1s infinite alternate;">● 計測中</span>
+                                <span>{{ t('route.timerLabel') }}</span>
+                                <span v-if="runningRouteId === route.id" style="color: var(--accent-green); font-size: 11px; animation: fadeIn 1s infinite alternate;">{{ t('route.measuring') }}</span>
                             </div>
-                            
+
                             <div class="timer-display" :class="{ running: runningRouteId === route.id }">
                                 {{ runningRouteId === route.id ? formatSeconds(runningSeconds) : formatSeconds(route.actualSeconds || 0) }}
                             </div>
-                            
+
                             <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
                                 <button v-if="runningRouteId !== route.id" class="btn-outline-blue" @click="startTimer(route)" style="background: var(--accent-green); color: white; border: none; padding: 5px 12px; font-weight: bold;">
-                                    ▶ 計測スタート
+                                    {{ t('route.startBtn') }}
                                 </button>
                                 <button v-else class="btn-outline-blue" @click="pauseTimer(route)" style="background: var(--accent-orange); color: white; border: none; padding: 5px 12px; font-weight: bold;">
-                                    ⏸ 一時停止 (保存)
+                                    {{ t('route.pauseBtn') }}
                                 </button>
                                 <button class="btn-outline-red" @click="resetTimer(route)" style="padding: 5px 10px; font-size:12px;">
-                                    🔄 リセット
+                                    {{ t('route.resetBtn') }}
                                 </button>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 12px;">
-                            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">🗺️ 経由順の入れ替え:</div>
+                            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 6px;">{{ t('route.reorderLabel') }}</div>
                             <div style="display: flex; flex-direction: column; gap: 4px; background: var(--input-bg); padding: 6px; border-radius: 6px; max-height: 160px; overflow-y: auto;">
                                 <div v-for="(spotId, sIdx) in route.selectedSpotIds" :key="spotId" style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); gap: 4px;">
                                     <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">{{ getSpotNameById(spotId) }}</span>
@@ -1051,38 +1052,38 @@
                         </div>
 
                         <div style="margin-bottom: 8px;">
-                            <textarea v-model="route.memo" placeholder="ルートメモ…" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
+                            <textarea v-model="route.memo" :placeholder="t('route.memoPlaceholder')" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
                         </div>
-                        
+
                         <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; margin-bottom: 4px; flex-wrap: wrap; gap: 4px;">
-                                <span>📐 理想値合計:</span>
-                                <span>🔥{{ getRouteStats(route).light }} / ⏱️{{ getRouteStats(route).timeStr }} / 効率: <b style="color:var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</b></span>
+                                <span>{{ t('route.idealTotal') }}</span>
+                                <span>🔥{{ getRouteStats(route).light }} / ⏱️{{ getRouteStats(route).timeStr }} / {{ t('route.efficiency') }} <b style="color:var(--accent-blue);">{{ getRouteStats(route).eff.toFixed(1) }}/s</b></span>
                             </div>
                             <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
-                                <span>🏃 実測値状況:</span>
+                                <span>{{ t('route.actualStatus') }}</span>
                                 <span>
-                                    効率: <b :style="{ color: (route.actualSeconds || 0) > 0 ? 'var(--accent-green)' : 'var(--text-gray)' }">
+                                    {{ t('route.efficiency') }} <b :style="{ color: (route.actualSeconds || 0) > 0 ? 'var(--accent-green)' : 'var(--text-gray)' }">
                                         {{ (route.actualSeconds || 0) > 0 ? (getRouteStats(route).light / route.actualSeconds).toFixed(1) + '/s' : '--' }}
                                     </b>
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div style="text-align: right; margin-top: 8px;">
-                            <button class="btn-outline-red" @click="deleteRoute(rIdx)" style="padding: 3px 8px; font-size: 11px;">🗑️ ルート削除</button>
+                            <button class="btn-outline-red" @click="deleteRoute(rIdx)" style="padding: 3px 8px; font-size: 11px;">{{ t('route.deleteBtn') }}</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="section-card">
-                <div class="section-header">🗺️ エリア管理</div>
+                <div class="section-header">{{ t('area.sectionHeader') }}</div>
 
                 <div class="view-toggle-row">
-                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'list'}" @click="setAreaViewMode('list')">📋 リスト</button>
-                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'map'}" @click="setAreaViewMode('map')">🗺️ ミニマップ</button>
-                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'atlas'}" @click="setAreaViewMode('atlas')">🧭 精密マップ</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'list'}" @click="setAreaViewMode('list')">{{ t('area.viewList') }}</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'map'}" @click="setAreaViewMode('map')">{{ t('area.viewMap') }}</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: areaViewMode === 'atlas'}" @click="setAreaViewMode('atlas')">{{ t('area.viewAtlas') }}</button>
                 </div>
 
                 <!-- ══════════════════ 🧭 精密マップビュー ══════════════════
@@ -1093,25 +1094,24 @@
                     <div class="atlas-tab-row">
                         <button v-for="name in atlasMapNames" :key="'at_'+name" type="button"
                                 class="atlas-tab" :class="{active: atlasMapName === name}"
-                                @click="setAtlasMap(name)">{{ name }}</button>
+                                @click="setAtlasMap(name)">{{ displayAreaName(name) }}</button>
                     </div>
 
                     <!-- 🖼️ 背景画像（この端末にのみ保存。サイトへは公開されない） -->
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; font-size:12px;">
                         <label class="btn-outline-blue" style="cursor:pointer;">
-                            🖼️ この地図の背景画像を設定
+                            {{ t('area.bgSetBtn') }}
                             <input type="file" accept="image/*" style="display:none;" @change="onAtlasBgSelected($event)">
                         </label>
                         <template v-if="atlasBgUrl">
-                            <button type="button" class="btn-outline-red" @click="clearAtlasBg()">背景を削除</button>
+                            <button type="button" class="btn-outline-red" @click="clearAtlasBg()">{{ t('area.bgRemoveBtn') }}</button>
                             <label style="display:flex; align-items:center; gap:6px; color:var(--text-gray);">
-                                濃さ
+                                {{ t('area.bgOpacity') }}
                                 <input type="range" min="0.2" max="1" step="0.05" v-model.number="atlasBgOpacity" style="width:90px; margin:0;">
                             </label>
                         </template>
                         <span style="color:var(--text-gray); font-size:11px;">
-                            ※画像はこの端末のブラウザ内にのみ保存されます（サイトには公開されません）。
-                            ソルとシュガ様(@sky_solsuga)の地図(2480×3508)を読み込むとマーカーがそのまま重なります
+                            {{ t('area.bgNote') }}
                         </span>
                     </div>
 
@@ -1146,7 +1146,7 @@
                                       stroke-width="4" stroke-dasharray="16 12"></rect>
                                 <text v-if="!atlasBgUrl" class="atlas-area-label" :x="rg.labelX" :y="rg.labelY"
                                       style="font-size:46px;"
-                                      :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ rg.name }}</text>
+                                      :fill="atlasTheme.label" :stroke="atlasTheme.halo">{{ displayAreaName(rg.name) }}</text>
                             </g>
                             <!-- 通路・ポイント名ラベル（背景画像があるときは画像側の表記に任せて非表示） -->
                             <template v-if="!atlasBgUrl">
@@ -1167,24 +1167,24 @@
                     </div>
 
                     <div class="atlas-legend">
-                        <span><span class="atlas-dot" style="background:#fff; border:2.5px solid #D93025;"></span>キャンドル</span>
-                        <span><span class="atlas-dot" style="background:#F6C445; border:2.5px solid #B8860B;"></span>宝キャンドル</span>
-                        <span><span class="atlas-dot" style="background:#E6D9F7; border:2.5px solid #7B4FC9;"></span>闇植物</span>
-                        <span><span class="atlas-dot" style="background:#fff; border:2.5px dashed #7B4FC9;"></span>闇植物(曜日限定)</span>
-                        <span><span class="atlas-dot" style="background:#FFE2B0; border:2.5px solid #E08A00;"></span>ソーシャル</span>
-                        <span style="opacity:0.8;">／ ドラッグ移動・ホイール/±でズーム・マーカータップで選択パネル</span>
+                        <span><span class="atlas-dot" style="background:#fff; border:2.5px solid #D93025;"></span>{{ t('area.legendCandle') }}</span>
+                        <span><span class="atlas-dot" style="background:#F6C445; border:2.5px solid #B8860B;"></span>{{ t('area.legendTreasure') }}</span>
+                        <span><span class="atlas-dot" style="background:#E6D9F7; border:2.5px solid #7B4FC9;"></span>{{ t('area.legendDark') }}</span>
+                        <span><span class="atlas-dot" style="background:#fff; border:2.5px dashed #7B4FC9;"></span>{{ t('area.legendDarkWeekday') }}</span>
+                        <span><span class="atlas-dot" style="background:#FFE2B0; border:2.5px solid #E08A00;"></span>{{ t('area.legendSocial') }}</span>
+                        <span style="opacity:0.8;">{{ t('area.legendControls') }}</span>
                     </div>
 
                     <!-- 選択パネル: タップしたマーカーが属するサブエリアのスポットを選択できる -->
                     <div v-if="atlasActiveSub" class="atlas-sub-panel">
                         <div class="atlas-sub-panel-title">
-                            <span>📍 {{ atlasActiveSub.area.name }} ／ {{ atlasActiveSub.sub.name }}</span>
+                            <span>📍 {{ displayAreaName(atlasActiveSub.area.name) }} ／ {{ displayAreaName(atlasActiveSub.sub.name) }}</span>
                             <span style="display:flex; align-items:center; gap:10px;">
                                 <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:600;">
                                     <input type="checkbox" :checked="isAllSubSelected(atlasActiveSub.sub)" @change="toggleSubArea(atlasActiveSub.sub)">
-                                    全選択
+                                    {{ t('area.selectAll') }}
                                 </label>
-                                <span style="color:var(--text-gray); font-weight:600;">⏱️{{ atlasActiveSub.sub.time || 0 }}秒 ⚡{{ getSubAreaStats(atlasActiveSub.sub).eff.toFixed(1) }}/s</span>
+                                <span style="color:var(--text-gray); font-weight:600;">⏱️{{ atlasActiveSub.sub.time || 0 }}{{ t('area.secLabel') }} ⚡{{ getSubAreaStats(atlasActiveSub.sub).eff.toFixed(1) }}/s</span>
                                 <button type="button" class="modal-closeish" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-gray);" @click="atlasActiveSubKey = ''">✕</button>
                             </span>
                         </div>
@@ -1192,12 +1192,12 @@
                             <div v-for="(spot, spIdx) in atlasActiveSub.sub.spots" :key="spot.id"
                                  class="atlas-chip" :class="{selected: spot.isSelected}"
                                  @click="toggleMapSpot(atlasActiveSub.mIdx, atlasActiveSub.sIdx, spIdx)">
-                                <span>{{ spot.isSelected ? '✅' : '⬜' }} {{ spot.name }}</span>
+                                <span>{{ spot.isSelected ? '✅' : '⬜' }} {{ displayAreaName(spot.name) }}</span>
                                 <span class="chip-light">🔥{{ spot.light }}</span>
                             </div>
                         </div>
                     </div>
-                    <div v-else class="realm-map-empty" style="margin-top:8px;">マーカーをタップすると、その場所のスポットを選択できます</div>
+                    <div v-else class="realm-map-empty" style="margin-top:8px;">{{ t('area.tapHint') }}</div>
                 </div>
 
                 <!-- ══════════════════ 🗺️ 地図ビュー ══════════════════
@@ -1206,16 +1206,16 @@
                      赤丸＋赤数字＝火種スポット。タップで選択トグル。 -->
                 <div v-if="areaViewMode === 'map'">
                     <div class="map-legend" style="margin:0 0 10px;">
-                        <span class="map-legend-dot"></span><span>火種スポット（数字＝火種量）</span>
-                        <span class="map-legend-dot sel"></span><span>選択中</span>
-                        <span style="opacity:0.8;">／ チェックで一括選択</span>
+                        <span class="map-legend-dot"></span><span>{{ t('area.mapLegendSpot') }}</span>
+                        <span class="map-legend-dot sel"></span><span>{{ t('area.mapLegendSelected') }}</span>
+                        <span style="opacity:0.8;">{{ t('area.mapLegendControls') }}</span>
                     </div>
                     <div v-for="(mainArea, mIdx) in areas" :key="'map_'+mainArea.id" class="realm-map-card">
                         <div class="realm-map-header">
                             <div class="realm-map-title">
-                                <span>{{ mainArea.name }}</span>
+                                <span>{{ displayAreaName(mainArea.name) }}</span>
                                 <span v-if="getMainAreaSelectedCount(mainArea) > 0" style="background:var(--accent-blue); color:#fff; font-size:11px; font-weight:bold; padding:2px 7px; border-radius:10px;">
-                                    {{ getMainAreaSelectedCount(mainArea) }}件選択中
+                                    {{ t('area.selectedCount', { n: getMainAreaSelectedCount(mainArea) }) }}
                                 </span>
                             </div>
                             <div class="realm-map-stats">
@@ -1224,16 +1224,16 @@
                             </div>
                         </div>
 
-                        <div v-if="!mainArea.subAreas || mainArea.subAreas.length === 0" class="realm-map-empty">サブエリアがまだありません</div>
+                        <div v-if="!mainArea.subAreas || mainArea.subAreas.length === 0" class="realm-map-empty">{{ t('area.noSubAreas') }}</div>
 
                         <div v-else class="mini-map-grid">
                             <div v-for="mini in getMiniMaps(mainArea)" :key="'mini_'+mini.sub.id" class="mini-map-card">
                                 <div class="mini-map-head">
                                     <label class="mini-map-name">
                                         <input type="checkbox" :checked="isAllSubSelected(mini.sub)" @change="toggleSubArea(mini.sub)">
-                                        <b>{{ mini.sub.name }}</b>
+                                        <b>{{ displayAreaName(mini.sub.name) }}</b>
                                     </label>
-                                    <span class="mini-map-stats">⏱️{{ mini.sub.time || 0 }}秒 ⚡{{ getSubAreaStats(mini.sub).eff.toFixed(1) }}/s</span>
+                                    <span class="mini-map-stats">⏱️{{ mini.sub.time || 0 }}{{ t('area.secLabel') }} ⚡{{ getSubAreaStats(mini.sub).eff.toFixed(1) }}/s</span>
                                 </div>
                                 <svg class="mini-map-svg" :view-box.camel="`0 0 340 ${mini.h}`">
                                     <!-- 背景と地形ブロブ -->
@@ -1278,7 +1278,7 @@
                                        class="map-marker" :class="{sel: m.selected}"
                                        :transform="`translate(${m.x},${m.y})`"
                                        @click="onMapMarkerClick(mIdx, m)">
-                                        <title>{{ m.name }}（🔥{{ m.light }}）</title>
+                                        <title>{{ displayAreaName(m.name) }}（🔥{{ m.light }}）</title>
                                         <circle :r="m.r"></circle>
                                         <text class="map-marker-num" :font-size="m.fs">{{ m.light }}</text>
                                         <text class="map-marker-name" :y="m.r + 13"
@@ -1300,7 +1300,7 @@
                             <input type="checkbox" :checked="isAllMainSelected(mainArea)" @change="toggleMainArea(mainArea)" style="flex-shrink:0;">
                             <input type="text" v-model="mainArea.name" style="font-weight:bold; font-size:15px; background:transparent; border:none; min-width:0; flex:1;">
                             <span v-if="getMainAreaSelectedCount(mainArea) > 0" style="flex-shrink:0; background:var(--accent-blue); color:white; font-size:11px; font-weight:bold; padding:2px 7px; border-radius:10px; line-height:1.4;">
-                                {{ getMainAreaSelectedCount(mainArea) }}件選択中
+                                {{ t('area.selectedCount', { n: getMainAreaSelectedCount(mainArea) }) }}
                             </span>
                         </div>
                         <div class="expand-toggle-btn" @click="mainArea.isExpanded = !mainArea.isExpanded">
@@ -1312,7 +1312,7 @@
                     <div v-if="mainArea.subAreas.length === 0" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:6px 0 4px 28px; font-size:13px; color:var(--text-gray);">
                         <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
                             <input type="checkbox" v-model="mainArea.isSelected" style="width:16px;height:16px;">
-                            <span style="color:var(--text-color); font-size:12px;">選択</span>
+                            <span style="color:var(--text-color); font-size:12px;">{{ t('area.selectedLabel') }}</span>
                         </label>
                         <div class="flex-group">
                             <span>🔥</span>
@@ -1321,7 +1321,7 @@
                         <div class="flex-group">
                             <span>⏱️</span>
                             <input type="number" v-model.number="mainArea.time" min="0" style="width:58px; padding:3px 5px; font-size:13px;">
-                            <span style="font-size:11px;">秒</span>
+                            <span style="font-size:11px;">{{ t('area.secLabel') }}</span>
                         </div>
                         <span v-if="(mainArea.time||0)>0" style="color:var(--accent-orange); font-weight:bold; font-size:12px;">
                             {{ ((mainArea.light||0)/mainArea.time).toFixed(1) }}/s
@@ -1331,23 +1331,23 @@
                     <!-- メインエリアの所要時間入力（サブエリアありだが全サブの所要時間が未入力のとき） -->
                     <div v-if="mainArea.subAreas.length > 0 && mainArea.subAreas.every(s => !(s.time > 0))" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:4px 0 2px 28px; font-size:12px; color:var(--text-gray);">
                         <div class="flex-group">
-                            <span>⏱️ 所要時間:</span>
+                            <span>⏱️ {{ t('area.durationLabel') }}</span>
                             <input type="number" v-model.number="mainArea.time" min="0" style="width:58px; padding:2px 4px; font-size:12px;">
-                            <span style="font-size:11px;">秒</span>
+                            <span style="font-size:11px;">{{ t('area.secLabel') }}</span>
                         </div>
                         <span v-if="(mainArea.time||0)>0 && getMainAreaStats(mainArea).light>0" style="color:var(--accent-orange); font-weight:bold; font-size:12px;">
                             {{ getMainAreaStats(mainArea).eff.toFixed(1) }}/s
                         </span>
-                        <span style="font-size:11px; color:var(--accent-blue);">（サブエリアに時間未入力のため代用）</span>
+                        <span style="font-size:11px; color:var(--accent-blue);">{{ t('area.subAreaTimeFallbackNote') }}</span>
                     </div>
 
                     <!-- 操作ボタン行 -->
                     <div class="area-title-row2">
                         <div class="btn-action-group">
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx,-1)" :disabled="mIdx===0">↑ 上へ</button>
-                            <button class="btn-outline-blue" @click="moveMainArea(mIdx,1)" :disabled="mIdx===areas.length-1">↓ 下へ</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx,-1)" :disabled="mIdx===0">{{ t('area.moveUp') }}</button>
+                            <button class="btn-outline-blue" @click="moveMainArea(mIdx,1)" :disabled="mIdx===areas.length-1">{{ t('area.moveDown') }}</button>
                         </div>
-                        <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)">🗑️ エリア削除</button>
+                        <button class="btn-outline-red" @click="requestDeleteMainArea(mIdx)">{{ t('area.deleteArea') }}</button>
                     </div>
 
                     <!-- ══ 折り畳み内：サブエリア一覧 ══ -->
@@ -1371,7 +1371,7 @@
                             <div v-if="subArea.spots.length === 0" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:5px 0 3px 26px; font-size:12px; color:var(--text-gray);">
                                 <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
                                     <input type="checkbox" v-model="subArea.isSelected" style="width:15px;height:15px;">
-                                    <span style="color:var(--text-color); font-size:11px;">選択</span>
+                                    <span style="color:var(--text-color); font-size:11px;">{{ t('area.selectedLabel') }}</span>
                                 </label>
                                 <div class="flex-group">
                                     <span>🔥</span>
@@ -1380,7 +1380,7 @@
                                 <div class="flex-group">
                                     <span>⏱️</span>
                                     <input type="number" v-model.number="subArea.time" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
-                                    <span style="font-size:11px;">秒</span>
+                                    <span style="font-size:11px;">{{ t('area.secLabel') }}</span>
                                 </div>
                                 <span v-if="(subArea.time||0)>0" style="color:var(--accent-orange); font-weight:bold; font-size:11px;">
                                     {{ ((subArea.light||0)/subArea.time).toFixed(1) }}/s
@@ -1390,9 +1390,9 @@
                             <!-- サブエリアにスポットがある場合：サブエリアの秒数入力を折り畳み外に表示 -->
                             <div v-else style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:5px 0 3px 26px; font-size:12px; color:var(--text-gray);">
                                 <div class="flex-group">
-                                    <span>⏱️ 所要時間:</span>
+                                    <span>⏱️ {{ t('area.durationLabel') }}</span>
                                     <input type="number" v-model.number="subArea.time" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
-                                    <span style="font-size:11px;">秒</span>
+                                    <span style="font-size:11px;">{{ t('area.secLabel') }}</span>
                                 </div>
                                 <span v-if="(subArea.time||0)>0 && getSubAreaStats(subArea).light>0" style="color:var(--accent-orange); font-weight:bold; font-size:11px;">
                                     {{ (getSubAreaStats(subArea).light/subArea.time).toFixed(1) }}/s
@@ -1405,7 +1405,7 @@
                                     <button class="btn-outline-blue" @click="moveSubArea(mIdx,sIdx,-1)" :disabled="sIdx===0" style="padding:2px 6px;font-size:11px;">↑</button>
                                     <button class="btn-outline-blue" @click="moveSubArea(mIdx,sIdx,1)" :disabled="sIdx===mainArea.subAreas.length-1" style="padding:2px 6px;font-size:11px;">↓</button>
                                 </div>
-                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx,sIdx)" style="padding:2px 6px;font-size:11px;">削除</button>
+                                <button class="btn-outline-red" @click="requestDeleteSubArea(mIdx,sIdx)" style="padding:2px 6px;font-size:11px;">{{ t('area.deleteSubArea') }}</button>
                             </div>
 
                             <!-- 折り畳み内：スポット一覧 -->
@@ -1415,33 +1415,33 @@
                                         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px;">
                                             <div style="display:flex; align-items:center; gap:8px; flex-grow:1; min-width:0;">
                                                 <input type="checkbox" v-model="spot.isSelected" @change="handleSpotChange(mIdx,sIdx,spIdx)" style="width:17px;height:17px; flex-shrink:0;">
-                                                <input type="text" v-model="spot.name" placeholder="スポット名" style="width:100%; font-size:13px; padding:3px 5px;">
+                                                <input type="text" v-model="spot.name" :placeholder="t('area.spotNamePlaceholder')" style="width:100%; font-size:13px; padding:3px 5px;">
                                             </div>
                                             <button class="btn-outline-red" @click="requestDeleteSpot(mIdx,sIdx,spIdx)" style="padding:2px 5px;font-size:11px;border-radius:4px;">×</button>
                                         </div>
                                         <!-- 火種のみ（秒数欄なし） -->
                                         <div style="display:flex; align-items:center; gap:12px; padding-left:25px; font-size:12px; color:var(--text-gray); flex-wrap:wrap;">
                                             <div class="flex-group">
-                                                <span>🔥 火種:</span>
+                                                <span>{{ t('area.fireLabel') }}</span>
                                                 <input type="number" v-model.number="spot.light" min="0" style="width:52px; padding:2px 4px; font-size:12px;">
                                             </div>
                                             <div class="flex-group">
-                                                <span>グループ:</span>
-                                                <input type="text" v-model="spot.group" placeholder="例: 曜日" style="width:68px; padding:2px 4px; font-size:12px;">
+                                                <span>{{ t('area.groupLabel') }}</span>
+                                                <input type="text" v-model="spot.group" :placeholder="t('area.groupPlaceholder')" style="width:68px; padding:2px 4px; font-size:12px;">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <button class="btn-add" @click="addSpot(mIdx,sIdx)" style="font-size:13px;padding:6px 4px;color:var(--accent-purple);">➕ スポットを追加</button>
+                                <button class="btn-add" @click="addSpot(mIdx,sIdx)" style="font-size:13px;padding:6px 4px;color:var(--accent-purple);">{{ t('area.addSpot') }}</button>
                             </div>
                         </div>
 
-                        <button class="btn-add" @click="addSubArea(mIdx)">➕ サブエリアを追加</button>
+                        <button class="btn-add" @click="addSubArea(mIdx)">{{ t('area.addSubArea') }}</button>
                     </div>
                 </div>
                 </template>
 
-                <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">➕ 新規メインエリアを追加</button>
+                <button class="btn-add" @click="addMainArea" style="margin-top: 16px; font-weight: bold; font-size: 15px;">{{ t('area.addMainArea') }}</button>
             </div>
         </div>
     </div>
@@ -1456,30 +1456,30 @@
 <div v-if="confirmModal.show" class="app-modal-overlay" @click.self="confirmModal.show = false">
         <div class="app-modal-content">
             <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                ⚠️ 確認
+                {{ t('confirmModal.title') }}
             </div>
             <p style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; margin: 0 0 22px 0;">{{ confirmModal.message }}</p>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="btn-outline-blue" @click="confirmModal.show = false" style="background: var(--input-bg); color: var(--text-color); border-color: var(--border-color); padding: 8px 16px; font-weight: normal;">
-                    キャンセル
+                    {{ t('confirmModal.cancel') }}
                 </button>
                 <button class="btn-outline-blue" @click="executeConfirm" style="background: var(--accent-red); color: white; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px;">
-                    実行する
+                    {{ t('confirmModal.execute') }}
                 </button>
             </div>
         </div>
     </div>
 
     <footer>
-        © 2026 ノマキャン計算機プロ<br>
-        作成・ご意見: <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
+        {{ t('footer.copyright') }}<br>
+        {{ t('footer.creditLabel') }} <a href="https://x.com/Skyzztai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-blue); text-decoration: none; font-weight: bold;">@Skyzztai</a>
         <span style="color: var(--text-gray); font-size: 12px; margin-top: 4px; display: inline-block;">
-            参考文献: 
-            <a href="https://sky-children-of-the-light.fandom.com/wiki/Pieces_of_Light" target="_blank" rel="noopener noreferrer">Pieces of Light (Sky Wiki)</a> | 
+            {{ t('footer.referencesLabel') }}
+            <a href="https://sky-children-of-the-light.fandom.com/wiki/Pieces_of_Light" target="_blank" rel="noopener noreferrer">Pieces of Light (Sky Wiki)</a> |
             <a href="https://sky-children-of-the-light.fandom.com/wiki/Additional_Light_Sources" target="_blank" rel="noopener noreferrer">Additional Light Sources (Sky Wiki)</a>
         </span>
         <span style="color: var(--text-gray); font-size: 12px; margin-top: 4px; display: inline-block;">
-            <a href="https://taipak5000.github.io/tai-info/" target="_blank" rel="noopener noreferrer">⚙️ 設定・更新情報・クレジット・プライバシーポリシー</a>
+            <a href="https://taipak5000.github.io/tai-info/" target="_blank" rel="noopener noreferrer">{{ t('footer.infoLink') }}</a>
         </span>
     </footer>
 
@@ -1490,10 +1490,10 @@
             <!-- ヘッダー -->
             <div style="padding:20px 24px 0;position:sticky;top:0;background:var(--card-bg);z-index:1;border-radius:16px 16px 0 0;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                    <div style="font-size:18px;font-weight:bold;">🌟 プレイスタイル診断</div>
+                    <div style="font-size:18px;font-weight:bold;">{{ t('skill.modalHeader') }}</div>
                     <button v-if="!skillModal.isFirst" @click="skillModal.show=false" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-gray);line-height:1;padding:0 4px;">×</button>
                 </div>
-                <div style="font-size:12px;color:var(--text-gray);margin-bottom:14px;">各質問にどのくらい当てはまるか選んでください。結果に応じて所要時間の初期値が設定されます。</div>
+                <div style="font-size:12px;color:var(--text-gray);margin-bottom:14px;">{{ t('skill.modalDesc') }}</div>
                 <hr style="border:none;border-top:1px solid var(--border-color);margin:0 -24px 0;">
             </div>
 
@@ -1502,31 +1502,31 @@
 
                 <!-- 共通ラベル説明 -->
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;font-size:10px;color:var(--text-gray);padding:0 0 0 0;">
-                    <div>まったく<br>当てはまらない</div>
-                    <div>あまり<br>当てはまらない</div>
-                    <div>やや<br>当てはまる</div>
-                    <div>とても<br>当てはまる</div>
+                    <div v-html="t('skill.scale0')"></div>
+                    <div v-html="t('skill.scale1')"></div>
+                    <div v-html="t('skill.scale2')"></div>
+                    <div v-html="t('skill.scale3')"></div>
                 </div>
 
                 <!-- Q1〜Q4 共通テンプレート -->
                 <div v-for="(q, qi) in skillModal.questions" :key="qi" style="background:var(--bg-color);border-radius:12px;padding:14px 16px;">
                     <div style="font-size:13px;font-weight:bold;margin-bottom:12px;line-height:1.4;">
-                        <span style="color:var(--accent-blue);margin-right:6px;">Q{{ qi+1 }}</span>{{ q.label }}
+                        <span style="color:var(--accent-blue);margin-right:6px;">Q{{ qi+1 }}</span>{{ t(q.labelKey) }}
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
                         <button v-for="opt in q.opts" :key="opt.v"
                             @click="skillModal.answers[qi] = opt.v"
-                            style="padding:10px 4px;border-radius:8px;border:2px solid var(--border-color);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1.3;background:var(--card-bg);color:var(--text-color);"
+                            style="padding:10px 4px;border-radius:8px;border:2px solid var(--border-color);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1.3;background:var(--card-bg);color:var(--text-color);white-space:pre-line;"
                             :style="skillModal.answers[qi]===opt.v ? {background:'var(--accent-blue)',color:'white',borderColor:'var(--accent-blue)',fontWeight:'bold'} : {}"
-                        >{{ opt.icon }}</button>
+                        >{{ t(opt.iconKey) }}</button>
                     </div>
                 </div>
 
                 <!-- スコアバー & 結果プレビュー -->
                 <div style="background:var(--bg-color);border-radius:12px;padding:14px 16px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                        <span style="font-size:12px;color:var(--text-gray);">スコア</span>
-                        <span style="font-size:13px;font-weight:bold;">{{ skillModal.totalScore }} / 12点</span>
+                        <span style="font-size:12px;color:var(--text-gray);">{{ t('skill.scoreLabel') }}</span>
+                        <span style="font-size:13px;font-weight:bold;">{{ t('skill.scoreOutOf', { n: skillModal.totalScore }) }}</span>
                     </div>
                     <!-- バー（4点以上で中級者ライン、視覚的に区切り） -->
                     <div style="position:relative;background:var(--border-color);border-radius:99px;height:12px;margin-bottom:6px;overflow:hidden;">
@@ -1534,14 +1534,14 @@
                     </div>
                     <!-- ラベル目盛り -->
                     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-gray);margin-bottom:12px;">
-                        <span>0</span><span>〜3</span><span>〜6</span><span>〜9</span><span>10〜<br>倍率なし</span>
+                        <span>{{ t('skill.scaleTick0') }}</span><span>{{ t('skill.scaleTick3') }}</span><span>{{ t('skill.scaleTick6') }}</span><span>{{ t('skill.scaleTick9') }}</span><span v-html="t('skill.scaleTick10')"></span>
                     </div>
                     <!-- レベル表示 -->
                     <div v-if="skillModal.allAnswered" style="text-align:center;padding:6px;background:var(--card-bg);border-radius:10px;">
-                        <div style="font-size:22px;margin-bottom:2px;">{{ skillModal.resultLabel }}</div>
-                        <div style="font-size:12px;color:var(--text-gray);">所要時間を <b style="color:var(--text-color);">{{ skillModal.resultDesc }}</b> で設定します</div>
+                        <div style="font-size:22px;margin-bottom:2px;">{{ skillModal.resultEmoji }}</div>
+                        <div style="font-size:12px;color:var(--text-gray);">{{ t('skill.resultTiming') }} <b style="color:var(--text-color);">{{ t(skillModal.resultLabelKey) }} {{ t(skillModal.resultDescKey) }}</b> {{ t('skill.resultSuffix') }}</div>
                     </div>
-                    <div v-else style="text-align:center;font-size:12px;color:var(--text-gray);">全問回答すると結果が表示されます</div>
+                    <div v-else style="text-align:center;font-size:12px;color:var(--text-gray);">{{ t('skill.resultNotReady') }}</div>
                 </div>
             </div>
 
@@ -1549,13 +1549,13 @@
             <div style="padding:0 24px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
                 <button v-if="!skillModal.isFirst" @click="skillModal.show=false"
                     style="background:var(--tab-bg);color:var(--text-color);border:none;padding:10px 18px;border-radius:8px;font-size:13px;cursor:pointer;">
-                    キャンセル
+                    {{ t('skill.cancelBtn') }}
                 </button>
                 <button @click="applySkillLevel"
                     :disabled="!skillModal.allAnswered"
                     :style="skillModal.allAnswered ? {background:'var(--accent-blue)',opacity:'1',cursor:'pointer'} : {background:'var(--accent-blue)',opacity:'0.35',cursor:'not-allowed'}"
                     style="color:white;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;">
-                    ✅ この設定で所要時間を設定する
+                    {{ t('skill.applyBtn') }}
                 </button>
             </div>
         </div>
@@ -1566,6 +1566,7 @@
 <script src="areas-data.js"></script>
 <script src="maps-data.js"></script>
 <script src="atlas-data.js"></script>
+<script src="i18n.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
 <script>
     if (typeof Vue === 'undefined') {
@@ -1594,6 +1595,33 @@
             };
 
             watch(isDarkMode, () => { applyThemeToDOM(); });
+
+            // ════════════════════════════════════════════════════
+            // 🌐 UI言語（日本語 / English）
+            // 'sky_app_lang' は taipak5000.github.io 系ツール共通のグローバル設定
+            // （プロフィール保存枠に依存しない端末側の表示言語）。sky_app_themeと同じ扱い。
+            // 翻訳辞書・エリア名英訳マップは i18n.js（window.SKY_TRANSLATIONS /
+            // window.SKY_AREA_NAMES_EN）に分離しています。
+            // ════════════════════════════════════════════════════
+            const lang = ref((typeof skyGetStoredLang === 'function') ? skyGetStoredLang() : 'ja');
+
+            const toggleLang = () => {
+                lang.value = lang.value === 'ja' ? 'en' : 'ja';
+                localStorage.setItem('sky_app_lang', lang.value);
+            };
+
+            // key に対応する訳文を返す（template・methods・computed のどこからでも呼べる）
+            const t = (key, params) => (typeof skyTranslate === 'function') ? skyTranslate(lang.value, key, params) : key;
+
+            // エリア／サブエリア／スポット名（areas-data.js由来の日本語名）の表示専用英訳。
+            // 保存データ・maps-data.js/atlas-data.js の照合キーは日本語名のまま変更しない。
+            const displayAreaName = (jaName) => (typeof skyDisplayAreaName === 'function') ? skyDisplayAreaName(lang.value, jaName) : jaName;
+
+            const applyLangToDOM = () => {
+                document.documentElement.setAttribute('lang', lang.value);
+                document.title = t('pageTitleWide');
+            };
+            watch(lang, () => { applyLangToDOM(); });
 
             const areas = ref([]);
             const placedItems = ref([]); 
@@ -1843,8 +1871,8 @@ const plannedUsage = ref(0);
                     const timeLabel = `${jst.getUTCHours()}:${String(jst.getUTCMinutes()).padStart(2, '0')}`;
                     const dayDiff = Math.round((Date.UTC(y, m - 1, d) - todayJstMs) / 86400000);
                     let dayLabel;
-                    if (dayDiff === 0) dayLabel = "本日";
-                    else if (dayDiff === 1) dayLabel = "明日";
+                    if (dayDiff === 0) dayLabel = t('date.today');
+                    else if (dayDiff === 1) dayLabel = t('date.tomorrow');
                     else dayLabel = `${m}/${d}(${SHARD_JP_WEEKDAY[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]})`;
                     results.push(`${dayLabel} ${timeLabel}`);
                 }
@@ -1879,11 +1907,11 @@ const plannedUsage = ref(0);
             // areas-data.js の time は「エキスパート（×1.0・倍率なし）」が基準
             // ────────────────────────────────────────────────────
             const SKILL_LEVELS = [
-                { key: "beginner",     label: "🌱 はじめたて",   desc: "基準の2.5倍（ゆっくり設定）",   mult: 2.5  },
-                { key: "novice",       label: "🌿 なれてきた",   desc: "基準の2.0倍",                  mult: 2.0  },
-                { key: "intermediate", label: "⭐ 中級者",       desc: "基準の1.7倍",                  mult: 1.7  },
-                { key: "advanced",     label: "🌟 上級者",       desc: "基準の1.3倍",                  mult: 1.3  },
-                { key: "expert",       label: "💫 エキスパート", desc: "基準値そのまま（倍率なし）",   mult: 1.0  },
+                { key: "beginner",     emoji: "🌱", labelKey: "skill.levelBeginnerLabel",     descKey: "skill.levelBeginnerDesc",     mult: 2.5  },
+                { key: "novice",       emoji: "🌿", labelKey: "skill.levelNoviceLabel",       descKey: "skill.levelNoviceDesc",       mult: 2.0  },
+                { key: "intermediate", emoji: "⭐", labelKey: "skill.levelIntermediateLabel", descKey: "skill.levelIntermediateDesc", mult: 1.7  },
+                { key: "advanced",     emoji: "🌟", labelKey: "skill.levelAdvancedLabel",     descKey: "skill.levelAdvancedDesc",     mult: 1.3  },
+                { key: "expert",       emoji: "💫", labelKey: "skill.levelExpertLabel",       descKey: "skill.levelExpertDesc",       mult: 1.0  },
             ];
 
             // スコア（0〜12点）→ レベルインデックス
@@ -1898,10 +1926,10 @@ const plannedUsage = ref(0);
 
             // 4段階の選択肢（全問共通ラベル・アイコン）
             const SCALE_OPTS = [
-                { v: 0, icon: "😕\nまったく" },
-                { v: 1, icon: "🙁\nあまり" },
-                { v: 2, icon: "🙂\nやや" },
-                { v: 3, icon: "😄\nとても" },
+                { v: 0, iconKey: "skill.opt0" },
+                { v: 1, iconKey: "skill.opt1" },
+                { v: 2, iconKey: "skill.opt2" },
+                { v: 3, iconKey: "skill.opt3" },
             ];
 
             const skillModal = ref({
@@ -1910,10 +1938,10 @@ const plannedUsage = ref(0);
                 lastLevel: null,
                 answers: [null, null, null, null],
                 questions: [
-                    { label: "プレイに自信がある" },
-                    { label: "おんぶロケットやテントを利用する" },
-                    { label: "リトル抜けなどグリッチを多用する" },
-                    { label: "ルートはある程度決まっている" },
+                    { labelKey: "skill.q1" },
+                    { labelKey: "skill.q2" },
+                    { labelKey: "skill.q3" },
+                    { labelKey: "skill.q4" },
                 ],
                 get totalScore() {
                     return this.answers.reduce((s, v) => s + (v ?? 0), 0);
@@ -1922,8 +1950,9 @@ const plannedUsage = ref(0);
                     return this.answers.every(v => v !== null);
                 },
                 get _levelIdx() { return scoreToLevel(this.totalScore); },
-                get resultLabel() { return SKILL_LEVELS[this._levelIdx]?.label ?? ''; },
-                get resultDesc()  { return SKILL_LEVELS[this._levelIdx]?.desc  ?? ''; },
+                get resultLabelKey() { return SKILL_LEVELS[this._levelIdx]?.labelKey ?? ''; },
+                get resultDescKey()  { return SKILL_LEVELS[this._levelIdx]?.descKey  ?? ''; },
+                get resultEmoji()    { return SKILL_LEVELS[this._levelIdx]?.emoji    ?? ''; },
                 get lastLevel()  { return this.allAnswered ? SKILL_LEVELS[this._levelIdx] : null; },
             });
 
@@ -1974,8 +2003,8 @@ const plannedUsage = ref(0);
                 skillModal.value.lastLevel = level;
                 save();
                 skillModal.value.show = false;
-                const multStr = level.mult === 1.0 ? '倍率なし（基準値そのまま）' : `基準×${level.mult}`;
-                showInlineMessage(`${level.label} として所要時間を設定しました（${multStr}）`, 'success');
+                const multStr = level.mult === 1.0 ? t('skill.multNone') : t('skill.multTemplate', { mult: level.mult });
+                showInlineMessage(t('skill.appliedMsg', { label: t(level.labelKey), multStr }), 'success');
             };
 
             const showRouteHint = (msg) => {
@@ -2015,8 +2044,8 @@ const plannedUsage = ref(0);
                 applyTimeMult(newMult);
 
                 const diffPercent = Math.round((newMult / oldMult - 1) * 100);
-                const dirText = diffPercent < 0 ? `${Math.abs(diffPercent)}%短く` : `${diffPercent}%長く`;
-                showRouteHint(`🎯「${route.name}」の実測結果から所要時間を${dirText}補正しました（現在 ×${newMult.toFixed(2)}）`);
+                const dir = diffPercent < 0 ? t('route.correctionShorter') : t('route.correctionLonger');
+                showRouteHint(t('route.correctionMsg', { name: route.name, percent: Math.abs(diffPercent), dir, mult: newMult.toFixed(2) }));
             };
 
             const getDefaultAreas = (timeMult = 1.0) => {
@@ -2026,7 +2055,7 @@ const plannedUsage = ref(0);
                     const baseAreaTime = Number(area.time) || 0;
                     return {
                         id: uuid(),
-                        name: area.name || "無題のエリア",
+                        name: area.name || t('area.untitledArea'),
                         isExpanded: !!area.isExpanded,
                         light: Number(area.light) || 0,
                         time: Math.round(baseAreaTime * timeMult),
@@ -2037,7 +2066,7 @@ const plannedUsage = ref(0);
                             const baseSubTime = Number(sub.time) || 0;
                             return {
                                 id: uuid(),
-                                name: sub.name || "無題のサブエリア",
+                                name: sub.name || t('area.untitledSubArea'),
                                 isExpanded: !!sub.isExpanded,
                                 light: Number(sub.light) || 0,
                                 time: Math.round(baseSubTime * timeMult),
@@ -2047,7 +2076,7 @@ const plannedUsage = ref(0);
                                     const baseSpotTime = Number(spot.time) || 0;
                                     return {
                                         id: uuid(),
-                                        name: spot.name || "無題のスポット",
+                                        name: spot.name || t('area.untitledSpot'),
                                         light: Number(spot.light) || 0,
                                         time: Math.round(baseSpotTime * timeMult),
                                         _baseTime: baseSpotTime,
@@ -2067,13 +2096,13 @@ const plannedUsage = ref(0);
                 if (areas.value.length === 0) {
                     areas.value = [{
                         id: uuid(),
-                        name: "⚠️データ読み込みエラー",
+                        name: t('area.loadErrorName'),
                         isExpanded: true,
-                        subAreas: [{ 
-                            id: uuid(), 
-                            name: "areas-data.js が同じフォルダにあるか確認してください", 
-                            isExpanded: true, 
-                            spots: [] 
+                        subAreas: [{
+                            id: uuid(),
+                            name: t('area.loadErrorHint'),
+                            isExpanded: true,
+                            spots: []
                         }]
                     }];
                 }
@@ -2089,7 +2118,7 @@ plannedUsage.value = 0;
 
             const resetCalculatorData = () => {
                 openCustomConfirm(
-                    "キャンドル数、メモ、エリアの選択状態などの入力数値をリセットしますか？\n（※保存したマイルートや自分で追加したエリアは消えずに残ります）",
+                    t('confirmModal.resetDataConfirm'),
                     () => {
                         stopAnyActiveTimer();
                         currentCandles.value = 0;
@@ -2117,14 +2146,14 @@ plannedUsage.value = 0;
                             });
                         }
                         save();
-                        showInlineMessage("🧹 入力数値をリセットしました", "success");
+                        showInlineMessage(t('confirmModal.resetDataDone'), "success");
                     }
                 );
             };
 
-            const deleteRoute = (index) => { 
+            const deleteRoute = (index) => {
                 openCustomConfirm(
-                    `ルート「${myRoutes.value[index]?.name}」を削除しますか？`,
+                    t('route.deleteConfirm', { name: myRoutes.value[index]?.name }),
                     () => {
                         if (myRoutes.value[index] && myRoutes.value[index].id === runningRouteId.value) stopAnyActiveTimer();
                         myRoutes.value.splice(index, 1); 
@@ -2133,10 +2162,10 @@ plannedUsage.value = 0;
                 );
             };
 
-            const requestDeleteMainArea = (index) => { 
+            const requestDeleteMainArea = (index) => {
                 if (areas.value[index]) {
                     openCustomConfirm(
-                        `「${areas.value[index].name || '無題のエリア'}」を削除しますか？\n※中のサブエリアやスポットもすべて消去されます`,
+                        t('area.deleteAreaConfirm', { name: displayAreaName(areas.value[index].name) || t('area.untitledArea') }),
                         () => {
                             areas.value.splice(index, 1);
                             save();
@@ -2145,10 +2174,10 @@ plannedUsage.value = 0;
                 }
             };
 
-            const requestDeleteSubArea = (mIdx, sIdx) => { 
+            const requestDeleteSubArea = (mIdx, sIdx) => {
                 if (areas.value[mIdx]?.subAreas[sIdx]) {
                     openCustomConfirm(
-                        `「${areas.value[mIdx].subAreas[sIdx].name || '無題のサブエリア'}」を削除しますか？\n※中のスポットもすべて消去されます`,
+                        t('area.deleteSubAreaConfirm', { name: displayAreaName(areas.value[mIdx].subAreas[sIdx].name) || t('area.untitledSubArea') }),
                         () => {
                             areas.value[mIdx].subAreas.splice(sIdx, 1);
                             save();
@@ -2157,10 +2186,10 @@ plannedUsage.value = 0;
                 }
             };
 
-            const requestDeleteSpot = (mIdx, sIdx, spIdx) => { 
+            const requestDeleteSpot = (mIdx, sIdx, spIdx) => {
                 if (areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx]) {
                     openCustomConfirm(
-                        `「${areas.value[mIdx].subAreas[sIdx].spots[spIdx].name || '無題のスポット'}」を削除しますか？`,
+                        t('area.deleteSpotConfirm', { name: displayAreaName(areas.value[mIdx].subAreas[sIdx].spots[spIdx].name) || t('area.untitledSpot') }),
                         () => {
                             areas.value[mIdx].subAreas[sIdx].spots.splice(spIdx, 1);
                             save();
@@ -2270,7 +2299,7 @@ plannedUsage.value = 0;
                             if (Array.isArray(decoded.myRoutes)) {
                                 myRoutes.value = decoded.myRoutes.map(r => ({
                                     id: r.id || uuid(),
-                                    name: r.name || "マイルート",
+                                    name: r.name || t('route.defaultNamePrefix'),
                                     memo: r.memo || "",
                                     isExpanded: false,
                                     selectedSpotIds: Array.isArray(r.selectedSpotIds) ? r.selectedSpotIds : [],
@@ -2370,7 +2399,7 @@ plannedUsage.value = 0;
 
             const formattedTotalTime = computed(() => {
                 const sec = totalSeconds.value;
-                return `${Math.floor(sec / 60)}分${Math.floor(sec % 60)}秒`;
+                return t('time.minSec', { m: Math.floor(sec / 60), s: Math.floor(sec % 60) });
             });
 
             const totalEfficiency = computed(() => {
@@ -2549,7 +2578,7 @@ plannedUsage.value = 0;
                     if (sMode === 'sub') {
                         // サブエリア自体に火種値がある場合は1マーカーで表す
                         h = 170;
-                        markers.push({ x: MINI_W / 2, y: 86, light: sub.light || 0, selected: !!sub.isSelected, name: sub.name, label: 'エリア全体', kind: 'sub', sIdx, spIdx: -1 });
+                        markers.push({ x: MINI_W / 2, y: 86, light: sub.light || 0, selected: !!sub.isSelected, name: sub.name, label: t('area.wholeAreaLabel'), kind: 'sub', sIdx, spIdx: -1 });
                     } else if (def) {
                         // 手作業レイアウト
                         h = def.h;
@@ -2557,11 +2586,11 @@ plannedUsage.value = 0;
                             const pos = def.spots[spot.name];
                             const x = pos ? pos[0] : MINI_W / 2;
                             const y = pos ? pos[1] : h / 2;
-                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, label: spot.name, kind: 'spot', sIdx, spIdx });
+                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, label: displayAreaName(spot.name), kind: 'spot', sIdx, spIdx });
                         });
                     } else if (spots.length === 1) {
                         h = 170;
-                        markers.push({ x: MINI_W / 2, y: 86, light: spots[0].light || 0, selected: !!spots[0].isSelected, name: spots[0].name, label: spots[0].name, kind: 'spot', sIdx, spIdx: 0 });
+                        markers.push({ x: MINI_W / 2, y: 86, light: spots[0].light || 0, selected: !!spots[0].isSelected, name: spots[0].name, label: displayAreaName(spots[0].name), kind: 'spot', sIdx, spIdx: 0 });
                     } else {
                         // 自動配置: 2〜4個は2列、それ以外は3列で、列ごとに少し上下をずらして地図らしく
                         const n = spots.length;
@@ -2573,7 +2602,7 @@ plannedUsage.value = 0;
                             const col = spIdx % cols, row = Math.floor(spIdx / cols);
                             const x = 20 + cellW * (col + 0.5);
                             const y = 96 + row * MINI_ROW_H + (cols > 1 ? (col % 2) * 10 : 0);
-                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, label: spot.name, kind: 'spot', sIdx, spIdx });
+                            markers.push({ x, y, light: spot.light || 0, selected: !!spot.isSelected, name: spot.name, label: displayAreaName(spot.name), kind: 'spot', sIdx, spIdx });
                         });
                     }
 
@@ -2816,28 +2845,30 @@ plannedUsage.value = 0;
                 if (!raw) return { markers: [], labels: [] };
                 const isCafe = atlasMapName.value === 'アリスカフェ';
                 const markers = (raw.markers || []).map(mk => {
-                    let value = mk.n, fill = '#fff', stroke = '#D93025', textFill = '#D93025', dash = '', kind = 'キャンドル';
+                    let value = mk.n, fill = '#fff', stroke = '#D93025', textFill = '#D93025', dash = '', kind = t('atlas.kindCandle');
                     if (mk.t === 't') {
                         value = (mk.n / 50 || 1) * 50;
-                        fill = '#F6C445'; stroke = '#B8860B'; textFill = '#6b4a00'; kind = '宝キャンドル';
+                        fill = '#F6C445'; stroke = '#B8860B'; textFill = '#6b4a00'; kind = t('atlas.kindTreasure');
                     } else if (mk.t === 'd') {
-                        fill = '#E6D9F7'; stroke = '#7B4FC9'; textFill = '#5b3a99'; kind = '闇植物';
+                        fill = '#E6D9F7'; stroke = '#7B4FC9'; textFill = '#5b3a99'; kind = t('atlas.kindDark');
                         if (mk.days && mk.days !== 'Everyday') { fill = '#fff'; dash = '7 5'; }
                     } else if (mk.t === 's') {
-                        fill = '#FFE2B0'; stroke = '#E08A00'; textFill = '#8a5500'; kind = 'ソーシャル';
+                        fill = '#FFE2B0'; stroke = '#E08A00'; textFill = '#8a5500'; kind = t('atlas.kindSocial');
                     } else if (isCafe) {
                         value = mk.n * 5; // アリスカフェの大キャンドルは1本=火種5
                     }
-                    const daysJa = mk.days ? (ATLAS_DAYS_JA[mk.days] || mk.days) : '';
+                    // 英語UIでは atlas-data.js の英語表記（M/W/F/Sun 等）をそのまま使い、日本語UIのみ和訳する
+                    const daysLabel = mk.days ? (lang.value === 'en' ? mk.days : (ATLAS_DAYS_JA[mk.days] || mk.days)) : '';
                     const r = value >= 100 ? 48 : 40;
                     return {
                         x: mk.x, y: mk.y, r, fs: r * 0.78, fill, stroke, textFill, dash,
                         text: value > 0 ? String(value) : '',
                         sub: atlasSubForPoint(atlasMapName.value, mk.x, mk.y),
-                        tip: `${kind}${value > 0 ? ' 火種' + value : ''}${daysJa ? '（' + daysJa + '）' : ''}`
+                        tip: `${kind}${value > 0 ? ' ' + t('atlas.fireLabel') + value : ''}${daysLabel ? '（' + daysLabel + '）' : ''}`
                     };
                 });
-                const labels = (raw.areaLabels || []).map(lb => ({ x: lb.x, y: lb.y, name: ATLAS_LABEL_JA[lb.name] || lb.name }));
+                // 英語UIでは atlas-data.js のラベル（英語）をそのまま使う。日本語UIのみ和訳マップを適用する
+                const labels = (raw.areaLabels || []).map(lb => ({ x: lb.x, y: lb.y, name: lang.value === 'en' ? lb.name : (ATLAS_LABEL_JA[lb.name] || lb.name) }));
                 // サブエリア区画（塗り＋名前）。ラベルは最初の矩形の中心に置く
                 const regionDefs = (ATLAS_REGIONS[atlasMapName.value] || { list: [] }).list;
                 const regions = regionDefs.map(rg => {
@@ -2957,23 +2988,23 @@ plannedUsage.value = 0;
                 });
                 
                 if (selectedIds.length === 0) {
-                    routeError.value = "⚠️ スポットが一つも選択されていません。";
+                    routeError.value = t('route.noSpotSelected');
                     setTimeout(() => { routeError.value = ""; }, 4000);
                     return;
                 }
-                
+
                 routeError.value = "";
                 myRoutes.value.push({
                     id: uuid(),
-                    name: `マイルート ${myRoutes.value.length + 1}`,
+                    name: `${t('route.defaultNamePrefix')} ${myRoutes.value.length + 1}`,
                     memo: "",
                     selectedSpotIds: selectedIds,
                     isExpanded: true,
                     actualSeconds: 0,
                     generatedSpell: ""
                 });
-                save(); 
-                showRouteHint("✅ ルートを保存しました。1回だけ計測すると、次回からの見積もり精度が上がります👇");
+                save();
+                showRouteHint(t('route.savedHint'));
             };
 
             const getRouteAreaNames = (route) => {
@@ -2982,15 +3013,15 @@ plannedUsage.value = 0;
                 route.selectedSpotIds.forEach(id => {
                     for (const area of areas.value) {
                         if (!area) continue;
-                        if (area.id === id) { names.push(area.name); break; }
+                        if (area.id === id) { names.push(displayAreaName(area.name)); break; }
                         if (Array.isArray(area.subAreas)) {
                             let found = false;
                             for (const sub of area.subAreas) {
                                 if (!sub) continue;
-                                if (sub.id === id) { names.push(`${area.name}・${sub.name}`); found = true; break; }
+                                if (sub.id === id) { names.push(`${displayAreaName(area.name)}・${displayAreaName(sub.name)}`); found = true; break; }
                                 if (Array.isArray(sub.spots)) {
                                     const sp = sub.spots.find(s => s.id === id);
-                                    if (sp) { names.push(`${sub.name}(${sp.name})`); found = true; break; }
+                                    if (sp) { names.push(`${displayAreaName(sub.name)}(${displayAreaName(sp.name)})`); found = true; break; }
                                 }
                             }
                             if (found) break;
@@ -3050,7 +3081,7 @@ plannedUsage.value = 0;
                         }
                     });
                 }
-                const timeStr = `${Math.floor(time / 60)}分${Math.floor(time % 60)}秒`;
+                const timeStr = t('time.minSec', { m: Math.floor(time / 60), s: Math.floor(time % 60) });
                 const eff = time > 0 ? (light / time) : 0.0;
                 return { light, timeStr, eff };
             };
@@ -3066,19 +3097,19 @@ plannedUsage.value = 0;
             const getSpotNameById = (id) => {
                 for (const area of areas.value) {
                     if (!area) continue;
-                    if (area.id === id) return area.name;
+                    if (area.id === id) return displayAreaName(area.name);
                     if (Array.isArray(area.subAreas)) {
                         for (const sub of area.subAreas) {
                             if (!sub) continue;
-                            if (sub.id === id) return `${area.name}・${sub.name}`;
+                            if (sub.id === id) return `${displayAreaName(area.name)}・${displayAreaName(sub.name)}`;
                             if (Array.isArray(sub.spots)) {
                                 const sp = sub.spots.find(s => s.id === id);
-                                if (sp) return `${sub.name}・${sp.name}`;
+                                if (sp) return `${displayAreaName(sub.name)}・${displayAreaName(sp.name)}`;
                             }
                         }
                     }
                 }
-                return "不明なスポット";
+                return t('area.unknownSpot');
             };
 
             const moveRouteSpot = (route, index, direction) => {
@@ -3165,11 +3196,11 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                     let binString = "";
                     for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
                     generatedSpell.value = btoa(binString);
-                } catch (e) { showInlineMessage("呪文の生成に失敗しました。", "error"); }
+                } catch (e) { showInlineMessage(t('spell.genFailed'), "error"); }
             };
 
             const requestApplySpell = () => {
-                if (!inputSpell.value.trim()) { showInlineMessage("呪文を入力してください。", "error"); return; }
+                if (!inputSpell.value.trim()) { showInlineMessage(t('spell.emptyInput'), "error"); return; }
                 isConfirming.value = true;
             };
 
@@ -3202,8 +3233,8 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                         }));
                     }
                     if (decoded.visibleSections) visibleSections.value = { ...visibleSections.value, ...decoded.visibleSections };
-                    inputSpell.value = ""; showInlineMessage("🌟 データの復元に成功しました！", "success");
-                } catch (e) { showInlineMessage("😢 じじゅもんが ちがいます！", "error"); }
+                    inputSpell.value = ""; showInlineMessage(t('spell.restoreSuccess'), "success");
+                } catch (e) { showInlineMessage(t('spell.restoreFailed'), "error"); }
             };
 
             // 📤 特定のマイルートのみをパッケージして共有呪文を生成
@@ -3245,7 +3276,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                     for (let i = 0; i < uint8array.length; i++) binString += String.fromCharCode(uint8array[i]);
                     route.generatedSpell = btoa(binString);
                 } catch (e) {
-                    routeSpellMessage.value = "⚠️ ルート呪文の生成に失敗しました。";
+                    routeSpellMessage.value = t('route.spellGenFailed');
                     routeSpellMessageType.value = "error";
                 }
             };
@@ -3282,10 +3313,13 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                         }
                         
                         // 2. 見つからない（他人が作った自作スポット等）場合は自動でエリア管理に登録
+                        // 名前は言語切替でマッチングが崩れないよう、常に日本語の固定名で保存する
+                        // （表示だけ displayAreaName() / SKY_AREA_NAMES_EN 経由で翻訳される）
                         if (!foundSpotId) {
-                            let sharedMain = areas.value.find(a => a && a.name === "📥 共有された外部エリア");
+                            const SHARED_AREA_NAME_JA = "📥 共有された外部エリア";
+                            let sharedMain = areas.value.find(a => a && a.name === SHARED_AREA_NAME_JA);
                             if (!sharedMain) {
-                                sharedMain = { id: uuid(), name: "📥 共有された外部エリア", isExpanded: true, subAreas: [] };
+                                sharedMain = { id: uuid(), name: SHARED_AREA_NAME_JA, isExpanded: true, subAreas: [] };
                                 areas.value.push(sharedMain);
                             }
                             
@@ -3313,21 +3347,21 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                     // 3. ルート配列に新規プッシュ
                     myRoutes.value.push({
                         id: uuid(),
-                        name: `[読込] ${decoded.name}`,
+                        name: `${t('route.importedNamePrefix')} ${decoded.name}`,
                         memo: decoded.memo || "",
                         selectedSpotIds: importedSpotIds,
                         isExpanded: true,
                         actualSeconds: decoded.actualSeconds || 0,
                         generatedSpell: ""
                     });
-                    
+
                     routeInputSpell.value = "";
-                    routeSpellMessage.value = "📥 ルートを正常に取り込みました！";
+                    routeSpellMessage.value = t('route.spellImportSuccess');
                     routeSpellMessageType.value = "success";
                     setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
                     save();
                 } catch (e) {
-                    routeSpellMessage.value = "😢 ルート呪文の構造が正しくありません。";
+                    routeSpellMessage.value = t('route.spellInvalid');
                     routeSpellMessageType.value = "error";
                     setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
                 }
@@ -3339,7 +3373,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
             const runRouteInTimer = (route) => {
                 generateRouteSpell(route); // route.generatedSpell を最新化
                 if (!route.generatedSpell) {
-                    routeSpellMessage.value = "⚠️ 呪文の生成に失敗したため、RTAタイマーに渡せませんでした。";
+                    routeSpellMessage.value = t('route.rtaGenFailed');
                     routeSpellMessageType.value = "error";
                     return;
                 }
@@ -3351,7 +3385,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(spell).catch(() => {});
                     }
-                    routeSpellMessage.value = "📋 ルートが大きいため呪文をコピーしました。開いたRTAタイマーの「計算機のルートを読込」欄に貼り付けてください。";
+                    routeSpellMessage.value = t('route.rtaCopiedHint');
                     routeSpellMessageType.value = "success";
                     setTimeout(() => { routeSpellMessage.value = ""; }, 6000);
                     window.open(RTA_TIMER_URL, "_blank", "noopener");
@@ -3468,9 +3502,9 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 save(); 
             };
 
-            const addMainArea = () => { areas.value.push({ id: uuid(), name: "新規メインエリア", isExpanded: false, light: 0, time: 0, isSelected: false, subAreas: [] }); };
-            const addSubArea = (mIdx) => { if (areas.value[mIdx]) areas.value[mIdx].subAreas.push({ id: uuid(), name: "新規サブエリア", isExpanded: false, light: 0, time: 0, isSelected: false, spots: [] }); };
-            const addSpot = (mIdx, sIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]) areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: "新規スポット", light: 0, time: 0, isSelected: false, group: "" }); };
+            const addMainArea = () => { areas.value.push({ id: uuid(), name: t('area.newMainArea'), isExpanded: false, light: 0, time: 0, isSelected: false, subAreas: [] }); };
+            const addSubArea = (mIdx) => { if (areas.value[mIdx]) areas.value[mIdx].subAreas.push({ id: uuid(), name: t('area.newSubArea'), isExpanded: false, light: 0, time: 0, isSelected: false, spots: [] }); };
+            const addSpot = (mIdx, sIdx) => { if (areas.value[mIdx]?.subAreas[sIdx]) areas.value[mIdx].subAreas[sIdx].spots.push({ id: uuid(), name: t('area.newSpot'), light: 0, time: 0, isSelected: false, group: "" }); };
 
             const handleSpotChange = (mIdx, sIdx, spIdx) => {
                 const currentSpot = areas.value[mIdx]?.subAreas[sIdx]?.spots[spIdx];
@@ -3486,9 +3520,10 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
 
             onMounted(() => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
-                if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); } 
+                if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); }
                 else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
                 applyThemeToDOM();
+                applyLangToDOM();
                 load();
                 // 前回の診断結果を復元
                 const savedLevelKey = localStorage.getItem('sky_skill_level_key');
@@ -3521,6 +3556,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
 
             return {
                 isDarkMode, toggleTheme,
+                lang, toggleLang, t, displayAreaName,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 isDraggingCarryGauge, startCarryDrag, moveCarryDrag, endCarryDrag, handleCarryGaugeKeydown, carryFillPercent,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
