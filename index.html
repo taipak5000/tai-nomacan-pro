@@ -1527,6 +1527,14 @@
                 </div>
             </div>
 
+            <div style="margin-bottom: 18px;">
+                <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.langSectionHeader') }}</div>
+                <div class="view-toggle-row">
+                    <button type="button" class="view-toggle-btn" :class="{active: lang === 'ja'}" @click="setLang('ja')">日本語</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: lang === 'en'}" @click="setLang('en')">English</button>
+                </div>
+            </div>
+
             <div>
                 <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.shortcutsSectionHeader') }}</div>
                 <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; background:var(--stat-box-bg); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; margin-bottom:10px;">
@@ -1752,6 +1760,15 @@
 
             const toggleLang = () => {
                 lang.value = lang.value === 'ja' ? 'en' : 'ja';
+                localStorage.setItem('sky_app_lang', lang.value);
+            };
+
+            // 環境設定モーダル内の言語セレクター用。指定した言語に直接切り替える
+            // （toggleLangの2択トグルとは別に、言語を選んで直接ジャンプするためのAPI）。
+            // 既に選択中の言語を再度指定した場合は何もしない（無意味な再描画/保存を避ける）。
+            const setLang = (l) => {
+                if (lang.value === l) return;
+                lang.value = l;
                 localStorage.setItem('sky_app_lang', lang.value);
             };
 
@@ -3705,7 +3722,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
             return {
                 isDarkMode, toggleTheme,
                 showAppSettingsModal, shortcutsEnabled,
-                lang, toggleLang, t, displayAreaName,
+                lang, toggleLang, setLang, t, displayAreaName,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
                 isDraggingCarryGauge, startCarryDrag, moveCarryDrag, endCarryDrag, handleCarryGaugeKeydown, carryFillPercent,
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
