@@ -20,6 +20,12 @@ window.SKY_TRANSLATIONS = {
         "sidebar.hamburgerToggle": "☰ ツール",
         "sidebar.relatedToolsLabel": "🔗 関連ツール",
 
+        // ── 🧭 サイトドック（クイックメニュー） ──
+        "dock.ariaLabel": "クイックメニュー",
+        "dock.areaView": "エリア表示",
+        "dock.otherTools": "他のツール",
+        "dock.preferences": "環境設定",
+
         // ── ツール名（共通UIチェイン踏襲＋このリポジトリ独自分） ──
         "tools.taiNomacanPro": "🕯️ ノマキャン計算機プロ",
         "tools.taiNomacan": "🕯️ ノマキャン計算機",
@@ -285,6 +291,12 @@ window.SKY_TRANSLATIONS = {
 
         "sidebar.hamburgerToggle": "☰ Tools",
         "sidebar.relatedToolsLabel": "🔗 Related Tools",
+
+        // ── 🧭 Site Dock (Quick Menu) ──
+        "dock.ariaLabel": "Quick Menu",
+        "dock.areaView": "Area View",
+        "dock.otherTools": "Other Tools",
+        "dock.preferences": "Preferences",
 
         "tools.taiNomacanPro": "🕯️ Nomacan Calculator Pro",
         "tools.taiNomacan": "🕯️ Nomacan Calculator",
