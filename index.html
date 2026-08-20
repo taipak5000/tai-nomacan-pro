@@ -1528,14 +1528,6 @@
             </div>
 
             <div style="margin-bottom: 18px;">
-                <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.langSectionHeader') }}</div>
-                <div class="view-toggle-row">
-                    <button type="button" class="view-toggle-btn" :class="{active: lang === 'ja'}" @click="setLang('ja')">日本語</button>
-                    <button type="button" class="view-toggle-btn" :class="{active: lang === 'en'}" @click="setLang('en')">English</button>
-                </div>
-            </div>
-
-            <div>
                 <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.shortcutsSectionHeader') }}</div>
                 <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; background:var(--stat-box-bg); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; margin-bottom:10px;">
                     <span style="font-size:14px;">{{ t('settings.shortcutsEnableLabel') }}</span>
@@ -1557,6 +1549,16 @@
                     </div>
                 </div>
             </div>
+
+            <div style="margin-bottom: 18px;">
+                <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.langSectionHeader') }}</div>
+                <div class="view-toggle-row">
+                    <button type="button" class="view-toggle-btn" :class="{active: lang === 'ja'}" @click="setLang('ja')">日本語</button>
+                    <button type="button" class="view-toggle-btn" :class="{active: lang === 'en'}" @click="setLang('en')">English</button>
+                </div>
+            </div>
+
+            <button class="btn-outline-blue" @click="showAppSettingsModal = false" style="width:100%; justify-content:center; margin-top:4px;">{{ t('settings.closeBtn') }}</button>
         </div>
     </div>
 

@@ -54,6 +54,7 @@ window.SKY_TRANSLATIONS = {
         "settings.shortcutOpenDesc": "この設定を開く",
         "settings.shortcutThemeDesc": "ダークモード切替",
         "settings.shortcutEscDesc": "開いているウィンドウを閉じる",
+        "settings.closeBtn": "閉じる",
 
         // ── 今日の精錬状況カード ──
         "refine.sectionHeader": "今日の精錬状況",
@@ -325,6 +326,7 @@ window.SKY_TRANSLATIONS = {
         "settings.shortcutOpenDesc": "Open this settings panel",
         "settings.shortcutThemeDesc": "Toggle dark mode",
         "settings.shortcutEscDesc": "Close the open window",
+        "settings.closeBtn": "Close",
 
         "refine.sectionHeader": "Today's Refining Status",
         "refine.dailyBonusLabel": "📅 Today's Grand Candles:",
