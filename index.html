@@ -1032,7 +1032,7 @@
                             <button class="btn-outline-blue" @click="moveRouteCard(rIdx, 1)" :disabled="rIdx === myRoutes.length - 1" style="padding: 4px 6px; font-size: 11px;">{{ t('route.moveDown') }}</button>
 
                             <button class="btn-outline-blue" @click="applyRoute(route)" style="padding: 4px 10px; font-size: 12px; background: var(--accent-blue); color: white; font-weight: bold; border: none; border-radius: 6px;">{{ t('route.apply') }}</button>
-                            <button class="btn-outline-blue" @click="generateRouteSpell(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">{{ t('route.share') }}</button>
+                            <button class="btn-outline-blue" @click="shareRoute(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-purple); color: white; border: none; border-radius: 6px; font-weight: bold;">{{ t('route.share') }}</button>
                             <button class="btn-outline-blue" @click="runRouteInTimer(route)" style="padding: 4px 8px; font-size: 12px; background: var(--accent-green); color: white; border: none; border-radius: 6px; font-weight: bold; white-space: nowrap;">{{ t('route.rtaBtn') }}</button>
                             <button class="expand-toggle-btn" @click="toggleRouteExpand(route)" style="padding: 4px 8px; font-size: 12px; border-radius: 6px; min-width: auto; height: auto; margin:0;">
                                 {{ route.isExpanded ? '▼' : '▶' }}
@@ -1043,6 +1043,11 @@
 
                     <div class="route-path-box" :title="getRouteAreaNames(route)">
                         {{ t('route.via') }} <span style="color:var(--text-color); font-weight:500;">{{ getRouteAreaNames(route) || t('route.viaNone') }}</span>
+                    </div>
+
+                    <div v-if="route.generatedSpell" style="margin-top: 8px;">
+                        <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 4px;">{{ t('route.shareResultLabel') }}</div>
+                        <textarea readonly :value="route.generatedSpell" @click="$event.target.select()" style="width: 100%; height: 50px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-family: monospace; font-size: 11px; box-sizing: border-box; resize: none; background: var(--input-bg); color: var(--text-color);"></textarea>
                     </div>
 
                     <div v-if="!route.isExpanded && (route.actualSeconds || 0) === 0"
@@ -1175,7 +1180,10 @@
                                    :opacity="atlasBgOpacity" preserveAspectRatio="xMidYMid slice"></image>
                             <!-- サブエリア区画（タップでも選択パネルを開ける）。背景画像があるときは控えめに表示 -->
                             <g v-for="(rg, ri) in atlasModel.regions" :key="'rg'+ri" style="cursor:pointer;"
-                               @click="onAtlasRegionClick(rg)">
+                               role="button" tabindex="0" :aria-label="displayAreaName(rg.name)"
+                               @click="onAtlasRegionClick(rg)"
+                               @keydown.enter="onAtlasRegionClick(rg)"
+                               @keydown.space.prevent="onAtlasRegionClick(rg)">
                                 <rect v-for="(rc, rci) in rg.rects" :key="'rc'+rci"
                                       :x="rc[0]" :y="rc[1]" :width="rc[2]-rc[0]" :height="rc[3]-rc[1]"
                                       rx="26" :fill="atlasBgUrl ? 'transparent' : atlasTheme.blob"
@@ -1196,7 +1204,10 @@
                             <g v-for="(m, mi) in atlasModel.markers" :key="'am'+mi"
                                class="atlas-marker"
                                :transform="`translate(${m.x},${m.y})`"
-                               @click="onAtlasMarkerClick(m)">
+                               role="button" tabindex="0" :aria-label="m.tip"
+                               @click="onAtlasMarkerClick(m)"
+                               @keydown.enter="onAtlasMarkerClick(m)"
+                               @keydown.space.prevent="onAtlasMarkerClick(m)">
                                 <title>{{ m.tip }}</title>
                                 <circle :r="m.r" :fill="m.fill" :stroke="m.stroke" :stroke-width="m.r * 0.18" :stroke-dasharray="m.dash"></circle>
                                 <text v-if="m.text" :font-size="m.fs" :fill="m.textFill">{{ m.text }}</text>
@@ -1229,7 +1240,10 @@
                         <div class="atlas-chips">
                             <div v-for="(spot, spIdx) in atlasActiveSub.sub.spots" :key="spot.id"
                                  class="atlas-chip" :class="{selected: spot.isSelected}"
-                                 @click="toggleMapSpot(atlasActiveSub.mIdx, atlasActiveSub.sIdx, spIdx)">
+                                 role="checkbox" :aria-checked="spot.isSelected" tabindex="0"
+                                 @click="toggleMapSpot(atlasActiveSub.mIdx, atlasActiveSub.sIdx, spIdx)"
+                                 @keydown.enter="toggleMapSpot(atlasActiveSub.mIdx, atlasActiveSub.sIdx, spIdx)"
+                                 @keydown.space.prevent="toggleMapSpot(atlasActiveSub.mIdx, atlasActiveSub.sIdx, spIdx)">
                                 <span>{{ spot.isSelected ? '✅' : '⬜' }} {{ displayAreaName(spot.name) }}</span>
                                 <span class="chip-light">🔥{{ spot.light }}</span>
                             </div>
@@ -1315,7 +1329,10 @@
                                     <g v-for="m in mini.markers" :key="mini.sub.id + '_mk' + m.spIdx"
                                        class="map-marker" :class="{sel: m.selected}"
                                        :transform="`translate(${m.x},${m.y})`"
-                                       @click="onMapMarkerClick(mIdx, m)">
+                                       role="checkbox" :aria-checked="m.selected" :aria-label="displayAreaName(m.name)" tabindex="0"
+                                       @click="onMapMarkerClick(mIdx, m)"
+                                       @keydown.enter="onMapMarkerClick(mIdx, m)"
+                                       @keydown.space.prevent="onMapMarkerClick(mIdx, m)">
                                         <title>{{ displayAreaName(m.name) }}（🔥{{ m.light }}）</title>
                                         <circle :r="m.r"></circle>
                                         <text class="map-marker-num" :font-size="m.fs">{{ m.light }}</text>
@@ -3445,6 +3462,28 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 }
             };
 
+            // 📤「共有」ボタン: 呪文を生成し、カード上に表示 ＋ クリップボードへコピーしてトーストで知らせる
+            const shareRoute = (route) => {
+                generateRouteSpell(route);
+                if (!route.generatedSpell) return; // 失敗時は generateRouteSpell 内でエラーメッセージ表示済み
+                const spell = route.generatedSpell;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(spell).then(() => {
+                        routeSpellMessage.value = t('route.shareCopiedHint');
+                        routeSpellMessageType.value = "success";
+                        setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
+                    }).catch(() => {
+                        routeSpellMessage.value = t('route.shareCopyFailedHint');
+                        routeSpellMessageType.value = "error";
+                        setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
+                    });
+                } else {
+                    routeSpellMessage.value = t('route.shareCopyFailedHint');
+                    routeSpellMessageType.value = "error";
+                    setTimeout(() => { routeSpellMessage.value = ""; }, 5000);
+                }
+            };
+
             // 📥 他人のルート呪文を解析して読み込む（名前マッピング ＆ 不足時は自動エリア生成）
             const applyRouteSpell = () => {
                 if (!routeInputSpell.value.trim()) return;
@@ -3736,7 +3775,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 heartsToSend, dailyHeartCost,
                 isAllMainSelected, toggleMainArea, isAllSubSelected, toggleSubArea, getSubAreaStats, getMainAreaStats, getMainAreaSelectedCount, moveMainArea, moveSubArea, generateSpell, requestApplySpell, confirmApplySpell,
                 skillModal, openSkillModal, applySkillLevel,
-                generateRouteSpell, applyRouteSpell, runRouteInTimer, RTA_TIMER_URL,
+                generateRouteSpell, shareRoute, applyRouteSpell, runRouteInTimer, RTA_TIMER_URL,
                 addMainArea, addSubArea, addSpot, requestDeleteMainArea, requestDeleteSubArea, requestDeleteSpot,
                 handleSpotChange,
                 saveCurrentRoute, deleteRoute, applyRoute, getRouteStats, getRouteAreaNames, resetCalculatorData,
