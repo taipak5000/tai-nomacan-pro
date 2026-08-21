@@ -3401,6 +3401,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                     if (decoded.targetDate) targetDate.value = decoded.targetDate;
                     if (decoded.currentCandles !== undefined) currentCandles.value = decoded.currentCandles;
                     if (decoded.plannedUsage !== undefined) plannedUsage.value = decoded.plannedUsage;
+                    if (decoded.heartsToSend !== undefined) heartsToSend.value = decoded.heartsToSend;
                     if (decoded.targetCandlesForOptimization !== undefined) targetCandlesForOptimization.value = decoded.targetCandlesForOptimization;
                     if (decoded.dailyBonusArea !== undefined) dailyBonusArea.value = Number(decoded.dailyBonusArea) || 0;
                     if (decoded.dailyShard) dailyShard.value = decoded.dailyShard;
@@ -3638,8 +3639,10 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
 
             const optimize = () => {
                 const target = Math.max(1, Math.min(targetCandlesForOptimization.value, thresholds.length));
-                const targetLightNeeded = thresholds[target - 1] - carryOverLight.value;
-                
+                let dailyBonusLight = (Number(dailyBonusArea.value) || 0) * 50;  // 個数×50火種
+                if (dailyShard.value === "black") dailyBonusLight += 200;         // 黒い破片+200火種
+                const targetLightNeeded = thresholds[target - 1] - carryOverLight.value - dailyBonusLight;
+
                 if (!Array.isArray(areas.value)) return;
                 // まず全選択解除
                 areas.value.forEach(area => {
