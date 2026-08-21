@@ -1676,7 +1676,7 @@
             <span class="site-dock-icon">🗺️</span>
             <span class="site-dock-label">{{ t('dock.areaView') }}</span>
         </button>
-        <button type="button" @click="showSidebar = true">
+        <button type="button" @click="openToolsSidebar">
             <span class="site-dock-icon">☰</span>
             <span class="site-dock-label">{{ t('dock.otherTools') }}</span>
         </button>
@@ -1745,6 +1745,7 @@
                 if (confirmModal.value.show) { confirmModal.value.show = false; return; }
                 if (showAppSettingsModal.value) { showAppSettingsModal.value = false; return; }
                 if (skillModal.value.show && !skillModal.value.isFirst) { skillModal.value.show = false; return; }
+                if (showSidebar.value) { showSidebar.value = false; return; }
             };
 
             // ⌨️ グローバルショートカット: ? = 環境設定を開く／D = ダークモード切替／Esc = 開いているモーダルを閉じる
@@ -1890,6 +1891,14 @@ const plannedUsage = ref(0);
             const heartsToSend = ref(0);
             const targetCandlesForOptimization = ref(20);
             const isWideScreen = ref(window.innerWidth >= 850);
+
+            // 🧭ドックの「他のツール」ボタン用。≥850px幅では.sidebarが常時インライン表示
+            // されているため（sidebar-toggle-btn/sidebar-close-btnを隠すのと同じisWideScreen
+            // ガード）、同じ内容をフルスクリーンオーバーレイで重ねて開かず何もしない。
+            const openToolsSidebar = () => {
+                if (isWideScreen.value) return;
+                showSidebar.value = true;
+            };
 
             const runningRouteId = ref(null);
             const runningSeconds = ref(0); 
@@ -3045,7 +3054,7 @@ plannedUsage.value = 0;
                         x: mk.x, y: mk.y, r, fs: r * 0.78, fill, stroke, textFill, dash,
                         text: value > 0 ? String(value) : '',
                         sub: atlasSubForPoint(atlasMapName.value, mk.x, mk.y),
-                        tip: `${kind}${value > 0 ? ' ' + t('atlas.fireLabel') + value : ''}${daysLabel ? '（' + daysLabel + '）' : ''}`
+                        tip: `${kind}${value > 0 ? ' ' + t('atlas.fireLabel') + ' ' + value : ''}${daysLabel ? '（' + daysLabel + '）' : ''}`
                     };
                 });
                 // 英語UIでは atlas-data.js のラベル（英語）をそのまま使う。日本語UIのみ和訳マップを適用する
@@ -3772,7 +3781,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
                 generatedSpell, inputSpell, isConfirming, spellMessage, spellMessageType,
                 routeInputSpell, routeSpellMessage, routeSpellMessageType,
                 confirmModal, executeConfirm,
-                showSettings, showSidebar, myRoutes, visibleSections, routeError, routeHintMessage,
+                showSettings, showSidebar, openToolsSidebar, myRoutes, visibleSections, routeError, routeHintMessage,
                 dailyBonusArea, dailyShard, shardPrediction, syncDailyShardWithPrediction,
                 totalLight, calculated, projectedCandles, totalEfficiency, formattedTotalTime, dailyReset, optimize,
                 heartsToSend, dailyHeartCost,
