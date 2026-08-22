@@ -14,6 +14,7 @@ window.SKY_TRANSLATIONS = {
         pageTitle: "ノマキャン計算機プロ",
         themeDark: "🌙 ダーク",
         themeLight: "☀️ ライト",
+        themeSystem: "🖥️ システム",
         langToggleBtn: "🌐 English",
 
         // ── サイドバー（共通UIチェイン踏襲） ──
@@ -47,12 +48,16 @@ window.SKY_TRANSLATIONS = {
         // ── ⚙️ 環境設定モーダル（ダークモード・キーボードショートカット） ──
         "settings.appSettingsBtn": "⚙️ 環境設定",
         "settings.displaySectionHeader": "🌙 表示",
-        "settings.darkModeLabel": "ダークモード",
+        "settings.darkModeLabel": "テーマ",
+        "settings.themeModeDark": "ダーク",
+        "settings.themeModeLight": "ライト",
+        "settings.themeModeSystem": "システムに合わせる",
+        "settings.themeAriaLabel": "テーマ切替（現在: {current} / クリックで{next}に切替）",
         "settings.langSectionHeader": "🌐 言語 / Language",
         "settings.shortcutsSectionHeader": "⌨️ キーボードショートカット",
         "settings.shortcutsEnableLabel": "ショートカットを有効にする",
         "settings.shortcutOpenDesc": "この設定を開く",
-        "settings.shortcutThemeDesc": "ダークモード切替",
+        "settings.shortcutThemeDesc": "テーマ切替（ライト→ダーク→システム）",
         "settings.shortcutEscDesc": "開いているウィンドウを閉じる",
         "settings.closeBtn": "閉じる",
 
@@ -295,6 +300,7 @@ window.SKY_TRANSLATIONS = {
         pageTitle: "Nomacan Calculator Pro",
         themeDark: "🌙 Dark",
         themeLight: "☀️ Light",
+        themeSystem: "🖥️ System",
         langToggleBtn: "🌐 日本語",
 
         "sidebar.hamburgerToggle": "☰ Tools",
@@ -325,12 +331,16 @@ window.SKY_TRANSLATIONS = {
         // ── ⚙️ Preferences modal (dark mode & keyboard shortcuts) ──
         "settings.appSettingsBtn": "⚙️ Preferences",
         "settings.displaySectionHeader": "🌙 Display",
-        "settings.darkModeLabel": "Dark Mode",
+        "settings.darkModeLabel": "Theme",
+        "settings.themeModeDark": "Dark",
+        "settings.themeModeLight": "Light",
+        "settings.themeModeSystem": "Follow System",
+        "settings.themeAriaLabel": "Theme toggle (current: {current}, click to switch to {next})",
         "settings.langSectionHeader": "🌐 Language",
         "settings.shortcutsSectionHeader": "⌨️ Keyboard Shortcuts",
         "settings.shortcutsEnableLabel": "Enable keyboard shortcuts",
         "settings.shortcutOpenDesc": "Open this settings panel",
-        "settings.shortcutThemeDesc": "Toggle dark mode",
+        "settings.shortcutThemeDesc": "Cycle theme (Light → Dark → System)",
         "settings.shortcutEscDesc": "Close the open window",
         "settings.closeBtn": "Close",
 

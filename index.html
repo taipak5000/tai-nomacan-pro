@@ -2,6 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <!-- 🌓 ダーク/ライト/システム追従の初期テーマを、CSSが読み込まれるより前に同期的に適用する
+         （ちらつき防止）。sky_app_theme は 'light' | 'dark' | 'system' | 未設定 のいずれかを取り得て、
+         'system' と未設定は同じ扱い。ここは他のどのスクリプトよりも先にスタンドアロンで
+         実行される必要があるため、下の resolveEffectiveTheme() と同じロジックをこの1箇所だけ
+         あえて複製しています（値を変えたときはこの2箇所を必ず同時に直してください）。 -->
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('sky_app_theme');
+                var effective = (stored === 'light' || stored === 'dark')
+                    ? stored
+                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', effective);
+            } catch (e) { /* noop */ }
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ノマキャン計算機プロ (Web版)</title>
     <link rel="manifest" href="manifest.json">
@@ -703,9 +719,10 @@
     <header>
         <h1 v-if="isWideScreen">{{ t('pageTitleWide') }}</h1>
         <h1 v-else>{{ t('pageTitle') }}</h1>
-        <button class="theme-toggle-btn" @click="toggleTheme">
-            <span v-if="isDarkMode">{{ t('themeDark') }}</span>
-            <span v-else>{{ t('themeLight') }}</span>
+        <button class="theme-toggle-btn" @click="toggleTheme" :aria-label="themeAriaLabel">
+            <span v-if="themeMode === 'dark'">{{ t('themeDark') }}</span>
+            <span v-else-if="themeMode === 'light'">{{ t('themeLight') }}</span>
+            <span v-else>{{ t('themeSystem') }}</span>
         </button>
         <button class="theme-toggle-btn" @click="toggleLang">
             {{ t('langToggleBtn') }}
@@ -1546,9 +1563,10 @@
                 <div style="font-size:13px; font-weight:bold; color: var(--accent-blue); margin-bottom:8px;">{{ t('settings.displaySectionHeader') }}</div>
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--stat-box-bg); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px;">
                     <span style="font-size:14px;">{{ t('settings.darkModeLabel') }}</span>
-                    <button class="btn-outline-blue" @click="toggleTheme" style="padding:6px 12px; font-size:13px;">
-                        <span v-if="isDarkMode">{{ t('themeDark') }}</span>
-                        <span v-else>{{ t('themeLight') }}</span>
+                    <button class="btn-outline-blue" @click="toggleTheme" style="padding:6px 12px; font-size:13px;" :aria-label="themeAriaLabel">
+                        <span v-if="themeMode === 'dark'">{{ t('themeDark') }}</span>
+                        <span v-else-if="themeMode === 'light'">{{ t('themeLight') }}</span>
+                        <span v-else>{{ t('themeSystem') }}</span>
                     </button>
                 </div>
             </div>
@@ -1710,6 +1728,15 @@
 <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
+    // 🌓 sky_app_theme（'light' | 'dark' | 'system' | 未設定）から、実際に適用すべき
+    // テーマ（'dark' | 'light'）を解決する共有ヘルパー。トグル関数・cross-tab storageリスナー・
+    // OSのprefers-color-scheme変化リスナーなど、明暗の判断が必要な箇所は必ずこれを経由させる
+    // （<head>先読みスクリプトのみ、他スクリプトより先に単独実行する必要があるためロジックを複製）。
+    function resolveEffectiveTheme(stored) {
+        if (stored === 'light' || stored === 'dark') return stored;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
     createApp({
         setup() {
             // ⏱️ RTAタイマー（分けて公開している別サイト）のURL。
@@ -1717,18 +1744,24 @@
             const RTA_TIMER_URL = "https://taipak5000.github.io/timer/";
 
             const thresholds = [94, 188, 282, 376, 470, 609, 748, 887, 1026, 1165, 1343, 1521, 1699, 1877, 2055, 2268, 2481, 2719, 3207, 4195, 6195, 10195, 18195];
-            const isDarkMode = ref(false);
+
+            // 🌓 テーマは 'light' → 'dark' → 'system' → 'light' … の3状態を巡回する
+            // （'system' はOSのprefers-color-schemeに常時追従。未設定時のデフォルトも'system'）。
+            const themeMode = ref('system');
+
+            const THEME_MODE_LABEL_KEY = { light: 'settings.themeModeLight', dark: 'settings.themeModeDark', system: 'settings.themeModeSystem' };
+            const nextThemeMode = (mode) => (mode === 'light' ? 'dark' : (mode === 'dark' ? 'system' : 'light'));
 
             const toggleTheme = () => {
-                isDarkMode.value = !isDarkMode.value;
-                localStorage.setItem('sky_app_theme', isDarkMode.value ? 'dark' : 'light');
+                themeMode.value = nextThemeMode(themeMode.value);
+                localStorage.setItem('sky_app_theme', themeMode.value);
             };
 
             const applyThemeToDOM = () => {
-                document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', resolveEffectiveTheme(themeMode.value));
             };
 
-            watch(isDarkMode, () => { applyThemeToDOM(); });
+            watch(themeMode, () => { applyThemeToDOM(); });
 
             // ════════════════════════════════════════════════════
             // ⚙️ 環境設定モーダル（ダークモード切替は上のtoggleThemeを流用／
@@ -1740,7 +1773,7 @@
 
             // shortcutsEnabled は素の ref にする（localStorage を直接読むだけの computed だと
             // Vueの依存追跡が効かずキャッシュされた値のまま更新されなくなるため、
-            // isDarkMode/lang と同じ「refを単一の真実の情報源にしてwatchで永続化する」方式にする）
+            // themeMode/lang と同じ「refを単一の真実の情報源にしてwatchで永続化する」方式にする）
             const shortcutsEnabled = ref(true);
             watch(shortcutsEnabled, (val) => {
                 try { localStorage.setItem('sky_shortcuts_enabled', val ? '1' : '0'); } catch (e) { /* noop */ }
@@ -1755,7 +1788,7 @@
                 if (showSidebar.value) { showSidebar.value = false; return; }
             };
 
-            // ⌨️ グローバルショートカット: ? = 環境設定を開く／D = ダークモード切替／Esc = 開いているモーダルを閉じる
+            // ⌨️ グローバルショートカット: ? = 環境設定を開く／D = テーマ切替（ライト→ダーク→システム）／Esc = 開いているモーダルを閉じる
             const handleGlobalKeydown = (e) => {
                 if (e.repeat) return;
                 if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1801,6 +1834,13 @@
 
             // key に対応する訳文を返す（template・methods・computed のどこからでも呼べる）
             const t = (key, params) => (typeof skyTranslate === 'function') ? skyTranslate(lang.value, key, params) : key;
+
+            // 🌓 テーマ切替ボタンのaria-label。3状態を巡回するボタンはaria-pressed（真偽値）では
+            // 表現できないため、「現在のモード / クリックで切り替わる次のモード」を文言で示す。
+            const themeAriaLabel = computed(() => t('settings.themeAriaLabel', {
+                current: t(THEME_MODE_LABEL_KEY[themeMode.value]),
+                next: t(THEME_MODE_LABEL_KEY[nextThemeMode(themeMode.value)]),
+            }));
 
             // エリア／サブエリア／スポット名（areas-data.js由来の日本語名）の表示専用英訳。
             // 保存データ・maps-data.js/atlas-data.js の照合キーは日本語名のまま変更しない。
@@ -3787,9 +3827,24 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
 
             onMounted(() => {
                 const savedTheme = localStorage.getItem('sky_app_theme');
-                if (savedTheme) { isDarkMode.value = (savedTheme === 'dark'); }
-                else { isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches; }
+                themeMode.value = (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') ? savedTheme : 'system';
                 applyThemeToDOM();
+
+                // 🌓 OSのprefers-color-schemeがタブを開いたまま変化した場合（日没での自動切替など）、
+                // 現在のモードが'system'のときだけ即座に再適用してライブ追従させる。
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                    if (themeMode.value === 'system') { applyThemeToDOM(); }
+                });
+
+                // 🌓 他タブ／同一オリジンの姉妹サイトでsky_app_themeが変更された場合、
+                // このタブにも即座に反映する（リロード不要）。
+                window.addEventListener('storage', (e) => {
+                    if (e.key !== 'sky_app_theme') return;
+                    const v = e.newValue;
+                    themeMode.value = (v === 'light' || v === 'dark' || v === 'system') ? v : 'system';
+                    applyThemeToDOM();
+                });
+
                 const savedShortcutsEnabled = localStorage.getItem('sky_shortcuts_enabled');
                 shortcutsEnabled.value = (savedShortcutsEnabled === null) ? true : (savedShortcutsEnabled === '1');
                 applyLangToDOM();
@@ -3825,7 +3880,7 @@ plannedUsage: plannedUsage.value, heartsToSend: heartsToSend.value, targetCandle
             watch(dailyShard, () => { save(); });
 
             return {
-                isDarkMode, toggleTheme,
+                themeMode, toggleTheme, themeAriaLabel,
                 showAppSettingsModal, shortcutsEnabled,
                 lang, toggleLang, setLang, t, displayAreaName,
                 areas, carryOverPercent, targetDate, eventDays, currentCandles, plannedUsage, targetCandlesForOptimization, isWideScreen, thresholds, candleMemo,
