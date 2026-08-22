@@ -185,6 +185,7 @@ window.SKY_TRANSLATIONS = {
         "route.startBtn": "▶ 計測スタート",
         "route.pauseBtn": "⏸ 一時停止 (保存)",
         "route.resetBtn": "🔄 リセット",
+        "route.lapBtn": "🚩 記録",
         "route.reorderLabel": "🗺️ 経由順の入れ替え:",
         "route.memoPlaceholder": "ルートメモ…",
         "route.idealTotal": "📐 理想値合計:",
@@ -211,6 +212,8 @@ window.SKY_TRANSLATIONS = {
 
         // ── エリア管理カード ──
         "area.sectionHeader": "🗺️ エリア管理",
+        "area.searchPlaceholder": "🔍 エリア・サブエリア・スポット名で検索...",
+        "area.searchNoResults": "「{q}」に一致するエリア・スポットが見つかりません",
         "area.viewList": "📋 リスト",
         "area.viewMap": "🗺️ ミニマップ",
         "area.viewAtlas": "🧭 精密マップ",
@@ -454,6 +457,7 @@ window.SKY_TRANSLATIONS = {
         "route.startBtn": "▶ Start Timing",
         "route.pauseBtn": "⏸ Pause (Save)",
         "route.resetBtn": "🔄 Reset",
+        "route.lapBtn": "🚩 Split",
         "route.reorderLabel": "🗺️ Reorder Route:",
         "route.memoPlaceholder": "Route memo…",
         "route.idealTotal": "📐 Ideal Total:",
@@ -479,6 +483,8 @@ window.SKY_TRANSLATIONS = {
         "route.sharedAreaName": "📥 Shared External Area",
 
         "area.sectionHeader": "🗺️ Area Management",
+        "area.searchPlaceholder": "🔍 Search by area, sub-area, or spot name...",
+        "area.searchNoResults": 'No areas or spots match "{q}"',
         "area.viewList": "📋 List",
         "area.viewMap": "🗺️ Mini-Map",
         "area.viewAtlas": "🧭 Precise Map",
